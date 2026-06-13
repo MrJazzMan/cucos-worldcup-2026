@@ -4,16 +4,15 @@ import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { useT } from "@/components/SettingsProvider";
 
 export function AuthButtons() {
-  const supabase = createSupabaseBrowser();
   const t = useT();
 
   async function signIn(provider: "google" | "apple") {
+    const supabase = createSupabaseBrowser();
     const redirectTo = `${window.location.origin}/auth/callback?next=/conta`;
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo,
-        skipBrowserRedirect: false,
       },
     });
   }
