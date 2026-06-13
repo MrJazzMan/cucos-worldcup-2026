@@ -71,6 +71,10 @@ const pt: Dict = {
   "account.enabling": "A activar…",
   "auth.google": "Continuar com Google",
   "auth.apple": "Continuar com Apple",
+  "auth.error.failed": "Falha ao iniciar sessão. Tenta outra vez.",
+  "auth.error.server": "Erro no servidor de autenticação. Verifica a configuração Google no Supabase.",
+  "auth.error.generic": "Erro de autenticação.",
+  "auth.loggedIn": "Sessão iniciada",
 
   "settings.title": "Definições",
   "settings.language": "Idioma",
@@ -145,6 +149,10 @@ const en: Dict = {
   "account.enabling": "Enabling…",
   "auth.google": "Continue with Google",
   "auth.apple": "Continue with Apple",
+  "auth.error.failed": "Sign-in failed. Please try again.",
+  "auth.error.server": "Authentication server error. Check Google setup in Supabase.",
+  "auth.error.generic": "Authentication error.",
+  "auth.loggedIn": "Signed in",
 
   "settings.title": "Settings",
   "settings.language": "Language",

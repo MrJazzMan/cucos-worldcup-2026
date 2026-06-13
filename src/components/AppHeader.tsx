@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SettingsMenu } from "@/components/SettingsMenu";
+import { AuthStatus } from "@/components/AuthStatus";
 import { useT } from "@/components/SettingsProvider";
 
 const links = [
@@ -50,6 +51,7 @@ export function AppHeader() {
               </Link>
             ))}
           </nav>
+          <AuthStatus />
           <SettingsMenu />
         </div>
       </div>

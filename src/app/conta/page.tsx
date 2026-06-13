@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { AuthButtons } from "@/components/AuthButtons";
 import { AccountPanel } from "@/components/AccountPanel";
+import { AuthErrorBanner } from "@/components/AuthStatus";
 import { T } from "@/components/Display";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getAllTeams } from "@/lib/matches";
@@ -40,6 +42,9 @@ export default async function ContaPage() {
   if (!user) {
     return (
       <div className="space-y-6">
+        <Suspense fallback={null}>
+          <AuthErrorBanner />
+        </Suspense>
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             <T k="account.title" />
@@ -65,11 +70,16 @@ export default async function ContaPage() {
     .single();
 
   return (
-    <AccountPanel
-      user={{ id: user.id, email: user.email }}
-      favourites={favourites ?? []}
-      prefs={prefs ?? { ...DEFAULT_PREFS, user_id: user.id }}
-      teams={teams}
-    />
+    <div className="space-y-6">
+      <Suspense fallback={null}>
+        <AuthErrorBanner />
+      </Suspense>
+      <AccountPanel
+        user={{ id: user.id, email: user.email }}
+        favourites={favourites ?? []}
+        prefs={prefs ?? { ...DEFAULT_PREFS, user_id: user.id }}
+        teams={teams}
+      />
+    </div>
   );
 }

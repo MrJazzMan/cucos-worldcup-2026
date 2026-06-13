@@ -71,12 +71,19 @@ Menu: **Google Auth Platform → Branding** (ou Audience)
 2. Clica **Continuar com Google** / **Continue with Google**
 3. Autoriza → deve voltar a `/conta` com sessão activa
 
-### Local
+### Local (localhost:3000)
 
-```bash
-npm run dev
-# http://localhost:3000/conta
-```
+Para testar login **em local**, confirma também:
+
+**Google Cloud** → Authorized JavaScript origins: `http://localhost:3000`
+
+**Supabase** → Redirect URLs inclui: `http://localhost:3000/auth/callback`
+
+> O botão Google usa `window.location.origin` — em local volta para
+> `localhost`, em produção para `wc26.pt`. Isto é normal.
+
+**Supabase Site URL:** pode ser `https://wc26.pt` mesmo testando local; o
+`redirectTo` na app sobrepõe-se para o callback correcto.
 
 ---
 

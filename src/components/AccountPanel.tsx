@@ -125,7 +125,9 @@ export function AccountPanel({
         <h2 className="mb-1 text-xl font-bold text-foreground">
           {t("account.yourAccount")}
         </h2>
-        <p className="text-sm text-muted">{user.email}</p>
+        <p className="text-sm text-emerald-600 dark:text-emerald-400">
+          ✓ {t("auth.loggedIn")} — {user.email}
+        </p>
         <button
           onClick={signOut}
           className="mt-3 text-sm text-muted underline hover:text-foreground"
