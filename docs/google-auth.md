@@ -9,7 +9,8 @@ O código da app já está pronto (`AuthButtons`, `/auth/callback`). Falta confi
 
 ## 1. Google Cloud Console
 
-Projecto criado: **cucos-wc26** ✓
+Projecto criado: **cucos-wc26** ✓  
+OAuth client criado ✓ (ficheiro `client_secret_....json` com redirect Supabase correcto)
 
 1. Abre [Google Cloud Console](https://console.cloud.google.com/) → projecto **cucos-wc26**
 2. Menu lateral: **Google Auth Platform → Overview**
@@ -38,17 +39,29 @@ Menu: **Google Auth Platform → Branding** (ou Audience)
 
 ## 2. Supabase
 
-1. [Supabase Dashboard](https://supabase.com/dashboard) → projecto `cucos-worldcup-2026`
-2. **Authentication → Providers → Google**
-   - Enable: **ON**
-   - Client ID: colar do Google
-   - Client Secret: colar do Google
-   - Guardar
-3. **Authentication → URL Configuration**
-   - Site URL: `https://wc26.pt`
-   - Redirect URLs (adicionar todos):
-     - `https://wc26.pt/auth/callback`
-     - `http://localhost:3000/auth/callback`
+> ⚠️ **Não uses** Settings → OAuth Apps (nível organização "Cuco's Org").
+> Isso é para publicar apps que integram *com* o Supabase — não é o login Google.
+
+### Caminho correcto
+
+1. Abre o **projecto** (não a org):  
+   [supabase.com/dashboard/project/vsbmdqzabegcvjupwcpj](https://supabase.com/dashboard/project/vsbmdqzabegcvjupwcpj)
+2. Menu esquerdo: **Authentication** → **Sign In / Providers** → **Google**
+   - Link directo: [Providers → Google](https://supabase.com/dashboard/project/vsbmdqzabegcvjupwcpj/auth/providers?provider=Google)
+3. **Enable Google**: ON
+4. Colar do ficheiro `.json` do Google (`client_secret_....json`):
+   - **Client ID:** campo `client_id` (termina em `.apps.googleusercontent.com`)
+   - **Client Secret:** campo `client_secret` (começa por `GOCSPX-`)
+5. **Save**
+
+### URL Configuration
+
+**Authentication → URL Configuration**
+
+- **Site URL:** `https://wc26.pt`
+- **Redirect URLs** (adicionar):
+  - `https://wc26.pt/auth/callback`
+  - `http://localhost:3000/auth/callback`
 
 ---
 
