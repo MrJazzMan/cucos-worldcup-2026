@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSettings } from "@/components/SettingsProvider";
+import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { COMMON_TIMEZONES } from "@/lib/datetime";
 import { LANGS } from "@/lib/i18n";
 
@@ -13,7 +16,9 @@ const THEME_OPTIONS = [
 
 export function SettingsMenu() {
   const { t, lang, setLang, theme, setTheme, tzPref, setTzPref } = useSettings();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,6 +39,25 @@ export function SettingsMenu() {
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const supabase = createSupabaseBrowser();
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+    });
+  }, [open]);
+
+  async function signOut() {
+    const supabase = createSupabaseBrowser();
+    await supabase.auth.signOut();
+    setOpen(false);
+    router.push("/conta");
+    router.refresh();
+  }
+
+  const username = email?.split("@")[0] ?? "Convidado";
+  const initial = username[0]?.toUpperCase() ?? "C";
 
   return (
     <div className="relative" ref={ref}>
@@ -68,7 +92,7 @@ export function SettingsMenu() {
           <aside className="fixed right-0 top-0 z-50 h-dvh w-[min(24rem,88vw)] border-l border-border-base bg-surface p-5 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <p className="text-2xl font-extrabold text-foreground">
-                {t("settings.title")}
+                Menu
               </p>
               <button
                 onClick={() => setOpen(false)}
@@ -79,7 +103,47 @@ export function SettingsMenu() {
               </button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
+              <section className="rounded-2xl bg-surface-2 p-3">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-accent text-sm font-bold text-white">
+                    {initial}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-bold text-foreground">
+                      {username}
+                    </p>
+                    <p className="truncate text-sm text-orange-500">🔥 4 dias seguidos</p>
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-2xl border border-border-base bg-surface-2">
+                <button
+                  className="flex w-full items-center gap-2 px-3 py-3 text-left text-base font-semibold text-foreground/70"
+                  type="button"
+                >
+                  <span>🏆</span>
+                  Galeria de Troféus
+                </button>
+                <Link
+                  href="/conta"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 border-t border-border-base px-3 py-3 text-base font-semibold text-foreground"
+                >
+                  <span>⚙️</span>
+                  Definições
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="flex w-full items-center gap-2 border-t border-border-base px-3 py-3 text-left text-base font-bold text-red-500"
+                  type="button"
+                >
+                  <span>↪</span>
+                  Sair
+                </button>
+              </section>
+
               <section>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
                   {t("settings.language")}
@@ -106,18 +170,18 @@ export function SettingsMenu() {
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
                   {t("settings.theme")}
                 </label>
-                <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
                   {THEME_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       onClick={() => setTheme(opt.value)}
-                      className={`flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                      className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors ${
                         theme === opt.value
                           ? "bg-accent text-white"
                           : "bg-surface-2 text-muted hover:text-foreground"
                       }`}
                     >
-                      <span className="mr-2">{opt.icon}</span>
+                      <span className="mr-1">{opt.icon}</span>
                       {t(opt.key)}
                     </button>
                   ))}
