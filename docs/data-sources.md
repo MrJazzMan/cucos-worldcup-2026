@@ -24,9 +24,14 @@
 
 ## Canais TV Portugal
 
-Nenhuma API fornece dados fiáveis de transmissão em Portugal. A tabela `broadcasts` é curada manualmente.
+**Fonte principal:** [OndeBola.com](https://ondebola.com/) — scrape HTML (port do Leopardo).
 
-Fontes de referência:
+- Módulo: `src/lib/ondebola.ts`
+- Sync: `GET /api/sync-broadcasts` (cron diário 07:00 UTC)
+- Match fuzzy: equipas + hora ±90 min (como Leopardo `canal_para_jogo`)
+- Fallback manual: `/admin` e seed Portugal
+
+Fontes de referência adicionais:
 - Comunicados RTP / Sport TV / SIC
 - Guia oficial FIFA de broadcasters
 - Imprensa desportiva portuguesa
