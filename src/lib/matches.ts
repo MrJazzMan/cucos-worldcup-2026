@@ -101,24 +101,39 @@ export async function getGroupStandings(): Promise<GroupStanding[]> {
     const data = await fetchStandings();
     if (!data.length) return getMockStandings();
 
-    return data[0].league.standings.map((group, i) => ({
-      group_name: `Grupo ${String.fromCharCode(65 + i)}`,
-      rows: group.map((row) => ({
-        rank: row.rank,
-        team_id: row.team.id,
-        team_name: row.team.name,
-        team_logo: row.team.logo,
-        played: row.all.played,
-        won: row.all.win,
-        draw: row.all.draw,
-        lost: row.all.lose,
-        goals_for: row.all.goals.for,
-        goals_against: row.all.goals.against,
-        goal_diff: row.goalsDiff,
-        points: row.points,
-        form: row.form,
-      })),
-    }));
+    const groups = data[0].league.standings
+      .map((group) => {
+        const apiGroup = group[0]?.group ?? "";
+        const match = apiGroup.match(/Group\s+([A-L])/i);
+
+        // Ignora tabela agregada "Group Stage" e quaisquer blocos fora A-L.
+        if (!match) return null;
+
+        const letter = match[1].toUpperCase();
+        return {
+          group_name: `Grupo ${letter}`,
+          rows: group.map((row) => ({
+            rank: row.rank,
+            team_id: row.team.id,
+            team_name: row.team.name,
+            team_logo: row.team.logo,
+            played: row.all.played,
+            won: row.all.win,
+            draw: row.all.draw,
+            lost: row.all.lose,
+            goals_for: row.all.goals.for,
+            goals_against: row.all.goals.against,
+            goal_diff: row.goalsDiff,
+            points: row.points,
+            form: row.form,
+          })),
+        };
+      })
+      .filter(Boolean) as GroupStanding[];
+
+    groups.sort((a, b) => a.group_name.localeCompare(b.group_name, "pt"));
+
+    return groups.length ? groups : getMockStandings();
   } catch {
     return getMockStandings();
   }

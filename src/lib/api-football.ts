@@ -140,6 +140,7 @@ export async function fetchStandings() {
       league: {
         standings: {
           rank: number;
+          group: string;
           team: { id: number; name: string; logo: string };
           all: {
             played: number;
