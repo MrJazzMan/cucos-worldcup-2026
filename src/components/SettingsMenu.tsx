@@ -59,75 +59,91 @@ export function SettingsMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-72 origin-top-right rounded-2xl border border-border-base bg-surface p-4 shadow-xl">
-          <p className="mb-3 text-sm font-bold text-foreground">
-            {t("settings.title")}
-          </p>
-
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
-                {t("settings.language")}
-              </label>
-              <div className="flex gap-1.5">
-                {LANGS.map((l) => (
-                  <button
-                    key={l.value}
-                    onClick={() => setLang(l.value)}
-                    className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium transition-colors ${
-                      lang === l.value
-                        ? "bg-accent text-white"
-                        : "bg-surface-2 text-muted hover:text-foreground"
-                    }`}
-                  >
-                    <span className="mr-1">{l.flag}</span>
-                    {l.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
-                {t("settings.theme")}
-              </label>
-              <div className="flex gap-1.5">
-                {THEME_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setTheme(opt.value)}
-                    className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium transition-colors ${
-                      theme === opt.value
-                        ? "bg-accent text-white"
-                        : "bg-surface-2 text-muted hover:text-foreground"
-                    }`}
-                  >
-                    <span className="mr-1">{opt.icon}</span>
-                    {t(opt.key)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted">
-                {t("settings.timezone")}
-              </label>
-              <select
-                value={tzPref}
-                onChange={(e) => setTzPref(e.target.value)}
-                className="w-full rounded-lg border border-border-base bg-surface-2 px-3 py-2 text-sm text-foreground"
+        <>
+          <button
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[1px]"
+            aria-label="Fechar menu"
+          />
+          <aside className="fixed right-0 top-0 z-50 h-dvh w-[min(24rem,88vw)] border-l border-border-base bg-surface p-5 shadow-2xl">
+            <div className="mb-5 flex items-center justify-between">
+              <p className="text-2xl font-extrabold text-foreground">
+                {t("settings.title")}
+              </p>
+              <button
+                onClick={() => setOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-surface-2 hover:text-foreground"
+                aria-label="Fechar menu"
               >
-                <option value="auto">{t("settings.timezone.auto")}</option>
-                {COMMON_TIMEZONES.map((tz) => (
-                  <option key={tz} value={tz}>
-                    {tz.replace(/_/g, " ")}
-                  </option>
-                ))}
-              </select>
+                ✕
+              </button>
             </div>
-          </div>
-        </div>
+
+            <div className="space-y-6">
+              <section>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
+                  {t("settings.language")}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {LANGS.map((l) => (
+                    <button
+                      key={l.value}
+                      onClick={() => setLang(l.value)}
+                      className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                        lang === l.value
+                          ? "bg-accent text-white"
+                          : "bg-surface-2 text-muted hover:text-foreground"
+                      }`}
+                    >
+                      <span className="mr-1">{l.flag}</span>
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
+                  {t("settings.theme")}
+                </label>
+                <div className="space-y-2">
+                  {THEME_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setTheme(opt.value)}
+                      className={`flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
+                        theme === opt.value
+                          ? "bg-accent text-white"
+                          : "bg-surface-2 text-muted hover:text-foreground"
+                      }`}
+                    >
+                      <span className="mr-2">{opt.icon}</span>
+                      {t(opt.key)}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
+                  {t("settings.timezone")}
+                </label>
+                <select
+                  value={tzPref}
+                  onChange={(e) => setTzPref(e.target.value)}
+                  className="w-full rounded-xl border border-border-base bg-surface-2 px-3 py-2.5 text-sm text-foreground"
+                >
+                  <option value="auto">{t("settings.timezone.auto")}</option>
+                  {COMMON_TIMEZONES.map((tz) => (
+                    <option key={tz} value={tz}>
+                      {tz.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </section>
+            </div>
+          </aside>
+        </>
       )}
     </div>
   );

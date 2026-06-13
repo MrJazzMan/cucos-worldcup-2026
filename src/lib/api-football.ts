@@ -168,6 +168,12 @@ export async function fetchFixturesByRound(round: string) {
   );
 }
 
+export async function fetchFixturesByDate(date: string) {
+  return apiFetch<ApiFixture[]>(
+    `/fixtures?league=1&season=2026&date=${encodeURIComponent(date)}&timezone=UTC`
+  );
+}
+
 export async function fetchTeams() {
   return apiFetch<
     { team: { id: number; name: string; logo: string } }[]

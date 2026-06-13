@@ -1,11 +1,19 @@
-const CACHE_NAME = "cucos-wc26-v2";
+const CACHE_NAME = "cucos-wc26-v3";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key.startsWith("cucos-wc26-") && key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener("push", (event) => {
@@ -37,12 +45,16 @@ self.addEventListener("notificationclick", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (event.request.mode === "navigate") return;
 
   const url = new URL(event.request.url);
   if (
     url.hostname === "localhost" ||
     url.hostname === "127.0.0.1" ||
-    url.pathname.startsWith("/_next")
+    url.pathname.startsWith("/_next") ||
+    url.pathname.startsWith("/auth/") ||
+    url.searchParams.has("code") ||
+    url.searchParams.has("error")
   ) {
     return;
   }
@@ -50,10 +62,14 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
+        if (!response.ok || response.type === "opaque") return response;
         const clone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        return cached ?? Response.error();
+      })
   );
 });

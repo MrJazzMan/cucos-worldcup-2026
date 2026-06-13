@@ -1,5 +1,6 @@
 import {
   fetchAllFixtures,
+  fetchFixturesByDate,
   fetchLiveFixtures,
   mapFixtureToMatch,
 } from "@/lib/api-football";
@@ -45,8 +46,27 @@ export async function syncMatches(mode: "full" | "live" = "full") {
   }
 
   try {
-    const fixtures =
-      mode === "live" ? await fetchLiveFixtures() : await fetchAllFixtures();
+    let fixtures;
+    if (mode === "live") {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setUTCDate(today.getUTCDate() - 1);
+
+      const [live, dayNow, dayPrev] = await Promise.all([
+        fetchLiveFixtures(),
+        fetchFixturesByDate(today.toISOString().slice(0, 10)),
+        fetchFixturesByDate(yesterday.toISOString().slice(0, 10)),
+      ]);
+
+      // Em live-sync incluímos hoje/ontem para apanhar transições live -> finished.
+      const dedup = new Map<number, (typeof live)[number]>();
+      [...live, ...dayNow, ...dayPrev].forEach((f) =>
+        dedup.set(f.fixture.id, f)
+      );
+      fixtures = [...dedup.values()];
+    } else {
+      fixtures = await fetchAllFixtures();
+    }
 
     if (!fixtures.length && mode === "full") {
       await seedMockMatches(admin);
