@@ -64,9 +64,7 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       await purgeMockMatches(admin);
     }
 
-    if (mode === "live") {
-      await purgeNonWorldCupMatches(admin);
-    }
+    await purgeNonWorldCupMatches(admin);
 
     return { synced: rows.length, source: "api-football" };
   } catch (err) {
