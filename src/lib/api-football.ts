@@ -42,12 +42,16 @@ function getApiKey(): string {
   return key;
 }
 
-async function apiFetch<T>(path: string): Promise<T> {
+async function apiFetch<T>(
+  path: string,
+  options?: { revalidate?: number }
+): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
       "x-apisports-key": getApiKey(),
     },
-    next: { revalidate: 0 },
+    // Default: cache curto para reduzir chamadas em páginas de leitura.
+    next: { revalidate: options?.revalidate ?? 300 },
   });
 
   if (!res.ok) {
@@ -123,12 +127,15 @@ export function mapFixtureToMatch(fixture: ApiFixture) {
 
 export async function fetchAllFixtures() {
   return apiFetch<ApiFixture[]>(
-    "/fixtures?league=1&season=2026&timezone=UTC"
+    "/fixtures?league=1&season=2026&timezone=UTC",
+    { revalidate: 0 }
   );
 }
 
 export async function fetchLiveFixtures() {
-  const all = await apiFetch<ApiFixture[]>("/fixtures?live=all");
+  const all = await apiFetch<ApiFixture[]>("/fixtures?live=all", {
+    revalidate: 0,
+  });
   return all.filter(
     (f) => f.league.id === WC_LEAGUE_ID && isWorldCupRound(f.league.round)
   );
@@ -155,28 +162,32 @@ export async function fetchStandings() {
         }[][];
       };
     }[]
-  >("/standings?league=1&season=2026");
+  >("/standings?league=1&season=2026", { revalidate: 300 });
 }
 
 export async function fetchRounds() {
-  return apiFetch<string[]>("/fixtures/rounds?league=1&season=2026");
+  return apiFetch<string[]>("/fixtures/rounds?league=1&season=2026", {
+    revalidate: 1800,
+  });
 }
 
 export async function fetchFixturesByRound(round: string) {
   const encoded = encodeURIComponent(round);
   return apiFetch<ApiFixture[]>(
-    `/fixtures?league=1&season=2026&round=${encoded}`
+    `/fixtures?league=1&season=2026&round=${encoded}`,
+    { revalidate: 300 }
   );
 }
 
 export async function fetchFixturesByDate(date: string) {
   return apiFetch<ApiFixture[]>(
-    `/fixtures?league=1&season=2026&date=${encodeURIComponent(date)}&timezone=UTC`
+    `/fixtures?league=1&season=2026&date=${encodeURIComponent(date)}&timezone=UTC`,
+    { revalidate: 0 }
   );
 }
 
 export async function fetchTeams() {
   return apiFetch<
     { team: { id: number; name: string; logo: string } }[]
-  >("/teams?league=1&season=2026");
+  >("/teams?league=1&season=2026", { revalidate: 3600 });
 }
