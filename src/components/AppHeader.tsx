@@ -2,17 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { SettingsMenu } from "@/components/SettingsMenu";
+import { useT } from "@/components/SettingsProvider";
 
 const links = [
-  { href: "/", label: "Jogos" },
-  { href: "/grupos", label: "Grupos" },
-  { href: "/eliminatorias", label: "Eliminatórias" },
-  { href: "/conta", label: "Conta" },
+  { href: "/", key: "nav.matches" },
+  { href: "/grupos", key: "nav.groups" },
+  { href: "/eliminatorias", key: "nav.knockouts" },
+  { href: "/conta", key: "nav.account" },
 ];
 
 export function AppHeader() {
   const pathname = usePathname();
+  const t = useT();
+
+  function isActive(href: string) {
+    return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-base bg-background/80 backdrop-blur-xl">
@@ -25,54 +31,42 @@ export function AppHeader() {
             <p className="text-lg font-bold leading-tight text-foreground">
               Cucos WC26
             </p>
-            <p className="text-xs text-muted">TV Portugal</p>
+            <p className="text-xs text-muted">{t("header.subtitle")}</p>
           </div>
         </Link>
         <div className="flex items-center gap-2">
           <nav className="hidden gap-1 sm:flex">
-            {links.map((link) => {
-              const active =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${
-                    active
-                      ? "bg-foreground text-background"
-                      : "text-muted hover:text-foreground"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${
+                  isActive(link.href)
+                    ? "bg-foreground text-background"
+                    : "text-muted hover:text-foreground"
+                }`}
+              >
+                {t(link.key)}
+              </Link>
+            ))}
           </nav>
-          <ThemeToggle />
+          <SettingsMenu />
         </div>
       </div>
       <nav className="flex gap-1 overflow-x-auto border-t border-border-base px-3 py-2 sm:hidden">
-        {links.map((link) => {
-          const active =
-            link.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(link.href);
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                active
-                  ? "bg-foreground text-background"
-                  : "text-muted hover:text-foreground"
-              }`}
-            >
-              {link.label}
-            </Link>
-          );
-        })}
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              isActive(link.href)
+                ? "bg-foreground text-background"
+                : "text-muted hover:text-foreground"
+            }`}
+          >
+            {t(link.key)}
+          </Link>
+        ))}
       </nav>
     </header>
   );

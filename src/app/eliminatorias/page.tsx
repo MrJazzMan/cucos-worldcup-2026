@@ -1,4 +1,5 @@
 import { MatchCard } from "@/components/MatchCard";
+import { T } from "@/components/Display";
 import { getKnockoutRounds } from "@/lib/matches";
 
 export default async function EliminatoriasPage() {
@@ -7,17 +8,21 @@ export default async function EliminatoriasPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Eliminatórias</h1>
-        <p className="mt-1 text-muted">Chave completa do torneio</p>
+        <h1 className="text-2xl font-bold text-foreground">
+          <T k="knockouts.title" />
+        </h1>
+        <p className="mt-1 text-muted">
+          <T k="knockouts.subtitle" />
+        </p>
       </div>
 
       {rounds.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border-base bg-surface/50 px-6 py-12 text-center">
           <p className="text-lg font-medium text-foreground">
-            Chave ainda não disponível
+            <T k="knockouts.empty.title" />
           </p>
           <p className="mt-1 text-sm text-muted">
-            Os jogos eliminatórios serão publicados à medida que o torneio avança.
+            <T k="knockouts.empty.subtitle" />
           </p>
         </div>
       ) : (

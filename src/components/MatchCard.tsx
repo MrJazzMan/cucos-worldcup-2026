@@ -1,8 +1,10 @@
+"use client";
+
 import { TeamFlag } from "@/components/TeamFlag";
+import { KickoffTime, TeamName, teamLabel } from "@/components/Display";
+import { useSettings } from "@/components/SettingsProvider";
 import { getChannelHref } from "@/lib/channels";
-import { formatKickoffTime } from "@/lib/timezone";
-import { getStatusColor, getStatusLabel } from "@/lib/match-utils";
-import { ptTeam } from "@/lib/team-names";
+import { getStatusColor } from "@/lib/match-utils";
 import type { Match } from "@/types";
 
 interface MatchCardProps {
@@ -10,11 +12,11 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match }: MatchCardProps) {
-  const time = formatKickoffTime(match.kickoff_utc);
+  const { t, lang } = useSettings();
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
-  const homeName = ptTeam(match.home_team_name);
-  const awayName = ptTeam(match.away_team_name);
+  const homeLabel = teamLabel(match.home_team_name, lang);
+  const awayLabel = teamLabel(match.away_team_name, lang);
 
   return (
     <article
@@ -35,13 +37,13 @@ export function MatchCard({ match }: MatchCardProps) {
           {isLive && (
             <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-current" />
           )}
-          {getStatusLabel(match.status)}
+          {t(`status.${match.status}`)}
           {isLive && match.minute != null && (
             <span className="ml-0.5">{match.minute}&apos;</span>
           )}
         </span>
         {match.isFavourite && (
-          <span className="text-amber-400" aria-label="Equipa favorita">
+          <span className="text-amber-400" aria-label="★">
             ★
           </span>
         )}
@@ -49,9 +51,9 @@ export function MatchCard({ match }: MatchCardProps) {
 
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-1 flex-col items-center gap-2 text-center">
-          <TeamFlag name={homeName} logo={match.home_team_logo} size={44} />
+          <TeamFlag name={homeLabel} logo={match.home_team_logo} size={44} />
           <p className="text-base font-semibold leading-tight text-foreground sm:text-lg">
-            {homeName}
+            <TeamName name={match.home_team_name} />
           </p>
         </div>
 
@@ -63,18 +65,15 @@ export function MatchCard({ match }: MatchCardProps) {
             </p>
           ) : (
             <p className="text-2xl font-bold tabular-nums text-foreground">
-              {time}
+              <KickoffTime utc={match.kickoff_utc} />
             </p>
-          )}
-          {!isLive && !isFinished && (
-            <p className="text-xs text-muted">hora PT</p>
           )}
         </div>
 
         <div className="flex flex-1 flex-col items-center gap-2 text-center">
-          <TeamFlag name={awayName} logo={match.away_team_logo} size={44} />
+          <TeamFlag name={awayLabel} logo={match.away_team_logo} size={44} />
           <p className="text-base font-semibold leading-tight text-foreground sm:text-lg">
-            {awayName}
+            <TeamName name={match.away_team_name} />
           </p>
         </div>
       </div>
@@ -112,7 +111,7 @@ export function MatchCard({ match }: MatchCardProps) {
             );
           })
         ) : (
-          <span className="text-sm text-muted">Canal a confirmar</span>
+          <span className="text-sm text-muted">{t("card.channelTBC")}</span>
         )}
       </div>
     </article>

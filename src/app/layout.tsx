@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { SettingsProvider } from "@/components/SettingsProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -47,14 +48,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans text-foreground antialiased`}
       >
-        <AppHeader />
-        <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
-          {children}
-        </main>
-        <footer className="mt-10 pb-8 text-center text-xs text-muted">
-          © 2026 Cuco Enterprise
-        </footer>
-        <ServiceWorkerRegister />
+        <SettingsProvider>
+          <AppHeader />
+          <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+            {children}
+          </main>
+          <footer className="mt-10 pb-8 text-center text-xs text-muted">
+            © 2026 Cuco Enterprise
+          </footer>
+          <ServiceWorkerRegister />
+        </SettingsProvider>
       </body>
     </html>
   );

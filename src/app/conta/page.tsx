@@ -1,5 +1,6 @@
 import { AuthButtons } from "@/components/AuthButtons";
 import { AccountPanel } from "@/components/AccountPanel";
+import { T } from "@/components/Display";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getAllTeams } from "@/lib/matches";
 import type { NotificationPrefs } from "@/types";
@@ -21,9 +22,11 @@ export default async function ContaPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Conta</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            <T k="account.title" />
+          </h1>
           <p className="mt-1 text-muted">
-            Configura Supabase para activar autenticação.
+            <T k="account.needSupabase" />
           </p>
         </div>
       </div>
@@ -38,9 +41,11 @@ export default async function ContaPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Conta</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            <T k="account.title" />
+          </h1>
           <p className="mt-1 text-muted">
-            Inicia sessão para guardar equipas favoritas e receber notificações.
+            <T k="account.signInPrompt" />
           </p>
         </div>
         <AuthButtons />

@@ -1,6 +1,6 @@
 import Image from "next/image";
+import { T, TeamName } from "@/components/Display";
 import { getGroupStandings } from "@/lib/matches";
-import { ptTeam } from "@/lib/team-names";
 
 export default async function GruposPage() {
   const groups = await getGroupStandings();
@@ -8,8 +8,12 @@ export default async function GruposPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Grupos</h1>
-        <p className="mt-1 text-muted">Classificações do Mundial 2026</p>
+        <h1 className="text-2xl font-bold text-foreground">
+          <T k="groups.title" />
+        </h1>
+        <p className="mt-1 text-muted">
+          <T k="groups.subtitle" />
+        </p>
       </div>
 
       {groups.map((group) => (
@@ -25,13 +29,27 @@ export default async function GruposPage() {
               <thead>
                 <tr className="text-left text-xs text-muted">
                   <th className="px-3 py-2">#</th>
-                  <th className="px-3 py-2">Equipa</th>
-                  <th className="px-3 py-2 text-center">J</th>
-                  <th className="px-3 py-2 text-center">V</th>
-                  <th className="px-3 py-2 text-center">E</th>
-                  <th className="px-3 py-2 text-center">D</th>
-                  <th className="px-3 py-2 text-center">DG</th>
-                  <th className="px-3 py-2 text-center font-bold">Pts</th>
+                  <th className="px-3 py-2">
+                    <T k="groups.col.team" />
+                  </th>
+                  <th className="px-3 py-2 text-center">
+                    <T k="groups.col.played" />
+                  </th>
+                  <th className="px-3 py-2 text-center">
+                    <T k="groups.col.won" />
+                  </th>
+                  <th className="px-3 py-2 text-center">
+                    <T k="groups.col.draw" />
+                  </th>
+                  <th className="px-3 py-2 text-center">
+                    <T k="groups.col.lost" />
+                  </th>
+                  <th className="px-3 py-2 text-center">
+                    <T k="groups.col.gd" />
+                  </th>
+                  <th className="px-3 py-2 text-center font-bold">
+                    <T k="groups.col.points" />
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -53,7 +71,9 @@ export default async function GruposPage() {
                             unoptimized
                           />
                         )}
-                        <span className="font-medium">{ptTeam(row.team_name)}</span>
+                        <span className="font-medium">
+                          <TeamName name={row.team_name} />
+                        </span>
                       </div>
                     </td>
                     <td className="px-3 py-2.5 text-center tabular-nums">

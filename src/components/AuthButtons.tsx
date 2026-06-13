@@ -1,9 +1,11 @@
 "use client";
 
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import { useT } from "@/components/SettingsProvider";
 
 export function AuthButtons() {
   const supabase = createSupabaseBrowser();
+  const t = useT();
 
   async function signIn(provider: "google" | "apple") {
     await supabase.auth.signInWithOAuth({
@@ -21,14 +23,14 @@ export function AuthButtons() {
         className="flex w-full items-center justify-center gap-3 rounded-xl bg-white px-4 py-3.5 text-base font-semibold text-zinc-900 transition hover:bg-zinc-100"
       >
         <span>G</span>
-        Continuar com Google
+        {t("auth.google")}
       </button>
       <button
         onClick={() => signIn("apple")}
         className="flex w-full items-center justify-center gap-3 rounded-xl bg-zinc-900 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-zinc-800"
       >
         <span>🍎</span>
-        Continuar com Apple
+        {t("auth.apple")}
       </button>
     </div>
   );

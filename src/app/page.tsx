@@ -1,68 +1,42 @@
-import { Suspense } from "react";
-import { MatchList } from "@/components/MatchList";
+import { MatchesView } from "@/components/MatchesView";
 import {
-  getMatchesForDay,
+  getAllMatches,
   getUserFavouriteTeamIds,
 } from "@/lib/matches";
 import { getMockMatchesForDate } from "@/lib/mock-data";
 import { getDateForOffset } from "@/lib/timezone";
-import type { DayOffset, Match } from "@/types";
+import type { Match } from "@/types";
 
-interface PageProps {
-  searchParams: Promise<{ dia?: string }>;
-}
-
-async function loadMatches(offset: DayOffset, favouriteIds: number[]) {
+async function loadAllMatches(favouriteIds: number[]) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    const date = getDateForOffset(offset);
-    return getMockMatchesForDate(date).map((m) => ({
-      ...m,
-      isFavourite:
-        favouriteIds.includes(m.home_team_id) ||
-        favouriteIds.includes(m.away_team_id),
-    }));
+    return mockWindow(favouriteIds);
   }
 
   try {
-    const matches = await getMatchesForDay(offset, favouriteIds);
+    const matches = await getAllMatches(favouriteIds);
     if (matches.length > 0) return matches;
-
-    const date = getDateForOffset(offset);
-    return getMockMatchesForDate(date).map((m) => ({
-      ...m,
-      isFavourite:
-        favouriteIds.includes(m.home_team_id) ||
-        favouriteIds.includes(m.away_team_id),
-    }));
+    return mockWindow(favouriteIds);
   } catch {
-    const date = getDateForOffset(offset);
-    return getMockMatchesForDate(date);
+    return mockWindow(favouriteIds);
   }
 }
 
-export default async function HomePage({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const raw = Number(params.dia ?? "0");
-  const offset = ([-1, 0, 1] as DayOffset[]).includes(raw as DayOffset)
-    ? (raw as DayOffset)
-    : 0;
+function mockWindow(favouriteIds: number[]): (Match & { isFavourite?: boolean })[] {
+  const days = [-1, 0, 1] as const;
+  const all = days.flatMap((d) => getMockMatchesForDate(getDateForOffset(d)));
+  return all.map((m) => ({
+    ...m,
+    isFavourite:
+      favouriteIds.includes(m.home_team_id) ||
+      favouriteIds.includes(m.away_team_id),
+  }));
+}
 
+export default async function HomePage() {
   const favouriteIds = await getUserFavouriteTeamIds().catch(() => [] as number[]);
-  const matches = await loadMatches(offset, favouriteIds);
+  const matches = await loadAllMatches(favouriteIds);
 
-  return (
-    <Suspense
-      fallback={
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl bg-surface" />
-          ))}
-        </div>
-      }
-    >
-      <MatchList matches={matches as (Match & { isFavourite?: boolean })[]} offset={offset} />
-    </Suspense>
-  );
+  return <MatchesView matches={matches} />;
 }
 
 export const revalidate = 60;

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
-import { ptTeam } from "@/lib/team-names";
+import { useSettings } from "@/components/SettingsProvider";
+import { teamLabel } from "@/components/Display";
 import type { NotificationPrefs, TeamOption } from "@/types";
 
 interface AccountPanelProps {
@@ -12,12 +13,12 @@ interface AccountPanelProps {
   teams: TeamOption[];
 }
 
-const NOTIF_LABELS: { key: keyof NotificationPrefs; label: string }[] = [
-  { key: "before_24h", label: "24 horas antes" },
-  { key: "before_1h", label: "1 hora antes" },
-  { key: "before_15m", label: "15 minutos antes" },
-  { key: "match_started", label: "Jogo começou" },
-  { key: "final_result", label: "Resultado final" },
+const NOTIF_LABELS: { key: keyof NotificationPrefs; i18nKey: string }[] = [
+  { key: "before_24h", i18nKey: "account.notif.before24h" },
+  { key: "before_1h", i18nKey: "account.notif.before1h" },
+  { key: "before_15m", i18nKey: "account.notif.before15m" },
+  { key: "match_started", i18nKey: "account.notif.started" },
+  { key: "final_result", i18nKey: "account.notif.final" },
 ];
 
 export function AccountPanel({
@@ -27,6 +28,7 @@ export function AccountPanel({
   teams,
 }: AccountPanelProps) {
   const supabase = createSupabaseBrowser();
+  const { t, lang } = useSettings();
   const [selected, setSelected] = useState<Set<number>>(
     new Set(favourites.map((f) => f.team_id))
   );
@@ -120,21 +122,23 @@ export function AccountPanel({
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="mb-1 text-xl font-bold text-foreground">A tua conta</h2>
+        <h2 className="mb-1 text-xl font-bold text-foreground">
+          {t("account.yourAccount")}
+        </h2>
         <p className="text-sm text-muted">{user.email}</p>
         <button
           onClick={signOut}
           className="mt-3 text-sm text-muted underline hover:text-foreground"
         >
-          Terminar sessão
+          {t("account.signOut")}
         </button>
       </section>
 
       <section>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Equipas favoritas</h3>
-        <p className="mb-4 text-sm text-muted">
-          Destacadas na homepage e usadas para notificações.
-        </p>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">
+          {t("account.favourites")}
+        </h3>
+        <p className="mb-4 text-sm text-muted">{t("account.favouritesHint")}</p>
         <div className="flex flex-wrap gap-2">
           {teams.map((team) => {
             const isSelected = selected.has(team.team_id);
@@ -149,7 +153,7 @@ export function AccountPanel({
                 }`}
               >
                 {isSelected && "★ "}
-                {ptTeam(team.team_name)}
+                {teamLabel(team.team_name, lang)}
               </button>
             );
           })}
@@ -157,14 +161,16 @@ export function AccountPanel({
       </section>
 
       <section>
-        <h3 className="mb-3 text-lg font-semibold text-foreground">Notificações</h3>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">
+          {t("account.notifications")}
+        </h3>
         <div className="space-y-2">
-          {NOTIF_LABELS.map(({ key, label }) => (
+          {NOTIF_LABELS.map(({ key, i18nKey }) => (
             <label
               key={key}
               className="flex items-center justify-between rounded-xl border border-border-base bg-surface px-4 py-3"
             >
-              <span className="text-sm text-foreground">{label}</span>
+              <span className="text-sm text-foreground">{t(i18nKey)}</span>
               <input
                 type="checkbox"
                 checked={notifPrefs[key] as boolean}
@@ -179,7 +185,7 @@ export function AccountPanel({
           disabled={saving}
           className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
         >
-          {saving ? "A activar…" : "Activar notificações push"}
+          {saving ? t("account.enabling") : t("account.enablePush")}
         </button>
         {pushStatus && (
           <p className="mt-2 text-sm text-muted">{pushStatus}</p>

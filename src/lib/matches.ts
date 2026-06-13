@@ -45,6 +45,36 @@ export async function getMatchesForDay(
   }));
 }
 
+export async function getAllMatches(
+  favouriteTeamIds: number[] = []
+): Promise<(Match & { isFavourite?: boolean })[]> {
+  const supabase = await createSupabaseServer();
+  if (!supabase) return [];
+
+  const { data: matches, error } = await supabase
+    .from("matches")
+    .select("*")
+    .order("kickoff_utc", { ascending: true });
+
+  if (error || !matches) return [];
+
+  const { data: broadcasts } = await supabase
+    .from("broadcasts")
+    .select("fixture_id, channels");
+
+  const broadcastMap = new Map(
+    (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+  );
+
+  return matches.map((m) => ({
+    ...m,
+    channels: broadcastMap.get(m.fixture_id) ?? [],
+    isFavourite:
+      favouriteTeamIds.includes(m.home_team_id) ||
+      favouriteTeamIds.includes(m.away_team_id),
+  }));
+}
+
 export async function getUserFavouriteTeamIds(): Promise<number[]> {
   const supabase = await createSupabaseServer();
   if (!supabase) return [];
