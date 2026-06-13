@@ -6,6 +6,12 @@ import {
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { MOCK_MATCHES } from "@/lib/mock-data";
 
+const MOCK_FIXTURE_IDS = MOCK_MATCHES.map((m) => m.fixture_id);
+
+async function purgeMockMatches(admin: ReturnType<typeof createSupabaseAdmin>) {
+  await admin.from("matches").delete().in("fixture_id", MOCK_FIXTURE_IDS);
+}
+
 export async function syncMatches(mode: "full" | "live" = "full") {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return { synced: MOCK_MATCHES.length, source: "mock-no-supabase" };
@@ -33,6 +39,11 @@ export async function syncMatches(mode: "full" | "live" = "full") {
     });
 
     if (error) throw error;
+
+    if (mode === "full") {
+      await purgeMockMatches(admin);
+    }
+
     return { synced: rows.length, source: "api-football" };
   } catch (err) {
     console.error("Sync error:", err);

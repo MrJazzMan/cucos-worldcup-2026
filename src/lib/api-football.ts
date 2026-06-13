@@ -125,7 +125,15 @@ export async function fetchAllFixtures() {
 
 export async function fetchLiveFixtures() {
   const all = await apiFetch<ApiFixture[]>("/fixtures?live=all");
-  return all.filter((f) => f.league.round.includes("World Cup") || true);
+  return all.filter((f) => {
+    const round = f.league.round.toLowerCase();
+    return (
+      round.includes("group") ||
+      round.includes("round of") ||
+      round.includes("final") ||
+      round.includes("3rd")
+    );
+  });
 }
 
 export async function fetchStandings() {
