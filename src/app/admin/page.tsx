@@ -11,10 +11,18 @@ interface AdminMatch {
   channels: string[];
 }
 
+const SECRET_STORAGE_KEY = "cucos-admin-secret";
+
 export default function AdminPage() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
+  const [secret, setSecret] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSecret(localStorage.getItem(SECRET_STORAGE_KEY) ?? "");
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/broadcasts")
@@ -28,12 +36,29 @@ export default function AdminPage() {
 
   async function saveBroadcast(fixtureId: number, channels: string[]) {
     setSaving(fixtureId);
-    await fetch("/api/admin/broadcasts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fixture_id: fixtureId, channels }),
-    });
-    setSaving(null);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/broadcasts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(secret ? { Authorization: `Bearer ${secret}` } : {}),
+        },
+        body: JSON.stringify({ fixture_id: fixtureId, channels }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(
+          res.status === 401
+            ? "Password incorrecta — grava de novo depois de corrigir."
+            : data.error ?? "Erro ao gravar."
+        );
+      }
+    } catch {
+      setError("Erro de rede ao gravar.");
+    } finally {
+      setSaving(null);
+    }
   }
 
   function toggleChannel(fixtureId: number, channel: string, current: string[]) {
@@ -66,6 +91,28 @@ export default function AdminPage() {
           Curadoria manual de transmissões em Portugal
         </p>
       </div>
+
+      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
+        <label className="text-sm font-medium text-zinc-300">
+          Password de admin (CRON_SECRET)
+        </label>
+        <input
+          type="password"
+          value={secret}
+          onChange={(e) => {
+            setSecret(e.target.value);
+            localStorage.setItem(SECRET_STORAGE_KEY, e.target.value);
+          }}
+          placeholder="Necessária para gravar"
+          className="mt-2 w-full rounded-lg bg-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500"
+        />
+      </div>
+
+      {error && (
+        <p className="rounded-lg bg-red-600/20 px-3 py-2 text-sm text-red-300">
+          {error}
+        </p>
+      )}
 
       {matches.length === 0 ? (
         <p className="text-zinc-500">
