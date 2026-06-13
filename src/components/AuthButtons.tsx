@@ -25,7 +25,7 @@ export function AuthButtons() {
       </button>
       <button
         onClick={() => signIn("apple")}
-        className="flex w-full items-center justify-center gap-3 rounded-xl bg-zinc-800 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-zinc-700"
+        className="flex w-full items-center justify-center gap-3 rounded-xl bg-zinc-900 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-zinc-800"
       >
         <span>🍎</span>
         Continuar com Apple

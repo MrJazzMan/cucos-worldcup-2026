@@ -21,8 +21,8 @@ export default async function ContaPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Conta</h1>
-          <p className="mt-1 text-zinc-400">
+          <h1 className="text-2xl font-bold text-foreground">Conta</h1>
+          <p className="mt-1 text-muted">
             Configura Supabase para activar autenticação.
           </p>
         </div>
@@ -38,8 +38,8 @@ export default async function ContaPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Conta</h1>
-          <p className="mt-1 text-zinc-400">
+          <h1 className="text-2xl font-bold text-foreground">Conta</h1>
+          <p className="mt-1 text-muted">
             Inicia sessão para guardar equipas favoritas e receber notificações.
           </p>
         </div>

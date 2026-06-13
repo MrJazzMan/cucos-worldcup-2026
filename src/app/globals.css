@@ -1,18 +1,82 @@
 @import "tailwindcss";
 
-:root {
-  --background: #09090b;
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ---- Tema claro (default) ---- */
+:root,
+[data-theme="light"] {
+  --background: #eef1f6;
+  --background-2: #e3e8f0;
+  --surface: #ffffff;
+  --surface-2: #f1f3f7;
+  --border-base: #dde1e9;
+  --foreground: #15171c;
+  --muted: #5b626e;
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.12);
+  --glow: rgba(37, 99, 235, 0.18);
+}
+
+/* ---- Tema escuro ---- */
+[data-theme="dark"] {
+  --background: #08080b;
+  --background-2: #0e0f15;
+  --surface: #15161c;
+  --surface-2: #20222b;
+  --border-base: #2a2c36;
   --foreground: #fafafa;
+  --muted: #9ca0ab;
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+  --glow: rgba(59, 130, 246, 0.22);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-2: var(--background-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border-base: var(--border-base);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 body {
-  background: var(--background);
   color: var(--foreground);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(60rem 60rem at 100% -10%, var(--glow), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 0%, var(--accent-soft), transparent 55%),
+    linear-gradient(180deg, var(--background-2), var(--background) 40%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.live-dot {
+  animation: pulse-live 1.2s ease-in-out infinite;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-rise {
+  animation: rise 0.4s ease-out both;
 }

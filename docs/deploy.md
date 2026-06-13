@@ -65,9 +65,29 @@ npx web-push generate-vapid-keys
 
 ### 5. Domínio custom
 
-No Vercel → Settings → Domains → adicionar domínio (ex: `wc26.cucos.pt`).
+Domínio actual: **`wc26.pt`** (comprado em dominios.pt por 1€).
 
-Actualizar `NEXT_PUBLIC_SITE_URL` e redirect URLs no Supabase.
+No Vercel → Settings → Domains → adicionar `wc26.pt`.
+
+Registos DNS (zona em dominios.pt):
+
+| Tipo | Nome | Valor |
+|------|------|-------|
+| A | `@` | `216.198.79.1` |
+| CNAME | `www` | `cname.vercel-dns.com` |
+
+Actualizar `NEXT_PUBLIC_SITE_URL=https://wc26.pt` e redirect URLs no Supabase.
+
+#### Nota: actualização de IP do Vercel (Jun 2026)
+
+O Vercel passou a recomendar um novo registo **A** devido à expansão da gama de IPs:
+
+- **Antigo:** `76.76.21.21` (continua a funcionar)
+- **Novo (recomendado):** `216.198.79.1` ✅ já aplicado
+
+O IP antigo continua a servir, por isso a troca não causa downtime. Depois de
+mudar o valor em dominios.pt, carrega em **Refresh** no Vercel → Domains para
+revalidar. A propagação pode demorar de minutos a algumas horas.
 
 ### 6. Pós-deploy
 

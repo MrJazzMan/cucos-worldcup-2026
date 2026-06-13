@@ -2,6 +2,7 @@ import { TeamFlag } from "@/components/TeamFlag";
 import { getChannelHref } from "@/lib/channels";
 import { formatKickoffTime } from "@/lib/timezone";
 import { getStatusColor, getStatusLabel } from "@/lib/match-utils";
+import { ptTeam } from "@/lib/team-names";
 import type { Match } from "@/types";
 
 interface MatchCardProps {
@@ -12,22 +13,31 @@ export function MatchCard({ match }: MatchCardProps) {
   const time = formatKickoffTime(match.kickoff_utc);
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
+  const homeName = ptTeam(match.home_team_name);
+  const awayName = ptTeam(match.away_team_name);
 
   return (
     <article
-      className={`rounded-2xl border bg-zinc-900 p-4 transition-colors ${
+      className={`animate-rise relative overflow-hidden rounded-2xl border bg-surface p-4 shadow-sm transition-all hover:shadow-md ${
         match.isFavourite
           ? "border-amber-500/60 ring-1 ring-amber-500/30"
-          : "border-zinc-800"
+          : "border-border-base"
       }`}
     >
+      {isLive && (
+        <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent" />
+      )}
+
       <div className="mb-3 flex items-center justify-between">
         <span
-          className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${getStatusColor(match.status)}`}
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${getStatusColor(match.status)}`}
         >
+          {isLive && (
+            <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-current" />
+          )}
           {getStatusLabel(match.status)}
           {isLive && match.minute != null && (
-            <span className="ml-1">{match.minute}&apos;</span>
+            <span className="ml-0.5">{match.minute}&apos;</span>
           )}
         </span>
         {match.isFavourite && (
@@ -39,35 +49,38 @@ export function MatchCard({ match }: MatchCardProps) {
 
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-1 flex-col items-center gap-2 text-center">
-          <TeamFlag name={match.home_team_name} logo={match.home_team_logo} size={40} />
-          <p className="text-lg font-semibold leading-tight text-white">
-            {match.home_team_name}
+          <TeamFlag name={homeName} logo={match.home_team_logo} size={44} />
+          <p className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+            {homeName}
           </p>
         </div>
 
         <div className="flex min-w-[5rem] flex-col items-center gap-1">
           {(isLive || isFinished) && match.home_score != null ? (
-            <p className="text-2xl font-bold tabular-nums text-white">
-              {match.home_score} – {match.away_score}
+            <p className="rounded-xl bg-surface-2 px-3 py-1 text-2xl font-bold tabular-nums text-foreground">
+              {match.home_score} <span className="text-muted">–</span>{" "}
+              {match.away_score}
             </p>
           ) : (
-            <p className="text-2xl font-bold tabular-nums text-white">{time}</p>
+            <p className="text-2xl font-bold tabular-nums text-foreground">
+              {time}
+            </p>
           )}
           {!isLive && !isFinished && (
-            <p className="text-xs text-zinc-500">hora PT</p>
+            <p className="text-xs text-muted">hora PT</p>
           )}
         </div>
 
         <div className="flex flex-1 flex-col items-center gap-2 text-center">
-          <TeamFlag name={match.away_team_name} logo={match.away_team_logo} size={40} />
-          <p className="text-lg font-semibold leading-tight text-white">
-            {match.away_team_name}
+          <TeamFlag name={awayName} logo={match.away_team_logo} size={44} />
+          <p className="text-base font-semibold leading-tight text-foreground sm:text-lg">
+            {awayName}
           </p>
         </div>
       </div>
 
       {match.group_name && (
-        <p className="mt-3 text-center text-xs text-zinc-500">{match.group_name}</p>
+        <p className="mt-3 text-center text-xs text-muted">{match.group_name}</p>
       )}
 
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -75,7 +88,7 @@ export function MatchCard({ match }: MatchCardProps) {
           match.channels.map((channel) => {
             const href = getChannelHref(channel);
             const className =
-              "rounded-lg bg-blue-600/20 px-3 py-1 text-sm font-medium text-blue-300";
+              "rounded-lg bg-accent-soft px-3 py-1 text-sm font-medium text-accent";
             const label = `📺 ${channel}`;
 
             if (href) {
@@ -85,7 +98,7 @@ export function MatchCard({ match }: MatchCardProps) {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${className} hover:bg-blue-600/30`}
+                  className={`${className} hover:brightness-110`}
                 >
                   {label}
                 </a>
@@ -99,7 +112,7 @@ export function MatchCard({ match }: MatchCardProps) {
             );
           })
         ) : (
-          <span className="text-sm text-zinc-500">Canal a confirmar</span>
+          <span className="text-sm text-muted">Canal a confirmar</span>
         )}
       </div>
     </article>

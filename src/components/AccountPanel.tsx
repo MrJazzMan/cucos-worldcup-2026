@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import { ptTeam } from "@/lib/team-names";
 import type { NotificationPrefs, TeamOption } from "@/types";
 
 interface AccountPanelProps {
@@ -119,19 +120,19 @@ export function AccountPanel({
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="mb-1 text-xl font-bold text-white">A tua conta</h2>
-        <p className="text-sm text-zinc-400">{user.email}</p>
+        <h2 className="mb-1 text-xl font-bold text-foreground">A tua conta</h2>
+        <p className="text-sm text-muted">{user.email}</p>
         <button
           onClick={signOut}
-          className="mt-3 text-sm text-zinc-500 underline hover:text-white"
+          className="mt-3 text-sm text-muted underline hover:text-foreground"
         >
           Terminar sessão
         </button>
       </section>
 
       <section>
-        <h3 className="mb-3 text-lg font-semibold text-white">Equipas favoritas</h3>
-        <p className="mb-4 text-sm text-zinc-400">
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Equipas favoritas</h3>
+        <p className="mb-4 text-sm text-muted">
           Destacadas na homepage e usadas para notificações.
         </p>
         <div className="flex flex-wrap gap-2">
@@ -144,11 +145,11 @@ export function AccountPanel({
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                   isSelected
                     ? "bg-amber-500 text-zinc-900"
-                    : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                    : "bg-surface-2 text-foreground hover:brightness-110"
                 }`}
               >
                 {isSelected && "★ "}
-                {team.team_name}
+                {ptTeam(team.team_name)}
               </button>
             );
           })}
@@ -156,14 +157,14 @@ export function AccountPanel({
       </section>
 
       <section>
-        <h3 className="mb-3 text-lg font-semibold text-white">Notificações</h3>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">Notificações</h3>
         <div className="space-y-2">
           {NOTIF_LABELS.map(({ key, label }) => (
             <label
               key={key}
-              className="flex items-center justify-between rounded-xl bg-zinc-900 px-4 py-3"
+              className="flex items-center justify-between rounded-xl border border-border-base bg-surface px-4 py-3"
             >
-              <span className="text-sm text-zinc-200">{label}</span>
+              <span className="text-sm text-foreground">{label}</span>
               <input
                 type="checkbox"
                 checked={notifPrefs[key] as boolean}
@@ -181,7 +182,7 @@ export function AccountPanel({
           {saving ? "A activar…" : "Activar notificações push"}
         </button>
         {pushStatus && (
-          <p className="mt-2 text-sm text-zinc-400">{pushStatus}</p>
+          <p className="mt-2 text-sm text-muted">{pushStatus}</p>
         )}
       </section>
     </div>

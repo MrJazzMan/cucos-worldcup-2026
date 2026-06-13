@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getGroupStandings } from "@/lib/matches";
+import { ptTeam } from "@/lib/team-names";
 
 export default async function GruposPage() {
   const groups = await getGroupStandings();
@@ -7,22 +8,22 @@ export default async function GruposPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Grupos</h1>
-        <p className="mt-1 text-zinc-400">Classificações do Mundial 2026</p>
+        <h1 className="text-2xl font-bold text-foreground">Grupos</h1>
+        <p className="mt-1 text-muted">Classificações do Mundial 2026</p>
       </div>
 
       {groups.map((group) => (
         <section
           key={group.group_name}
-          className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900"
+          className="overflow-hidden rounded-2xl border border-border-base bg-surface shadow-sm"
         >
-          <h2 className="border-b border-zinc-800 px-4 py-3 text-lg font-semibold text-white">
+          <h2 className="border-b border-border-base px-4 py-3 text-lg font-semibold text-foreground">
             {group.group_name}
           </h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-zinc-500">
+                <tr className="text-left text-xs text-muted">
                   <th className="px-3 py-2">#</th>
                   <th className="px-3 py-2">Equipa</th>
                   <th className="px-3 py-2 text-center">J</th>
@@ -37,7 +38,7 @@ export default async function GruposPage() {
                 {group.rows.map((row) => (
                   <tr
                     key={row.team_id}
-                    className="border-t border-zinc-800/50 text-zinc-200"
+                    className="border-t border-border-base/60 text-foreground"
                   >
                     <td className="px-3 py-2.5 tabular-nums">{row.rank}</td>
                     <td className="px-3 py-2.5">
@@ -52,7 +53,7 @@ export default async function GruposPage() {
                             unoptimized
                           />
                         )}
-                        <span className="font-medium">{row.team_name}</span>
+                        <span className="font-medium">{ptTeam(row.team_name)}</span>
                       </div>
                     </td>
                     <td className="px-3 py-2.5 text-center tabular-nums">
@@ -70,7 +71,7 @@ export default async function GruposPage() {
                     <td className="px-3 py-2.5 text-center tabular-nums">
                       {row.goal_diff > 0 ? `+${row.goal_diff}` : row.goal_diff}
                     </td>
-                    <td className="px-3 py-2.5 text-center font-bold tabular-nums text-white">
+                    <td className="px-3 py-2.5 text-center font-bold tabular-nums text-foreground">
                       {row.points}
                     </td>
                   </tr>

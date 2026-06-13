@@ -55,7 +55,7 @@ export default async function HomePage({ searchParams }: PageProps) {
       fallback={
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-2xl bg-zinc-900" />
+            <div key={i} className="h-40 animate-pulse rounded-2xl bg-surface" />
           ))}
         </div>
       }

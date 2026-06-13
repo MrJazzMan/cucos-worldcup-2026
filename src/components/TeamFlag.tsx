@@ -22,7 +22,7 @@ export function TeamFlag({ name, logo, size = 32 }: TeamFlagProps) {
 
   return (
     <div
-      className="flex items-center justify-center rounded-full bg-zinc-800 text-xs font-bold text-zinc-300"
+      className="flex items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-muted"
       style={{ width: size, height: size }}
       aria-label={name}
     >
