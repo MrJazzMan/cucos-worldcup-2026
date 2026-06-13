@@ -5,7 +5,7 @@ import { TeamFlag } from "@/components/TeamFlag";
 import { KickoffTime, TeamName, teamLabel } from "@/components/Display";
 import { useSettings } from "@/components/SettingsProvider";
 import { getChannelHref } from "@/lib/channels";
-import { parseVenue, venueCountryLabel } from "@/lib/venues";
+import { parseVenue, venueCountryLabel, venueStateLabel } from "@/lib/venues";
 import type { Match } from "@/types";
 
 interface MatchCardProps {
@@ -76,10 +76,11 @@ export function MatchCard({ match }: MatchCardProps) {
   const awayLabel = teamLabel(match.away_team_name, lang);
   const venue = parseVenue(match.venue);
   const stadium = venue.stadium?.trim() ?? null;
-  const country =
-    venue.city && venueCountryLabel(venue.city, lang)
-      ? `${venue.city}, ${venueCountryLabel(venue.city, lang)}`
-      : venue.city;
+  const countryLabel = venueCountryLabel(venue.city, lang);
+  const stateLabel = venueStateLabel(venue.city, lang);
+  const location = venue.city
+    ? [venue.city, stateLabel, countryLabel].filter(Boolean).join(", ")
+    : null;
 
   useEffect(() => {
     if (match.status !== "upcoming") return;
@@ -185,11 +186,11 @@ export function MatchCard({ match }: MatchCardProps) {
       )}
 
       {/* Localização */}
-      {country && (
+      {location && (
         <p className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-muted">
           <span>📍</span>
           <span>
-            {country}
+            {location}
             {venue.countryFlag && (
               <span className="ml-1">{venue.countryFlag}</span>
             )}

@@ -6,27 +6,33 @@ const HOST_COUNTRY: Record<string, { flag: string; labelPt: string; labelEn: str
   Mexico: { flag: "🇲🇽", labelPt: "México", labelEn: "Mexico" },
 };
 
-/** Cidade → país anfitrião (heurística para estádios WC26). */
-const CITY_COUNTRY: Record<string, keyof typeof HOST_COUNTRY> = {
-  Atlanta: "USA",
-  Boston: "USA",
-  Dallas: "USA",
-  Houston: "USA",
-  Kansas: "USA",
-  "Kansas City": "USA",
-  "Los Angeles": "USA",
-  Miami: "USA",
-  "New York": "USA",
-  "New York/New Jersey": "USA",
-  Philadelphia: "USA",
-  "San Francisco": "USA",
-  "Bay Area": "USA",
-  Seattle: "USA",
-  Toronto: "Canada",
-  Vancouver: "Canada",
-  Guadalajara: "Mexico",
-  "Mexico City": "Mexico",
-  Monterrey: "Mexico",
+type CityHostMeta = {
+  country: keyof typeof HOST_COUNTRY;
+  statePt: string;
+  stateEn: string;
+};
+
+/** Cidade → anfitrião + estado/província (heurística para estádios WC26). */
+const CITY_HOST: Record<string, CityHostMeta> = {
+  Atlanta: { country: "USA", statePt: "GA", stateEn: "GA" },
+  Boston: { country: "USA", statePt: "MA", stateEn: "MA" },
+  Dallas: { country: "USA", statePt: "TX", stateEn: "TX" },
+  Houston: { country: "USA", statePt: "TX", stateEn: "TX" },
+  Inglewood: { country: "USA", statePt: "CA", stateEn: "CA" },
+  "Kansas City": { country: "USA", statePt: "MO", stateEn: "MO" },
+  "Los Angeles": { country: "USA", statePt: "CA", stateEn: "CA" },
+  Miami: { country: "USA", statePt: "FL", stateEn: "FL" },
+  "New York/New Jersey": { country: "USA", statePt: "NJ", stateEn: "NJ" },
+  "East Rutherford": { country: "USA", statePt: "NJ", stateEn: "NJ" },
+  Philadelphia: { country: "USA", statePt: "PA", stateEn: "PA" },
+  "San Francisco": { country: "USA", statePt: "CA", stateEn: "CA" },
+  "Santa Clara": { country: "USA", statePt: "CA", stateEn: "CA" },
+  Seattle: { country: "USA", statePt: "WA", stateEn: "WA" },
+  Toronto: { country: "Canada", statePt: "ON", stateEn: "ON" },
+  Vancouver: { country: "Canada", statePt: "BC", stateEn: "BC" },
+  Guadalajara: { country: "Mexico", statePt: "JAL", stateEn: "JAL" },
+  "Mexico City": { country: "Mexico", statePt: "CDMX", stateEn: "CDMX" },
+  Monterrey: { country: "Mexico", statePt: "NL", stateEn: "NL" },
 };
 
 export interface VenueDisplay {
@@ -46,8 +52,8 @@ export function parseVenue(venue: string | null | undefined): VenueDisplay {
   const city = parts.length >= 2 ? parts[0] : null;
   const stadium = parts.length >= 2 ? parts.slice(1).join(" · ") : venue;
 
-  const hostKey = city ? CITY_COUNTRY[city] : null;
-  const host = hostKey ? HOST_COUNTRY[hostKey] : null;
+  const hostMeta = city ? CITY_HOST[city] : null;
+  const host = hostMeta ? HOST_COUNTRY[hostMeta.country] : null;
 
   return {
     city,
@@ -62,10 +68,20 @@ export function venueCountryLabel(
   lang: "pt" | "en"
 ): string | null {
   if (!city) return null;
-  const hostKey = CITY_COUNTRY[city];
-  if (!hostKey) return null;
-  const host = HOST_COUNTRY[hostKey];
+  const hostMeta = CITY_HOST[city];
+  if (!hostMeta) return null;
+  const host = HOST_COUNTRY[hostMeta.country];
   return lang === "pt" ? host.labelPt : host.labelEn;
+}
+
+export function venueStateLabel(
+  city: string | null,
+  lang: "pt" | "en"
+): string | null {
+  if (!city) return null;
+  const hostMeta = CITY_HOST[city];
+  if (!hostMeta) return null;
+  return lang === "pt" ? hostMeta.statePt : hostMeta.stateEn;
 }
 
 export function formatVenueField(
