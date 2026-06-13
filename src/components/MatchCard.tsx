@@ -75,6 +75,7 @@ export function MatchCard({ match }: MatchCardProps) {
   const homeLabel = teamLabel(match.home_team_name, lang);
   const awayLabel = teamLabel(match.away_team_name, lang);
   const venue = parseVenue(match.venue);
+  const stadium = venue.stadium?.trim() ?? null;
   const country =
     venue.city && venueCountryLabel(venue.city, lang)
       ? `${venue.city}, ${venueCountryLabel(venue.city, lang)}`
@@ -175,9 +176,17 @@ export function MatchCard({ match }: MatchCardProps) {
         </div>
       </div>
 
+      {/* Estádio */}
+      {stadium && (
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted">
+          <span>🏟️</span>
+          <span>{stadium}</span>
+        </p>
+      )}
+
       {/* Localização */}
       {country && (
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted">
+        <p className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-muted">
           <span>📍</span>
           <span>
             {country}
