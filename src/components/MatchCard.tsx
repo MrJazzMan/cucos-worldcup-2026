@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TeamFlag } from "@/components/TeamFlag";
 import { KickoffTime, TeamName, teamLabel } from "@/components/Display";
 import { useSettings } from "@/components/SettingsProvider";
@@ -17,7 +17,7 @@ function countdownLabel(
   t: (key: string) => string
 ): string | null {
   const diff = new Date(kickoffUtc).getTime() - Date.now();
-  if (diff <= 0 || diff > 6 * 60 * 60 * 1000) return null;
+  if (diff <= 0 || diff > 12 * 60 * 60 * 1000) return null;
   const minutes = Math.ceil(diff / 60_000);
   if (minutes < 60) {
     return t("status.inMinutes").replace("{n}", String(minutes));
@@ -26,25 +26,38 @@ function countdownLabel(
   return t("status.inHours").replace("{n}", String(hours));
 }
 
-function statusStyles(status: Match["status"], soon: boolean) {
-  if (status === "live") return "bg-red-500 text-white";
-  if (status === "finished") return "bg-zinc-400 text-white";
-  if (soon) return "bg-emerald-500 text-white";
-  return "bg-emerald-600/80 text-white";
+/** Minuto ao vivo: base da API + incremento local entre refreshes. */
+function useLiveMinute(
+  isLive: boolean,
+  serverMinute: number | null
+): number | null {
+  const syncedAt = useRef(Date.now());
+  const [elapsedMin, setElapsedMin] = useState(0);
+
+  useEffect(() => {
+    syncedAt.current = Date.now();
+    setElapsedMin(0);
+  }, [serverMinute]);
+
+  useEffect(() => {
+    if (!isLive || serverMinute == null) return;
+    const id = setInterval(() => {
+      setElapsedMin(Math.floor((Date.now() - syncedAt.current) / 60_000));
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [isLive, serverMinute]);
+
+  if (!isLive || serverMinute == null) return serverMinute;
+  return serverMinute + elapsedMin;
 }
 
 export function MatchCard({ match }: MatchCardProps) {
   const { t, lang } = useSettings();
   const [now, setNow] = useState(() => Date.now());
 
-  useEffect(() => {
-    if (match.status !== "upcoming") return;
-    const id = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(id);
-  }, [match.status]);
-
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
+  const liveMinute = useLiveMinute(isLive, match.minute);
   const homeLabel = teamLabel(match.home_team_name, lang);
   const awayLabel = teamLabel(match.away_team_name, lang);
   const venue = parseVenue(match.venue);
@@ -53,133 +66,146 @@ export function MatchCard({ match }: MatchCardProps) {
       ? `${venue.city}, ${venueCountryLabel(venue.city, lang)}`
       : venue.city;
 
+  useEffect(() => {
+    if (match.status !== "upcoming") return;
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, [match.status]);
+
   const countdown = useMemo(
-    () => (match.status === "upcoming" ? countdownLabel(match.kickoff_utc, t) : null),
+    () =>
+      match.status === "upcoming"
+        ? countdownLabel(match.kickoff_utc, t)
+        : null,
     [match.status, match.kickoff_utc, t, now]
   );
 
+  const badgeClass = isLive
+    ? "bg-red-500 text-white"
+    : isFinished
+      ? "bg-zinc-400 text-white"
+      : "bg-emerald-500 text-white";
+
+  const badgeText = isLive
+    ? liveMinute != null
+      ? `${t("status.live")} ${liveMinute}'`
+      : t("status.live")
+    : countdown ?? t(`status.${match.status}`);
+
   return (
     <article
-      className={`animate-rise relative overflow-hidden rounded-2xl border bg-surface p-4 shadow-sm transition-all hover:shadow-md ${
+      className={`animate-rise rounded-2xl border bg-surface px-4 py-5 shadow-sm transition-all hover:shadow-md ${
         match.isFavourite
           ? "border-amber-500/60 ring-1 ring-amber-500/30"
           : "border-border-base"
       }`}
     >
-      {isLive && (
-        <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent" />
-      )}
+      {/* Topo: estado + favorito */}
+      <div className="mb-4 flex items-center justify-between">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${badgeClass}`}
+        >
+          {!isLive && !isFinished && <span>🕐</span>}
+          {isLive && (
+            <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-white" />
+          )}
+          {badgeText}
+        </span>
+        <span
+          className={`text-lg ${match.isFavourite ? "text-amber-400" : "text-muted/40"}`}
+          aria-hidden
+        >
+          {match.isFavourite ? "★" : "☆"}
+        </span>
+      </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
-        {/* Esquerda: estado + equipas */}
-        <div className="min-w-0 space-y-3">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${statusStyles(match.status, !!countdown)}`}
-          >
-            {isLive && (
-              <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-current" />
-            )}
-            {countdown ??
-              (isLive && match.minute != null
-                ? `${t("status.live")} ${match.minute}'`
-                : t(`status.${match.status}`))}
-          </span>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <TeamFlag name={homeLabel} logo={match.home_team_logo} size={28} />
-              <p className="truncate text-sm font-semibold text-foreground">
-                <TeamName name={match.home_team_name} />
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <TeamFlag name={awayLabel} logo={match.away_team_logo} size={28} />
-              <p className="truncate text-sm font-semibold text-foreground">
-                <TeamName name={match.away_team_name} />
-              </p>
-            </div>
-          </div>
+      {/* Equipas + centro */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Casa */}
+        <div className="flex flex-1 flex-col items-center gap-2 text-center">
+          <TeamFlag name={homeLabel} logo={match.home_team_logo} size={48} />
+          <p className="text-sm font-bold leading-tight text-foreground sm:text-base">
+            <TeamName name={match.home_team_name} />
+          </p>
         </div>
 
-        {/* Centro: resultado ou hora */}
-        <div className="flex min-w-[4.5rem] flex-col items-center justify-center self-center px-1">
+        {/* Centro: vs + hora/resultado */}
+        <div className="flex w-24 shrink-0 flex-col items-center gap-1">
+          <span className="text-[10px] font-medium uppercase text-muted">vs</span>
           {(isLive || isFinished) && match.home_score != null ? (
             <p
-              className={`text-2xl font-bold tabular-nums ${
+              className={`text-3xl font-bold tabular-nums ${
                 isLive ? "text-red-500" : "text-foreground"
               }`}
             >
-              {match.home_score}
-              <span className="mx-1 text-muted">-</span>
-              {match.away_score}
+              {match.home_score}-{match.away_score}
             </p>
           ) : (
-            <p className="text-2xl font-bold tabular-nums text-foreground">
+            <p className="text-3xl font-bold tabular-nums text-foreground">
               <KickoffTime utc={match.kickoff_utc} />
             </p>
           )}
+          <span
+            className={`h-1 w-10 rounded-full ${
+              isLive ? "bg-red-500" : isFinished ? "bg-zinc-400" : "bg-emerald-500"
+            }`}
+          />
         </div>
 
-        {/* Direita: local + canais + favorito */}
-        <div className="min-w-0 space-y-2 text-right">
-          {match.isFavourite && (
-            <span className="text-amber-400" aria-label="★">
-              ★
-            </span>
-          )}
+        {/* Fora */}
+        <div className="flex flex-1 flex-col items-center gap-2 text-center">
+          <TeamFlag name={awayLabel} logo={match.away_team_logo} size={48} />
+          <p className="text-sm font-bold leading-tight text-foreground sm:text-base">
+            <TeamName name={match.away_team_name} />
+          </p>
+        </div>
+      </div>
 
-          {(country || venue.stadium) && (
-            <div className="space-y-0.5 text-[11px] text-muted">
-              {country && (
-                <p className="flex items-center justify-end gap-1">
-                  <span>📍</span>
-                  <span className="truncate">
-                    {country}
-                    {venue.countryFlag && (
-                      <span className="ml-1">{venue.countryFlag}</span>
-                    )}
-                  </span>
-                </p>
-              )}
-              {venue.stadium && (
-                <p className="flex items-center justify-end gap-1 truncate">
-                  <span>🏟️</span>
-                  <span className="truncate">{venue.stadium}</span>
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="flex flex-wrap justify-end gap-1">
-            {match.channels && match.channels.length > 0 ? (
-              match.channels.map((channel) => {
-                const href = getChannelHref(channel);
-                const cls =
-                  "rounded border border-border-base bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-foreground";
-                if (href) {
-                  return (
-                    <a
-                      key={channel}
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`${cls} hover:bg-accent-soft`}
-                    >
-                      {channel}
-                    </a>
-                  );
-                }
-                return (
-                  <span key={channel} className={cls}>
-                    {channel}
-                  </span>
-                );
-              })
-            ) : (
-              <span className="text-[10px] text-muted">{t("card.channelTBC")}</span>
+      {/* Localização */}
+      {country && (
+        <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted">
+          <span>📍</span>
+          <span>
+            {country}
+            {venue.countryFlag && (
+              <span className="ml-1">{venue.countryFlag}</span>
             )}
-          </div>
-        </div>
+          </span>
+        </p>
+      )}
+
+      {/* Canais */}
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+        {match.channels && match.channels.length > 0 ? (
+          match.channels.map((channel) => {
+            const href = getChannelHref(channel);
+            const isRtp = channel.toUpperCase().startsWith("RTP");
+            const cls = isRtp
+              ? "rounded-md bg-blue-600 px-3 py-1 text-[11px] font-bold uppercase text-white"
+              : "rounded-md bg-zinc-900 px-3 py-1 text-[11px] font-bold uppercase text-amber-400";
+
+            if (href) {
+              return (
+                <a
+                  key={channel}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${cls} hover:brightness-110`}
+                >
+                  {channel}
+                </a>
+              );
+            }
+            return (
+              <span key={channel} className={cls}>
+                {channel}
+              </span>
+            );
+          })
+        ) : (
+          <span className="text-xs text-muted">{t("card.channelTBC")}</span>
+        )}
       </div>
 
       {match.group_name && (

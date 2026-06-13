@@ -9,24 +9,30 @@ O código da app já está pronto (`AuthButtons`, `/auth/callback`). Falta confi
 
 ## 1. Google Cloud Console
 
-1. Abre [Google Cloud Console](https://console.cloud.google.com/)
-2. Cria um projecto (ex.: `cucos-wc26`) ou usa um existente
-3. **APIs & Services → OAuth consent screen**
-   - Tipo: **External** (ou Internal se for Workspace)
-   - App name: `Cucos WC26`
-   - User support email: o teu email
-   - Authorized domains: `wc26.pt`, `supabase.co`
-   - Guardar
-4. **APIs & Services → Credentials → Create Credentials → OAuth client ID**
-   - Application type: **Web application**
-   - Name: `Cucos WC26 Web`
-   - **Authorized JavaScript origins:**
-     - `https://wc26.pt`
-     - `http://localhost:3000`
-   - **Authorized redirect URIs:**
-     - `https://vsbmdqzabegcvjupwcpj.supabase.co/auth/v1/callback`
-     - (copia o URL exacto em Supabase → Authentication → Google → Callback URL)
-5. Copia o **Client ID** e **Client Secret**
+Projecto criado: **cucos-wc26** ✓
+
+1. Abre [Google Cloud Console](https://console.cloud.google.com/) → projecto **cucos-wc26**
+2. Menu lateral: **Google Auth Platform → Overview**
+3. Clica **Create OAuth client** (no ecrã diz "You haven't configured any OAuth clients yet")
+4. Tipo: **Web application**
+5. Name: `Cucos WC26 Web`
+6. **Authorized JavaScript origins:**
+   - `https://wc26.pt`
+   - `http://localhost:3000`
+7. **Authorized redirect URIs** (copiar exactamente):
+   ```
+   https://vsbmdqzabegcvjupwcpj.supabase.co/auth/v1/callback
+   ```
+   > ⚠️ É o URL do **Supabase**, não `wc26.pt/auth/callback`. Confirma em
+   > Supabase → Authentication → Google → "Callback URL (for OAuth)".
+8. **Create** → copia **Client ID** e **Client Secret**
+
+### OAuth consent screen (se ainda não fizeste)
+
+Menu: **Google Auth Platform → Branding** (ou Audience)
+- App name: `Cucos WC26`
+- User support email: o teu email
+- Authorized domains: `wc26.pt`
 
 ---
 

@@ -20,7 +20,8 @@ const OFFSETS = [
 ] as const;
 
 /** Intervalo de auto-refresh no separador "Hoje" (ms). */
-const LIVE_REFRESH_MS = 45_000;
+const LIVE_REFRESH_MS = 30_000;
+const IDLE_REFRESH_MS = 90_000;
 
 export function MatchesView({ matches }: { matches: DayMatch[] }) {
   const router = useRouter();
@@ -53,7 +54,7 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
     if (!mounted || offset !== 0) return;
 
     const tick = () => router.refresh();
-    const ms = hasLiveToday ? LIVE_REFRESH_MS : LIVE_REFRESH_MS * 2;
+    const ms = hasLiveToday ? LIVE_REFRESH_MS : IDLE_REFRESH_MS;
     const id = setInterval(tick, ms);
     return () => clearInterval(id);
   }, [mounted, offset, hasLiveToday, router]);
