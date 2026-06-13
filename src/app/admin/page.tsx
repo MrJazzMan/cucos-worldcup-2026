@@ -26,14 +26,31 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/admin/broadcasts")
+    if (!secret) {
+      setLoading(false);
+      setMatches([]);
+      return;
+    }
+
+    setLoading(true);
+    fetch("/api/admin/broadcasts", {
+      headers: {
+        Authorization: `Bearer ${secret}`,
+      },
+    })
       .then((r) => r.json())
       .then((data) => {
-        setMatches(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          setMatches(data);
+          setError(null);
+        } else {
+          setMatches([]);
+          if (data?.error) setError(data.error);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [secret]);
 
   async function saveBroadcast(fixtureId: number, channels: string[]) {
     setSaving(fixtureId);
@@ -117,7 +134,9 @@ export default function AdminPage() {
 
       {matches.length === 0 ? (
         <p className="text-muted">
-          Sem jogos na base de dados. Executa /api/sync primeiro.
+          {secret
+            ? "Sem jogos na base de dados. Executa /api/sync primeiro."
+            : "Introduz a password de admin para carregar os jogos."}
         </p>
       ) : (
         <div className="space-y-4">

@@ -1,6 +1,7 @@
 import webpush from "web-push";
 import { NextResponse } from "next/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { createSupabaseServer } from "@/lib/supabase/server";
 import type { NotificationType } from "@/types";
 
 function setupVapid() {
@@ -40,7 +41,14 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: "CRON_SECRET não configurado" },
+      { status: 500 }
+    );
+  }
+
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
@@ -168,16 +176,29 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { endpoint, p256dh, auth, user_id } = body;
+  const supabase = await createSupabaseServer();
+  if (!supabase) {
+    return NextResponse.json({ error: "Supabase não configurado" }, { status: 500 });
+  }
 
-  if (!endpoint || !p256dh || !auth || !user_id) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const { endpoint, p256dh, auth } = body;
+
+  if (!endpoint || !p256dh || !auth) {
     return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
   }
 
   const admin = createSupabaseAdmin();
   const { error } = await admin.from("push_subscriptions").upsert(
-    { user_id, endpoint, p256dh, auth },
+    { user_id: user.id, endpoint, p256dh, auth },
     { onConflict: "user_id,endpoint" }
   );
 
