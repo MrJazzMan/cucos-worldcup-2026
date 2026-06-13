@@ -6,9 +6,16 @@ import { useT } from "@/components/SettingsProvider";
 export function AuthButtons() {
   const t = useT();
 
+  function getAuthCallbackUrl() {
+    const host = window.location.hostname;
+    const isProdHost = host === "wc26.pt" || host.endsWith(".wc26.pt");
+    const origin = isProdHost ? "https://wc26.pt" : window.location.origin;
+    return `${origin}/auth/callback?next=/conta`;
+  }
+
   async function signIn(provider: "google" | "apple") {
     const supabase = createSupabaseBrowser();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/conta`;
+    const redirectTo = getAuthCallbackUrl();
     await supabase.auth.signInWithOAuth({
       provider,
       options: {

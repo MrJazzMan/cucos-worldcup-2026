@@ -3,6 +3,18 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
+function getRequestOrigin(request: NextRequest) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const isLocalEnv = process.env.NODE_ENV === "development";
+
+  if (!isLocalEnv && forwardedHost) {
+    return `${forwardedProto ?? "https"}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
+}
+
 function createSupabaseMiddleware(
   request: NextRequest,
   getResponse: () => NextResponse
@@ -28,6 +40,7 @@ function createSupabaseMiddleware(
 
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+  const origin = getRequestOrigin(request);
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return NextResponse.next({ request });
@@ -55,10 +68,7 @@ export async function middleware(request: NextRequest) {
     let next = searchParams.get("next") ?? "/conta";
     if (!next.startsWith("/")) next = "/conta";
 
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = next;
-    redirectUrl.searchParams.delete("code");
-    redirectUrl.searchParams.delete("next");
+    const redirectUrl = new URL(next, origin);
 
     const redirectResponse = NextResponse.redirect(redirectUrl);
     const supabase = createSupabaseMiddleware(request, () => redirectResponse);
@@ -66,9 +76,7 @@ export async function middleware(request: NextRequest) {
 
     if (error) {
       console.error("[auth/callback]", error.message);
-      const errorUrl = request.nextUrl.clone();
-      errorUrl.pathname = "/conta";
-      errorUrl.search = "";
+      const errorUrl = new URL("/conta", origin);
       errorUrl.searchParams.set("error", "auth");
       errorUrl.searchParams.set("error_code", error.message);
       const errorResponse = NextResponse.redirect(errorUrl);
