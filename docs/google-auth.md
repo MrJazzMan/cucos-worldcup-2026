@@ -92,6 +92,7 @@ Para testar login **em local**, confirma também:
 | Erro | Solução |
 |------|---------|
 | `redirect_uri_mismatch` | O redirect URI no Google deve ser **exactamente** o callback do Supabase (`...supabase.co/auth/v1/callback`), não o da app |
+| `unexpected_failure` no login Google | Correr `supabase/migrations/002_fix_auth_trigger.sql` no SQL Editor |
 | Volta a `/conta?error=auth` | Verificar Redirect URLs no Supabase; cookies/HTTPS em produção |
 | `OAuth client not found` | Client ID errado no Supabase |
 
