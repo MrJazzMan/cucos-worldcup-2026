@@ -1,11 +1,18 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { AuthButtons } from "@/components/AuthButtons";
 import { AccountPanel } from "@/components/AccountPanel";
-import { AuthErrorBanner, ClearStaleAuthError } from "@/components/AuthStatus";
+import { AuthErrorBanner } from "@/components/AuthStatus";
 import { T } from "@/components/Display";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getAllTeams } from "@/lib/matches";
 import type { NotificationPrefs } from "@/types";
+
+type ContaSearchParams = {
+  error?: string;
+  error_code?: string;
+  error_description?: string;
+};
 
 const DEFAULT_PREFS: NotificationPrefs = {
   user_id: "",
@@ -16,7 +23,12 @@ const DEFAULT_PREFS: NotificationPrefs = {
   final_result: true,
 };
 
-export default async function ContaPage() {
+export default async function ContaPage({
+  searchParams,
+}: {
+  searchParams: Promise<ContaSearchParams>;
+}) {
+  const params = await searchParams;
   const supabase = await createSupabaseServer();
   const teams = await getAllTeams();
 
@@ -38,6 +50,10 @@ export default async function ContaPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (user && params.error) {
+    redirect("/conta");
+  }
 
   if (!user) {
     return (
@@ -71,9 +87,6 @@ export default async function ContaPage() {
 
   return (
     <div className="space-y-6">
-      <Suspense fallback={null}>
-        <ClearStaleAuthError />
-      </Suspense>
       <AccountPanel
         user={{ id: user.id, email: user.email }}
         favourites={favourites ?? []}

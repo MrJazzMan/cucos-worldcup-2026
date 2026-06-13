@@ -1,4 +1,4 @@
-const CACHE_NAME = "cucos-wc26-v1";
+const CACHE_NAME = "cucos-wc26-v2";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
@@ -37,6 +37,15 @@ self.addEventListener("notificationclick", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+
+  const url = new URL(event.request.url);
+  if (
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1" ||
+    url.pathname.startsWith("/_next")
+  ) {
+    return;
+  }
 
   event.respondWith(
     fetch(event.request)

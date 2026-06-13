@@ -49,21 +49,6 @@ export function AuthStatus() {
   );
 }
 
-/** Remove ?error=… da URL quando a sessão já está activa (SSR). */
-export function ClearStaleAuthError() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (pathname === "/conta" && searchParams.get("error")) {
-      router.replace("/conta");
-    }
-  }, [pathname, router, searchParams]);
-
-  return null;
-}
-
 export function AuthErrorBanner() {
   const t = useT();
   const searchParams = useSearchParams();
