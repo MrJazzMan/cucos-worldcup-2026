@@ -8,10 +8,12 @@ export function AuthButtons() {
   const t = useT();
 
   async function signIn(provider: "google" | "apple") {
+    const redirectTo = `${window.location.origin}/auth/callback?next=/conta`;
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo,
+        skipBrowserRedirect: false,
       },
     });
   }

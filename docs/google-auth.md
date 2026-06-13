@@ -59,9 +59,12 @@ Menu: **Google Auth Platform → Branding** (ou Audience)
 **Authentication → URL Configuration**
 
 - **Site URL:** `https://wc26.pt`
-- **Redirect URLs** (adicionar):
+- **Redirect URLs** (adicionar **exactamente** estes paths):
   - `https://wc26.pt/auth/callback`
   - `http://localhost:3000/auth/callback`
+
+> ⚠️ Não basta `http://localhost:3000` — tem de incluir `/auth/callback`.
+> Se o `code` cair em `/?code=...` em vez de `/auth/callback`, o login falha (500).
 
 ---
 

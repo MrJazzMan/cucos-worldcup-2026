@@ -4,9 +4,19 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 export async function middleware(request: NextRequest) {
-  // Erros OAuth do Supabase às vezes caem na homepage — redireccionar para /conta
-  const oauthError = request.nextUrl.searchParams.get("error");
-  if (oauthError && request.nextUrl.pathname === "/") {
+  const { pathname, searchParams } = request.nextUrl;
+
+  // OAuth code deve ir para /auth/callback (às vezes cai na homepage)
+  const code = searchParams.get("code");
+  if (code && pathname !== "/auth/callback") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
+  // Erros OAuth do Supabase às vezes caem na homepage
+  const oauthError = searchParams.get("error");
+  if (oauthError && pathname === "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/conta";
     return NextResponse.redirect(url);
