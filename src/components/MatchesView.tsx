@@ -89,14 +89,24 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
         })}
       </div>
 
-      <div className="px-1">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-sm font-medium capitalize text-muted">
-            {displayDate(selectedKey, tz, locale)}
+      <div className="flex items-center justify-between gap-2 px-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-muted">📅</span>
+          <h2 className="truncate text-sm font-bold uppercase text-foreground">
+            {offset === 0 ? t("day.today") : offset === -1 ? t("day.yesterday") : t("day.tomorrow")}
           </h2>
+          <span className="truncate text-sm capitalize text-muted">
+            {displayDate(selectedKey, tz, locale)}
+          </span>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
+            {dayMatches.length}{" "}
+            {dayMatches.length === 1 ? t("matches.countOne") : t("matches.count")}
+          </p>
           {offset === 0 && hasLiveToday && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-red-500">
-              <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-current" />
+            <span className="inline-flex items-center gap-1 text-[10px] text-red-500">
+              <span className="live-dot inline-block h-1 w-1 rounded-full bg-current" />
               {t("matches.liveRefresh")}
             </span>
           )}

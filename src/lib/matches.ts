@@ -1,6 +1,7 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { DayOffset, GroupStanding, Match, TeamOption } from "@/types";
+import { isWorldCupMatch } from "@/lib/world-cup";
 import { getDateForOffset, formatMatchDate } from "@/lib/timezone";
 import {
   fetchStandings,
@@ -26,7 +27,9 @@ export async function getMatchesForDay(
 
   if (error || !matches) return [];
 
-  const fixtureIds = matches.map((m) => m.fixture_id);
+  const wcMatches = matches.filter(isWorldCupMatch);
+
+  const fixtureIds = wcMatches.map((m) => m.fixture_id);
   const { data: broadcasts } = await supabase
     .from("broadcasts")
     .select("fixture_id, channels")
@@ -36,7 +39,7 @@ export async function getMatchesForDay(
     (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
   );
 
-  return matches.map((m) => ({
+  return wcMatches.map((m) => ({
     ...m,
     channels: broadcastMap.get(m.fixture_id) ?? [],
     isFavourite:
@@ -58,6 +61,8 @@ export async function getAllMatches(
 
   if (error || !matches) return [];
 
+  const wcMatches = matches.filter(isWorldCupMatch);
+
   const { data: broadcasts } = await supabase
     .from("broadcasts")
     .select("fixture_id, channels");
@@ -66,7 +71,7 @@ export async function getAllMatches(
     (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
   );
 
-  return matches.map((m) => ({
+  return wcMatches.map((m) => ({
     ...m,
     channels: broadcastMap.get(m.fixture_id) ?? [],
     isFavourite:

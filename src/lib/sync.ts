@@ -12,6 +12,26 @@ async function purgeMockMatches(admin: ReturnType<typeof createSupabaseAdmin>) {
   await admin.from("matches").delete().in("fixture_id", MOCK_FIXTURE_IDS);
 }
 
+/** Remove jogos que não são do Mundial (ex.: live sync de outras ligas). */
+async function purgeNonWorldCupMatches(
+  admin: ReturnType<typeof createSupabaseAdmin>
+) {
+  const { data: all } = await admin.from("matches").select("fixture_id");
+  if (!all?.length) return;
+
+  const validIds = new Set(
+    (await fetchAllFixtures()).map((f) => f.fixture.id)
+  );
+
+  const toDelete = all
+    .filter((m) => !validIds.has(m.fixture_id))
+    .map((m) => m.fixture_id);
+
+  if (toDelete.length) {
+    await admin.from("matches").delete().in("fixture_id", toDelete);
+  }
+}
+
 export async function syncMatches(mode: "full" | "live" = "full") {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return { synced: MOCK_MATCHES.length, source: "mock-no-supabase" };
@@ -42,6 +62,10 @@ export async function syncMatches(mode: "full" | "live" = "full") {
 
     if (mode === "full") {
       await purgeMockMatches(admin);
+    }
+
+    if (mode === "live") {
+      await purgeNonWorldCupMatches(admin);
     }
 
     return { synced: rows.length, source: "api-football" };

@@ -99,7 +99,8 @@ Nunca commitar ficheiros com chaves.
 | Jogos duplicados / bandeiras erradas | Correr `/api/sync` (apaga mocks) |
 | `Não autorizado` no curl | Verificar `CRON_SECRET` no Vercel = valor no curl |
 | API season 2022-2024 only | Upgrade Pro em api-football.com |
-| Login não funciona | Supabase → Redirect URL `https://wc26.pt/auth/callback` |
+| Jogos estranhos (clubes, U20, cidades) | Correr `/api/sync` (full) — live sync antigo podia inserir outras ligas; agora filtrado ao Mundial |
+| Login não funciona | Ver [google-auth.md](google-auth.md) |
 
 ---
 

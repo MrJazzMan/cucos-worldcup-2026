@@ -1,5 +1,7 @@
 import type { MatchStatus } from "@/types";
 import { formatMatchDate } from "@/lib/timezone";
+import { formatVenueField } from "@/lib/venues";
+import { WC_LEAGUE_ID, isWorldCupRound } from "@/lib/world-cup";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
@@ -11,9 +13,10 @@ interface ApiFixture {
       short: string;
       elapsed: number | null;
     };
-    venue: { name: string | null } | null;
+    venue: { name: string | null; city: string | null } | null;
   };
   league: {
+    id: number;
     round: string;
   };
   teams: {
@@ -113,7 +116,7 @@ export function mapFixtureToMatch(fixture: ApiFixture) {
       status === "live" ? fixture.fixture.status.elapsed : null,
     round: fixture.league.round,
     group_name: extractGroupName(fixture.league.round),
-    venue: fixture.fixture.venue?.name ?? null,
+    venue: formatVenueField(fixture.fixture.venue),
     updated_at: new Date().toISOString(),
   };
 }
@@ -126,15 +129,9 @@ export async function fetchAllFixtures() {
 
 export async function fetchLiveFixtures() {
   const all = await apiFetch<ApiFixture[]>("/fixtures?live=all");
-  return all.filter((f) => {
-    const round = f.league.round.toLowerCase();
-    return (
-      round.includes("group") ||
-      round.includes("round of") ||
-      round.includes("final") ||
-      round.includes("3rd")
-    );
-  });
+  return all.filter(
+    (f) => f.league.id === WC_LEAGUE_ID && isWorldCupRound(f.league.round)
+  );
 }
 
 export async function fetchStandings() {

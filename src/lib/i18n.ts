@@ -24,6 +24,11 @@ const pt: Dict = {
   "matches.empty.subtitle": "Selecciona outro dia ou volta mais tarde.",
   "matches.loading": "A carregar jogos…",
   "matches.liveRefresh": "Actualização automática",
+  "matches.count": "jogos",
+  "matches.countOne": "jogo",
+
+  "status.inHours": "Em {n} horas",
+  "status.inMinutes": "Em {n} min",
 
   "status.live": "Ao vivo",
   "status.finished": "Terminado",
@@ -93,6 +98,11 @@ const en: Dict = {
   "matches.empty.subtitle": "Pick another day or check back later.",
   "matches.loading": "Loading matches…",
   "matches.liveRefresh": "Auto-updating",
+  "matches.count": "matches",
+  "matches.countOne": "match",
+
+  "status.inHours": "In {n} hours",
+  "status.inMinutes": "In {n} min",
 
   "status.live": "Live",
   "status.finished": "Finished",

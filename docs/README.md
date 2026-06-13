@@ -13,6 +13,7 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [deploy.md](deploy.md) | Vercel, variáveis, crons, pós-deploy |
 | [notifications.md](notifications.md) | Web Push, preferências, cron |
 | [operacoes.md](operacoes.md) | Comandos do dia-a-dia (sync, admin, troubleshooting) |
+| [google-auth.md](google-auth.md) | Sign in with Google (passo-a-passo) |
 
 ## Links rápidos
 
