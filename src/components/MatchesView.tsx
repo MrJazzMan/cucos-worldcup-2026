@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { MatchCard } from "@/components/MatchCard";
 import { useSettings } from "@/components/SettingsProvider";
 import {
@@ -18,7 +19,11 @@ const OFFSETS = [
   { offset: 1, key: "day.tomorrow" },
 ] as const;
 
+/** Intervalo de auto-refresh no separador "Hoje" (ms). */
+const LIVE_REFRESH_MS = 45_000;
+
 export function MatchesView({ matches }: { matches: DayMatch[] }) {
+  const router = useRouter();
   const { t, tz, locale, mounted } = useSettings();
   const [offset, setOffset] = useState<number>(0);
 
@@ -32,6 +37,26 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
       matches.filter((m) => dateKeyInTz(m.kickoff_utc, tz) === selectedKey),
     [matches, tz, selectedKey]
   );
+
+  const hasLiveToday = useMemo(
+    () =>
+      matches.some(
+        (m) =>
+          m.status === "live" &&
+          dateKeyInTz(m.kickoff_utc, tz) === dayKeyWithOffset(tz, 0)
+      ),
+    [matches, tz]
+  );
+
+  // Auto-refresh: em "Hoje" a cada 45s; com jogos ao vivo refresca sempre.
+  useEffect(() => {
+    if (!mounted || offset !== 0) return;
+
+    const tick = () => router.refresh();
+    const ms = hasLiveToday ? LIVE_REFRESH_MS : LIVE_REFRESH_MS * 2;
+    const id = setInterval(tick, ms);
+    return () => clearInterval(id);
+  }, [mounted, offset, hasLiveToday, router]);
 
   if (!mounted) {
     return (
@@ -65,9 +90,17 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
       </div>
 
       <div className="px-1">
-        <h2 className="text-sm font-medium capitalize text-muted">
-          {displayDate(selectedKey, tz, locale)}
-        </h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-sm font-medium capitalize text-muted">
+            {displayDate(selectedKey, tz, locale)}
+          </h2>
+          {offset === 0 && hasLiveToday && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-red-500">
+              <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-current" />
+              {t("matches.liveRefresh")}
+            </span>
+          )}
+        </div>
       </div>
 
       {dayMatches.length === 0 ? (

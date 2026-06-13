@@ -23,6 +23,26 @@ Resposta esperada:
 curl -H "Authorization: Bearer TEU_CRON_SECRET" "https://wc26.pt/api/sync?mode=live"
 ```
 
+#### Automático (GitHub Actions)
+
+Workflow `.github/workflows/live-sync.yml` — corre **de 5 em 5 minutos** (mínimo do
+GitHub; o Vercel Hobby não permite cron mais frequente).
+
+**Configurar uma vez no GitHub** (repo → Settings → Secrets and variables → Actions):
+
+| Tipo | Nome | Valor |
+|------|------|-------|
+| Secret | `CRON_SECRET` | O mesmo que está no Vercel (`uma-password-qualquer-123`) |
+| Variable (opcional) | `SITE_URL` | `https://wc26.pt` |
+
+Testar manualmente: Actions → **Live sync** → **Run workflow**.
+
+#### Auto-refresh na homepage
+
+Com o separador **Hoje** aberto, a página refresca sozinha (~45s se há jogos ao
+vivo, ~90s caso contrário). Os cartões mostram marcador, minuto e etiqueta
+"Ao vivo / Live".
+
 ---
 
 ## Sync de canais TV (OndeBola)

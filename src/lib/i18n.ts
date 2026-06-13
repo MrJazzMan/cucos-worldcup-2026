@@ -23,6 +23,7 @@ const pt: Dict = {
   "matches.empty.title": "Sem jogos neste dia",
   "matches.empty.subtitle": "Selecciona outro dia ou volta mais tarde.",
   "matches.loading": "A carregar jogos…",
+  "matches.liveRefresh": "Actualização automática",
 
   "status.live": "Ao vivo",
   "status.finished": "Terminado",
@@ -91,6 +92,7 @@ const en: Dict = {
   "matches.empty.title": "No matches on this day",
   "matches.empty.subtitle": "Pick another day or check back later.",
   "matches.loading": "Loading matches…",
+  "matches.liveRefresh": "Auto-updating",
 
   "status.live": "Live",
   "status.finished": "Finished",

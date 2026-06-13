@@ -1,0 +1,29 @@
+# Sync ao vivo dos resultados (API-Football → Supabase).
+# O Vercel Hobby só permite cron 1×/dia; este workflow corre de 5 em 5 min
+# (mínimo do GitHub Actions). A homepage refresca sozinha a cada ~45s.
+
+name: Live sync
+
+on:
+  schedule:
+    # A cada 5 minutos (mínimo suportado pelo GitHub Actions)
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  sync-live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync live fixtures
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET não configurado em Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          BASE="${SITE_URL:-https://wc26.pt}"
+          curl -fsS \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "${BASE}/api/sync?mode=live"
