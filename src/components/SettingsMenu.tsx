@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { useSettings } from "@/components/SettingsProvider";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { COMMON_TIMEZONES } from "@/lib/datetime";
@@ -18,7 +19,8 @@ export function SettingsMenu() {
   const { t, lang, setLang, theme, setTheme, tzPref, setTzPref } = useSettings();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [streakDays, setStreakDays] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,9 +46,51 @@ export function SettingsMenu() {
     if (!open) return;
     const supabase = createSupabaseBrowser();
     supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? null);
+      setUser(data.user ?? null);
     });
   }, [open]);
+
+  useEffect(() => {
+    if (!user) {
+      setStreakDays(0);
+      return;
+    }
+
+    const storageKey = `cucos-streak-${user.id}`;
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+      today.getDate()
+    ).padStart(2, "0")}`;
+
+    const saved = localStorage.getItem(storageKey);
+    if (!saved) {
+      localStorage.setItem(storageKey, JSON.stringify({ day: todayKey, streak: 1 }));
+      setStreakDays(1);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(saved) as { day?: string; streak?: number };
+      const prevDay = parsed.day ?? "";
+      const prevStreak = Math.max(1, parsed.streak ?? 1);
+
+      if (prevDay === todayKey) {
+        setStreakDays(prevStreak);
+        return;
+      }
+
+      const prevDate = new Date(`${prevDay}T00:00:00`);
+      const currDate = new Date(`${todayKey}T00:00:00`);
+      const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / 86_400_000);
+
+      const nextStreak = diffDays === 1 ? prevStreak + 1 : 1;
+      localStorage.setItem(storageKey, JSON.stringify({ day: todayKey, streak: nextStreak }));
+      setStreakDays(nextStreak);
+    } catch {
+      localStorage.setItem(storageKey, JSON.stringify({ day: todayKey, streak: 1 }));
+      setStreakDays(1);
+    }
+  }, [user]);
 
   async function signOut() {
     const supabase = createSupabaseBrowser();
@@ -56,7 +100,7 @@ export function SettingsMenu() {
     router.refresh();
   }
 
-  const username = email?.split("@")[0] ?? "Convidado";
+  const username = user?.email?.split("@")[0] ?? "Convidado";
   const initial = username[0]?.toUpperCase() ?? "C";
 
   return (
@@ -113,23 +157,22 @@ export function SettingsMenu() {
                     <p className="truncate text-base font-bold text-foreground">
                       {username}
                     </p>
-                    <p className="truncate text-sm text-orange-500">🔥 4 dias seguidos</p>
+                    {user ? (
+                      <p className="truncate text-sm text-orange-500">
+                        🔥 {streakDays || 1} dia{(streakDays || 1) > 1 ? "s" : ""} seguidos
+                      </p>
+                    ) : (
+                      <p className="truncate text-sm text-muted">Inicia sessão para guardar progresso</p>
+                    )}
                   </div>
                 </div>
               </section>
 
               <section className="rounded-2xl border border-border-base bg-surface-2">
-                <button
-                  className="flex w-full items-center gap-2 px-3 py-3 text-left text-base font-semibold text-foreground/70"
-                  type="button"
-                >
-                  <span>🏆</span>
-                  Galeria de Troféus
-                </button>
                 <Link
                   href="/conta"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2 border-t border-border-base px-3 py-3 text-base font-semibold text-foreground"
+                  className="flex items-center gap-2 px-3 py-3 text-base font-semibold text-foreground"
                 >
                   <span>⚙️</span>
                   Definições
