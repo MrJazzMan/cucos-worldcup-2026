@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CHANNEL_LINKS, PT_CHANNELS } from "@/lib/channels";
 
 interface AdminMatch {
   fixture_id: number;
@@ -9,8 +10,6 @@ interface AdminMatch {
   match_date: string;
   channels: string[];
 }
-
-const PT_CHANNELS = ["RTP1", "RTP2", "RTP3", "SIC", "TVI", "Sport TV", "DAZN"];
 
 export default function AdminPage() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
@@ -88,6 +87,7 @@ export default function AdminPage() {
               <div className="mt-3 flex flex-wrap gap-2">
                 {PT_CHANNELS.map((ch) => {
                   const active = match.channels.includes(ch);
+                  const link = CHANNEL_LINKS[ch];
                   return (
                     <button
                       key={ch}
@@ -95,6 +95,7 @@ export default function AdminPage() {
                         toggleChannel(match.fixture_id, ch, match.channels)
                       }
                       disabled={saving === match.fixture_id}
+                      title={link ?? undefined}
                       className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                         active
                           ? "bg-blue-600 text-white"
@@ -102,6 +103,9 @@ export default function AdminPage() {
                       }`}
                     >
                       {ch}
+                      {link && (
+                        <span className="ml-1 text-xs opacity-70">▶</span>
+                      )}
                     </button>
                   );
                 })}

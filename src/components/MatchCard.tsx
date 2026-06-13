@@ -1,4 +1,5 @@
 import { TeamFlag } from "@/components/TeamFlag";
+import { getChannelHref } from "@/lib/channels";
 import { formatKickoffTime } from "@/lib/timezone";
 import { getStatusColor, getStatusLabel } from "@/lib/match-utils";
 import type { Match } from "@/types";
@@ -71,14 +72,32 @@ export function MatchCard({ match }: MatchCardProps) {
 
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
         {match.channels && match.channels.length > 0 ? (
-          match.channels.map((channel) => (
-            <span
-              key={channel}
-              className="rounded-lg bg-blue-600/20 px-3 py-1 text-sm font-medium text-blue-300"
-            >
-              📺 {channel}
-            </span>
-          ))
+          match.channels.map((channel) => {
+            const href = getChannelHref(channel);
+            const className =
+              "rounded-lg bg-blue-600/20 px-3 py-1 text-sm font-medium text-blue-300";
+            const label = `📺 ${channel}`;
+
+            if (href) {
+              return (
+                <a
+                  key={channel}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${className} hover:bg-blue-600/30`}
+                >
+                  {label}
+                </a>
+              );
+            }
+
+            return (
+              <span key={channel} className={className}>
+                {label}
+              </span>
+            );
+          })
         ) : (
           <span className="text-sm text-zinc-500">Canal a confirmar</span>
         )}

@@ -31,8 +31,14 @@ Ver [.env.example](.env.example).
 
 ## Documentação
 
+Documentação completa em [`docs/`](docs/) (GitHub only — excluída do deploy Vercel).
+
+- [docs/README.md](docs/README.md) — índice
+- [docs/historico-e-setup.md](docs/historico-e-setup.md) — tudo o que fizemos
+- [docs/operacoes.md](docs/operacoes.md) — sync, admin, troubleshooting
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [docs/data-sources.md](docs/data-sources.md)
+- [docs/deploy.md](docs/deploy.md)
 - [docs/notifications.md](docs/notifications.md)
 
 ## Licença

@@ -2,6 +2,8 @@
 
 Última actualização: 2026-06-13.
 
+> A pasta `docs/` **não é enviada para o Vercel** — ver [`.vercelignore`](../.vercelignore). Fica só no GitHub.
+
 ## Pré-requisitos
 
 1. Conta [Vercel](https://vercel.com)

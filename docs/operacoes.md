@@ -1,0 +1,92 @@
+# Operações do dia-a-dia
+
+Última actualização: 2026-06-13.
+
+## Sync de jogos (API-Football)
+
+```bash
+curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync
+```
+
+Resposta esperada:
+
+```json
+{"ok":true,"synced":72,"source":"api-football"}
+```
+
+- `synced` varia conforme jogos publicados na API (máx. ~104)
+- Se `source: mock-fallback` → API key em falta ou plano Free (sem 2026)
+
+### Sync live (durante jogos)
+
+```bash
+curl -H "Authorization: Bearer TEU_CRON_SECRET" "https://wc26.pt/api/sync?mode=live"
+```
+
+---
+
+## Sync de canais TV (OndeBola)
+
+```bash
+curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync-broadcasts
+```
+
+Só jogos do Mundial, match fuzzy com a tabela `matches`.
+
+Resposta exemplo:
+
+```json
+{"ok":true,"synced":6,"source":"ondebola","agenda_total":32,"jogos_mundial_hoje":3}
+```
+
+---
+
+## Admin manual
+
+URL: https://wc26.pt/admin
+
+Canais disponíveis: RTP1, RTP2, RTP3, SIC, TVI, Sport TV, DAZN, **LV** (YouTube).
+
+Clicar nos botões para activar/desactivar canais por jogo.
+
+---
+
+## Deploy
+
+Push à `main` → Vercel deploy automático.
+
+Manual:
+
+```bash
+vercel --prod --yes
+```
+
+---
+
+## Variáveis locais
+
+Editar `.env.local` (ou `env.local` visível no Finder).
+
+Nunca commitar ficheiros com chaves.
+
+---
+
+## Troubleshooting
+
+| Sintoma | Acção |
+|---------|--------|
+| "Canal a confirmar" em muitos jogos | Correr `/api/sync-broadcasts`; completar em `/admin` |
+| Jogos duplicados / bandeiras erradas | Correr `/api/sync` (apaga mocks) |
+| `Não autorizado` no curl | Verificar `CRON_SECRET` no Vercel = valor no curl |
+| API season 2022-2024 only | Upgrade Pro em api-football.com |
+| Login não funciona | Supabase → Redirect URL `https://wc26.pt/auth/callback` |
+
+---
+
+## Vercel CLI útil
+
+```bash
+vercel env ls
+vercel domains inspect wc26.pt
+vercel logs https://wc26.pt
+```
