@@ -2,7 +2,7 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-Última actualização: 2026-06-13.
+Última actualização: 2026-06-13 (noite).
 
 ## Índice
 
@@ -14,6 +14,10 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [notifications.md](notifications.md) | Web Push, preferências, cron |
 | [operacoes.md](operacoes.md) | Comandos do dia-a-dia (sync, admin, troubleshooting) |
 | [google-auth.md](google-auth.md) | Sign in with Google (passo-a-passo) |
+
+Notas recentes:
+- OAuth Google estabilizado em produção (`wc26.pt`) com callback SSR e troubleshooting Safari.
+- Live sync actualizado para fechar correctamente jogos que saem de `live` para `finished`.
 
 ## Links rápidos
 

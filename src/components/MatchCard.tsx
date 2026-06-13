@@ -51,6 +51,20 @@ function useLiveMinute(
   return serverMinute + elapsedMin;
 }
 
+function channelBadgeClass(channel: string) {
+  const upper = channel.toUpperCase();
+
+  if (upper.startsWith("RTP")) {
+    return "inline-flex items-center rounded-lg bg-[#1f43ff] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white shadow-[inset_0_-1px_0_rgba(255,255,255,0.2)]";
+  }
+
+  if (upper.includes("SPORT TV")) {
+    return "inline-flex items-center rounded-lg border border-[#111827] bg-[#07090f] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#ffd230]";
+  }
+
+  return "inline-flex items-center rounded-lg bg-zinc-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white";
+}
+
 export function MatchCard({ match }: MatchCardProps) {
   const { t, lang } = useSettings();
   const [now, setNow] = useState(() => Date.now());
@@ -177,32 +191,32 @@ export function MatchCard({ match }: MatchCardProps) {
       {/* Canais */}
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
         {match.channels && match.channels.length > 0 ? (
-          match.channels.map((channel) => {
-            const href = getChannelHref(channel);
-            const isRtp = channel.toUpperCase().startsWith("RTP");
-            const cls = isRtp
-              ? "rounded-md bg-blue-600 px-3 py-1 text-[11px] font-bold uppercase text-white"
-              : "rounded-md bg-zinc-900 px-3 py-1 text-[11px] font-bold uppercase text-amber-400";
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-border-base/70 bg-surface-2/60 px-2 py-1">
+            {match.channels.map((channel, idx) => {
+              const href = getChannelHref(channel);
+              const cls = channelBadgeClass(channel);
 
-            if (href) {
               return (
-                <a
-                  key={channel}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${cls} hover:brightness-110`}
-                >
-                  {channel}
-                </a>
+                <span key={channel} className="inline-flex items-center gap-2">
+                  {idx > 0 && (
+                    <span className="text-sm leading-none text-muted">•</span>
+                  )}
+                  {href ? (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${cls} hover:brightness-110`}
+                    >
+                      {channel}
+                    </a>
+                  ) : (
+                    <span className={cls}>{channel}</span>
+                  )}
+                </span>
               );
-            }
-            return (
-              <span key={channel} className={cls}>
-                {channel}
-              </span>
-            );
-          })
+            })}
+          </div>
         ) : (
           <span className="text-xs text-muted">{t("card.channelTBC")}</span>
         )}

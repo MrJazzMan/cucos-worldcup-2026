@@ -23,6 +23,13 @@ Resposta esperada:
 curl -H "Authorization: Bearer TEU_CRON_SECRET" "https://wc26.pt/api/sync?mode=live"
 ```
 
+No modo `live`, o sync usa:
+- fixtures em directo (`live=all`)
+- fixtures de **hoje**
+- fixtures de **ontem**
+
+Isto evita jogos presos em "Ao vivo" quando saem do feed live e passam a `finished`.
+
 #### Automático (GitHub Actions)
 
 Workflow `.github/workflows/live-sync.yml` — corre **de 5 em 5 minutos** (mínimo do
@@ -101,6 +108,8 @@ Nunca commitar ficheiros com chaves.
 | API season 2022-2024 only | Upgrade Pro em api-football.com |
 | Jogos estranhos (clubes, U20, cidades) | Correr `/api/sync` (full) — live sync antigo podia inserir outras ligas; agora filtrado ao Mundial |
 | Login não funciona | Ver [google-auth.md](google-auth.md) |
+| Jogo ficou preso em `live` (ex.: 75') | Correr `/api/sync?mode=live` manualmente; confirmar que o `updated_at` do `fixture_id` mudou |
+| Safari falha no callback OAuth | Limpar Website Data (`wc26.pt`, `supabase.co`, `localhost`) e repetir login em `wc26.pt` |
 
 ---
 

@@ -1,9 +1,9 @@
 # Autenticação Google (Sign in with Google)
 
-Última actualização: 2026-06-13.
+Última actualização: 2026-06-13 (noite).
 
-O código da app já está pronto (`AuthButtons`, `/auth/callback`). Falta configurar
-**Google Cloud** e **Supabase**.
+O fluxo está implementado e validado em produção (`wc26.pt`). Este guia documenta
+a configuração correcta e o troubleshooting dos erros reais que aconteceram.
 
 ---
 
@@ -96,8 +96,21 @@ Para testar login **em local**, confirma também:
 |------|---------|
 | `redirect_uri_mismatch` | O redirect URI no Google deve ser **exactamente** o callback do Supabase (`...supabase.co/auth/v1/callback`), não o da app |
 | `unexpected_failure` no login Google | Correr `supabase/migrations/002_fix_auth_trigger.sql` no SQL Editor |
+| Volta a `localhost:3000/?code=...` em produção | Confirmar `Site URL = https://wc26.pt` em Supabase URL Configuration; no código o `redirectTo` deve ser `https://wc26.pt/auth/callback` (sem query extra) |
 | Volta a `/conta?error=auth` | Verificar Redirect URLs no Supabase; cookies/HTTPS em produção |
 | `OAuth client not found` | Client ID errado no Supabase |
+| `PKCE code verifier not found in storage` | Garantir que a troca de código acontece no servidor/middleware (`@supabase/ssr`) e não num callback client-only |
+| Safari abre página em branco / `FetchEvent.respondWith ... response is null` no callback | Limpar dados de `wc26.pt`/`supabase.co` no Safari e actualizar service worker; versões novas do `sw.js` já ignoram navegação/auth |
+
+### Nota prática (Safari recente)
+
+Em algumas versões, o menu `Develop` pode não aparecer mesmo com opções activadas.
+Nesses casos:
+
+1. `Safari > Settings > Privacy > Manage Website Data...`
+2. Remover dados de `wc26.pt`, `supabase.co` e `localhost`
+3. Fechar e reabrir Safari
+4. Testar login novamente em `https://wc26.pt/conta`
 
 ---
 

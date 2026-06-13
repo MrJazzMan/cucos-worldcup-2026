@@ -10,8 +10,9 @@ Registo de tudo o que foi feito para pôr o **Cucos World Cup 2026** em produç�
 
 ### Menu de definições (hambúrguer)
 
-`src/components/SettingsMenu.tsx` no cabeçalho abre um painel com 3 definições,
-geridas pelo `SettingsProvider` (`src/components/SettingsProvider.tsx`) e
+`src/components/SettingsMenu.tsx` no cabeçalho abre um **drawer lateral** (overlay + fechar),
+com bloco de utilizador e acções rápidas (`Galeria de Troféus`, `Definições`, `Sair`), além
+das definições geridas pelo `SettingsProvider` (`src/components/SettingsProvider.tsx`) e
 guardadas em `localStorage`:
 
 | Definição | Valores | Chave localStorage |
@@ -45,6 +46,9 @@ guardadas em `localStorage`:
 - Script anti-flash (FOUC) no `<head>` do `layout.tsx`.
 - Fundo com gradientes, cartões com sombra/animação, indicador "ao vivo" a
   pulsar, badges de canais em destaque.
+- Badges de TV com look aproximado de marca:
+  - `SPORT TV`: preto + amarelo
+  - `RTP`: azul + branco
 
 ### Rodapé
 
@@ -213,6 +217,21 @@ Sync: [`src/lib/sync.ts`](../src/lib/sync.ts) → `GET /api/sync`
 
 Após upgrade Pro, mocks (IDs 1001–1005) são **apagados** automaticamente no sync completo.
 
+### Correcção live-sync (jogos presos em "ao vivo")
+
+Problema detectado em produção: alguns jogos (ex.: Catar) ficavam presos em `live`
+quando já tinham terminado.
+
+Causa: `/api/sync?mode=live` usava apenas `/fixtures?live=all`; quando o jogo passa a
+`FT`, sai desse endpoint e deixava de ser actualizado.
+
+Solução aplicada em `src/lib/sync.ts`:
+- no modo live, sincronizar `live + hoje + ontem`,
+- deduplicar por `fixture_id`,
+- fazer upsert normal.
+
+Resultado: a transição `live -> finished` fica garantida no próximo ciclo.
+
 ### OndeBola (canais TV)
 
 Port directo do projecto Leopardo (`briefing/fontes/ondebola.py`):
@@ -274,12 +293,16 @@ LV → https://www.youtube.com/channel/UCpcTrCXblq78GZrTUTLWeBw
 
 ---
 
-## 11. Autenticação (pendente / parcial)
+## 11. Autenticação (estado actual)
 
-- Google + Apple via Supabase Auth — UI em `/conta`
-- Falta activar providers no Supabase Dashboard
-- Redirect URL produção: `https://wc26.pt/auth/callback`
-- Apple Developer ($99/ano) necessário para Sign in with Apple
+- Google OAuth via Supabase Auth: **activo e validado em produção**
+- Callback final: `https://wc26.pt/auth/callback`
+- URL config Supabase:
+  - Site URL: `https://wc26.pt`
+  - Redirect URLs:
+    - `https://wc26.pt/auth/callback`
+    - `http://localhost:3000/auth/callback`
+- Apple Sign in: UI pronta, provider ainda pendente de configuração no Apple Developer
 
 ---
 
@@ -316,12 +339,17 @@ Ficheiro visível (opcional): `env.local` — cópia sem ponto para editar no Fi
 | Jogos mock + reais misturados | `purgeMockMatches` após sync API |
 | OndeBola `synced: 0` | Normal até haver jogos reais na BD; depois match fuzzy |
 | Chave API no chat | Regenerar no dashboard se preocupação |
+| OAuth voltava para `localhost` em produção | `redirectTo` simplificado para callback puro + origem resolvida com `x-forwarded-host/proto` no middleware |
+| `PKCE code verifier not found` / erros intermitentes OAuth | troca de código centralizada no middleware com cookies SSR |
+| Safari falhava no callback (`FetchEvent` / resposta nula) | service worker endurecido: ignora navegação/auth/query params e limpa caches antigas |
+| Menu hamburger básico face ao mock | drawer lateral com perfil e acções rápidas |
+| Canais com visual genérico | badges por canal (`SPORT TV` e `RTP`) |
 
 ---
 
 ## 15. Próximos passos sugeridos
 
-- [ ] Activar Google OAuth no Supabase
+- [x] Activar Google OAuth no Supabase
 - [ ] Activar Apple OAuth (conta Developer)
 - [ ] Gerar chaves VAPID e activar push
 - [ ] Sync manual diário durante o torneio (`curl` jogos + broadcasts)
