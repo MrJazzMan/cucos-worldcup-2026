@@ -1,7 +1,7 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { DayOffset, GroupStanding, Match, TeamOption } from "@/types";
-import { getDateForOffset } from "@/lib/timezone";
+import { getDateForOffset, formatMatchDate } from "@/lib/timezone";
 import {
   fetchStandings,
   fetchRounds,
@@ -113,7 +113,7 @@ export async function getKnockoutRounds(): Promise<
           const m = {
             fixture_id: f.fixture.id,
             kickoff_utc: f.fixture.date,
-            match_date: f.fixture.date.slice(0, 10),
+            match_date: formatMatchDate(f.fixture.date),
             home_team_id: f.teams.home.id,
             home_team_name: f.teams.home.name,
             home_team_logo: f.teams.home.logo,

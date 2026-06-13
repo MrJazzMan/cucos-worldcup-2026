@@ -1,4 +1,5 @@
 import type { MatchStatus } from "@/types";
+import { formatMatchDate } from "@/lib/timezone";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
@@ -92,7 +93,7 @@ function extractGroupName(round: string): string | null {
 
 export function mapFixtureToMatch(fixture: ApiFixture) {
   const kickoffUtc = fixture.fixture.date;
-  const matchDate = kickoffUtc.slice(0, 10);
+  const matchDate = formatMatchDate(kickoffUtc);
   const status = mapApiStatus(fixture.fixture.status.short);
 
   return {
