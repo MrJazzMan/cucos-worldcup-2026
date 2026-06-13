@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AuthButtons } from "@/components/AuthButtons";
 import { AccountPanel } from "@/components/AccountPanel";
-import { AuthErrorBanner } from "@/components/AuthStatus";
+import { AuthErrorBanner } from "@/components/AuthErrorBanner";
 import { T } from "@/components/Display";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { getAllTeams } from "@/lib/matches";

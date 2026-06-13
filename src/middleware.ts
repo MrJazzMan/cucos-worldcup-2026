@@ -3,38 +3,12 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
-export async function middleware(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
-
-  // OAuth code deve ir para /auth/callback (às vezes cai na homepage)
-  const code = searchParams.get("code");
-  if (code && pathname !== "/auth/callback") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/callback";
-    return NextResponse.redirect(url);
-  }
-
-  // Erros OAuth do Supabase às vezes caem na homepage
-  const oauthError = searchParams.get("error");
-  if (oauthError && pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/conta";
-    return NextResponse.redirect(url);
-  }
-
-  // Não tocar em cookies/sessão durante o callback OAuth (PKCE)
-  if (pathname.startsWith("/auth/callback")) {
-    return NextResponse.next({ request });
-  }
-
-  let response = NextResponse.next({ request });
-
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return response;
-  }
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL.trim(),
+function createSupabaseMiddleware(
+  request: NextRequest,
+  getResponse: () => NextResponse
+) {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!.trim(),
     {
       cookies: {
@@ -42,18 +16,77 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet: CookieToSet[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
+          const response = getResponse();
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
         },
       },
     }
   );
+}
 
+export async function middleware(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    return NextResponse.next({ request });
+  }
+
+  const code = searchParams.get("code");
+  const oauthError = searchParams.get("error");
+
+  // OAuth code deve ir para /auth/callback (às vezes cai na homepage)
+  if (code && pathname !== "/auth/callback") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
+  // Erros OAuth do Supabase às vezes caem na homepage
+  if (oauthError && pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/conta";
+    return NextResponse.redirect(url);
+  }
+
+  // Troca PKCE no middleware — cookies do pedido ficam disponíveis aqui
+  if (pathname === "/auth/callback" && code) {
+    let next = searchParams.get("next") ?? "/conta";
+    if (!next.startsWith("/")) next = "/conta";
+
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = next;
+    redirectUrl.searchParams.delete("code");
+    redirectUrl.searchParams.delete("next");
+
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    const supabase = createSupabaseMiddleware(request, () => redirectResponse);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      console.error("[auth/callback]", error.message);
+      const errorUrl = request.nextUrl.clone();
+      errorUrl.pathname = "/conta";
+      errorUrl.search = "";
+      errorUrl.searchParams.set("error", "auth");
+      errorUrl.searchParams.set("error_code", error.message);
+      const errorResponse = NextResponse.redirect(errorUrl);
+      redirectResponse.cookies.getAll().forEach((cookie) => {
+        errorResponse.cookies.set(cookie.name, cookie.value);
+      });
+      return errorResponse;
+    }
+
+    return redirectResponse;
+  }
+
+  if (pathname === "/auth/callback") {
+    return NextResponse.redirect(new URL("/conta?error=auth", request.url));
+  }
+
+  const response = NextResponse.next({ request });
+  const supabase = createSupabaseMiddleware(request, () => response);
   await supabase.auth.getUser();
   return response;
 }
