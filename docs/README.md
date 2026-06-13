@@ -14,6 +14,7 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [notifications.md](notifications.md) | Web Push, preferências, cron |
 | [operacoes.md](operacoes.md) | Comandos do dia-a-dia (sync, admin, troubleshooting) |
 | [google-auth.md](google-auth.md) | Sign in with Google (passo-a-passo) |
+| [coding-guidelines.md](coding-guidelines.md) | Convenções de código para legibilidade humana + AI |
 
 Notas recentes:
 - OAuth Google estabilizado em produção (`wc26.pt`) com callback SSR e troubleshooting Safari.
