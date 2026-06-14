@@ -51,18 +51,42 @@ function useLiveMinute(
   return serverMinute + elapsedMin;
 }
 
+const BASE_BADGE = "inline-flex items-center rounded-lg px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide";
+
 function channelBadgeClass(channel: string) {
   const upper = channel.toUpperCase();
 
+  // RTP — azul oficial RTP
   if (upper.startsWith("RTP")) {
-    return "inline-flex items-center rounded-lg bg-[#1f43ff] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-white shadow-[inset_0_-1px_0_rgba(255,255,255,0.2)]";
+    return `${BASE_BADGE} bg-[#3565f2] text-white`;
   }
 
+  // Sport TV — preto com amarelo dourado
   if (upper.includes("SPORT TV")) {
-    return "inline-flex items-center rounded-lg border border-[#111827] bg-[#07090f] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-[#ffd230]";
+    return `${BASE_BADGE} bg-[#07090f] text-[#ffd230] border border-[#ffd230]/30`;
   }
 
-  return "inline-flex items-center rounded-lg bg-zinc-900 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white";
+  // SIC — vermelho coral característico
+  if (upper === "SIC") {
+    return `${BASE_BADGE} bg-[#e8000d] text-white`;
+  }
+
+  // TVI — laranja/vermelho tvi
+  if (upper === "TVI") {
+    return `${BASE_BADGE} bg-[#f04e23] text-white`;
+  }
+
+  // DAZN — preto com amarelo neón
+  if (upper === "DAZN") {
+    return `${BASE_BADGE} bg-black text-[#f5f500] border border-[#f5f500]/20`;
+  }
+
+  // LV (FIFA World Cup Live — YouTube)
+  if (upper === "LV") {
+    return `${BASE_BADGE} bg-[#ff0000] text-white`;
+  }
+
+  return `${BASE_BADGE} bg-surface-2 text-foreground border border-border-base`;
 }
 
 export function MatchCard({ match }: MatchCardProps) {
@@ -197,34 +221,27 @@ export function MatchCard({ match }: MatchCardProps) {
       )}
 
       {/* Canais */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
         {match.channels && match.channels.length > 0 ? (
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 rounded-2xl border border-border-base/70 bg-surface-2/60 px-2 py-1">
-            {match.channels.map((channel, idx) => {
-              const href = getChannelHref(channel);
-              const cls = channelBadgeClass(channel);
-
-              return (
-                <span key={channel} className="inline-flex items-center gap-2">
-                  {idx > 0 && (
-                    <span className="text-sm leading-none text-muted">•</span>
-                  )}
-                  {href ? (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`${cls} hover:brightness-110`}
-                    >
-                      {channel}
-                    </a>
-                  ) : (
-                    <span className={cls}>{channel}</span>
-                  )}
-                </span>
-              );
-            })}
-          </div>
+          match.channels.map((channel) => {
+            const href = getChannelHref(channel);
+            const cls = channelBadgeClass(channel);
+            return href ? (
+              <a
+                key={channel}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${cls} transition hover:brightness-110`}
+              >
+                {channel}
+              </a>
+            ) : (
+              <span key={channel} className={cls}>
+                {channel}
+              </span>
+            );
+          })
         ) : (
           <span className="text-xs text-muted">{t("card.channelTBC")}</span>
         )}
