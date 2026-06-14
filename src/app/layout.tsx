@@ -54,7 +54,8 @@ export default function RootLayout({
             {children}
           </main>
           <footer className="mt-10 pb-8 text-center text-xs text-muted">
-            © 2026 Cuco Enterprise
+            <p><T k="footer.production" />: Miguel Garcia</p>
+            <p className="mt-0.5">© 2026 Cuco Enterprise</p>
           </footer>
           <ServiceWorkerRegister />
         </SettingsProvider>

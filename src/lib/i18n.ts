@@ -96,6 +96,8 @@ const pt: Dict = {
   "settings.timezone": "Fuso horário",
   "settings.timezone.auto": "Automático (browser)",
   "settings.close": "Fechar",
+
+  "footer.production": "Produção",
 };
 
 const en: Dict = {
@@ -185,6 +187,8 @@ const en: Dict = {
   "settings.timezone": "Time zone",
   "settings.timezone.auto": "Automatic (browser)",
   "settings.close": "Close",
+
+  "footer.production": "Production",
 };
 
 const DICTS: Record<Lang, Dict> = { pt, en };
