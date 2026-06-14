@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TeamFlag } from "@/components/TeamFlag";
 import { KickoffTime, TeamName, teamLabel } from "@/components/Display";
 import { useSettings } from "@/components/SettingsProvider";
@@ -109,13 +109,8 @@ export function MatchCard({ match }: MatchCardProps) {
     return () => clearInterval(id);
   }, [match.status]);
 
-  const countdown = useMemo(
-    () =>
-      match.status === "upcoming"
-        ? countdownLabel(match.kickoff_utc, t)
-        : null,
-    [match.status, match.kickoff_utc, t, now]
-  );
+  const countdown =
+    match.status === "upcoming" ? countdownLabel(match.kickoff_utc, t) : null;
 
   const badgeClass = isLive
     ? "bg-red-500 text-white"
