@@ -33,13 +33,6 @@ export function AuthButtons() {
         <span>G</span>
         {t("auth.google")}
       </button>
-      <button
-        onClick={() => signIn("apple")}
-        className="flex w-full items-center justify-center gap-3 rounded-xl bg-zinc-900 px-4 py-3.5 text-base font-semibold text-white transition hover:bg-zinc-800"
-      >
-        <span>🍎</span>
-        {t("auth.apple")}
-      </button>
     </div>
   );
 }
