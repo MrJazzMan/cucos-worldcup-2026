@@ -61,9 +61,9 @@ function channelBadgeClass(channel: string) {
     return `${BASE_BADGE} bg-[#3565f2] text-white`;
   }
 
-  // Sport TV — preto com amarelo dourado
+  // Sport TV — azul escuro com amarelo dourado
   if (upper.includes("SPORT TV")) {
-    return `${BASE_BADGE} bg-[#07090f] text-[#ffd230] border border-[#ffd230]/30`;
+    return `${BASE_BADGE} bg-[#0f1a3a] text-[#ffd230] border border-[#ffd230]/30`;
   }
 
   // SIC — vermelho coral característico

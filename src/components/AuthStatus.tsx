@@ -47,11 +47,11 @@ export function AuthStatus() {
   const initial = email[0]?.toUpperCase() ?? "?";
 
   return (
-    <div className="hidden items-center gap-1.5 sm:flex">
+    <div className="flex items-center gap-1.5">
       {isAdmin && (
         <Link
           href="/admin"
-          className={`rounded-lg border border-accent/40 bg-accent/10 px-2 py-1 text-xs font-semibold text-accent transition hover:bg-accent/20 ${
+          className={`hidden rounded-lg border border-accent/40 bg-accent/10 px-2 py-1 text-xs font-semibold text-accent transition hover:bg-accent/20 sm:inline-flex ${
             pathname.startsWith("/admin") ? "ring-1 ring-accent/60" : ""
           }`}
         >
@@ -68,7 +68,7 @@ export function AuthStatus() {
         <span className="grid h-6 w-6 place-items-center rounded-full bg-accent text-xs font-bold text-white">
           {initial}
         </span>
-        <span className="max-w-[7rem] truncate text-xs font-medium text-foreground">
+        <span className="hidden max-w-[7rem] truncate text-xs font-medium text-foreground sm:block">
           {email.split("@")[0]}
         </span>
       </Link>
