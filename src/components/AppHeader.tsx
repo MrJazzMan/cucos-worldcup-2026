@@ -48,7 +48,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 border-b border-border-base bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-accent to-blue-400 text-lg shadow-lg shadow-accent/30">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-accent to-amber-400 text-lg shadow-lg shadow-accent/30">
             ⚽
           </span>
           <div>

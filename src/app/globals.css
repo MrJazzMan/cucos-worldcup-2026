@@ -5,30 +5,30 @@
 /* ---- Tema claro (default) ---- */
 :root,
 [data-theme="light"] {
-  --background: #eef1f6;
-  --background-2: #e3e8f0;
+  --background: #faf6f0;
+  --background-2: #f0e9df;
   --surface: #ffffff;
-  --surface-2: #f1f3f7;
-  --border-base: #dde1e9;
-  --foreground: #15171c;
-  --muted: #5b626e;
-  --accent: #2563eb;
-  --accent-soft: rgba(37, 99, 235, 0.12);
-  --glow: rgba(37, 99, 235, 0.18);
+  --surface-2: #f5ede3;
+  --border-base: #e0d4c5;
+  --foreground: #1a1410;
+  --muted: #7a6a5a;
+  --accent: #ea580c;
+  --accent-soft: rgba(234, 88, 12, 0.12);
+  --glow: rgba(234, 88, 12, 0.18);
 }
 
 /* ---- Tema escuro ---- */
 [data-theme="dark"] {
-  --background: #08080b;
-  --background-2: #0e0f15;
-  --surface: #15161c;
-  --surface-2: #20222b;
-  --border-base: #2a2c36;
-  --foreground: #fafafa;
-  --muted: #9ca0ab;
-  --accent: #3b82f6;
-  --accent-soft: rgba(59, 130, 246, 0.16);
-  --glow: rgba(59, 130, 246, 0.22);
+  --background: #0e0b08;
+  --background-2: #14100d;
+  --surface: #1b1612;
+  --surface-2: #241f19;
+  --border-base: #332b22;
+  --foreground: #faf7f4;
+  --muted: #9c9289;
+  --accent: #f97316;
+  --accent-soft: rgba(249, 115, 22, 0.14);
+  --glow: rgba(249, 115, 22, 0.22);
 }
 
 @theme inline {

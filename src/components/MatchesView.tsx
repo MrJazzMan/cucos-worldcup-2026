@@ -80,7 +80,7 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
               onClick={() => setOffset(tab.offset)}
               className={`flex-1 rounded-xl py-3 text-center text-base font-semibold transition-all ${
                 active
-                  ? "bg-gradient-to-br from-accent to-blue-400 text-white shadow-md shadow-accent/30"
+                  ? "bg-gradient-to-br from-accent to-amber-400 text-white shadow-md shadow-accent/30"
                   : "text-muted hover:text-foreground"
               }`}
             >
