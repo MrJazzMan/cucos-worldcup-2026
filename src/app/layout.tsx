@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
+import { T } from "@/components/Display";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -56,6 +57,7 @@ export default function RootLayout({
           <footer className="mt-10 pb-8 text-center text-xs text-muted">
             <p><T k="footer.production" />: Miguel Garcia</p>
             <p className="mt-0.5">© 2026 Cuco Enterprise</p>
+            <p className="mt-2 text-muted/60">🐱 Dedicado ao Miiuuu</p>
           </footer>
           <ServiceWorkerRegister />
         </SettingsProvider>
