@@ -26,6 +26,9 @@ const pt: Dict = {
   "matches.liveRefresh": "Actualização automática",
   "matches.count": "jogos",
   "matches.countOne": "jogo",
+  "matches.myMatches": "Os meus jogos",
+  "matches.noFavMatches": "Sem jogos das tuas equipas hoje",
+  "matches.noFavMatchesHint": "Escolhe outro dia ou adiciona equipas favoritas em Conta.",
 
   "status.inHours": "Dentro de {n} horas",
   "status.inMinutes": "Dentro de {n} min",
@@ -112,6 +115,9 @@ const en: Dict = {
   "matches.liveRefresh": "Auto-updating",
   "matches.count": "matches",
   "matches.countOne": "match",
+  "matches.myMatches": "My matches",
+  "matches.noFavMatches": "No matches for your teams today",
+  "matches.noFavMatchesHint": "Pick another day or add favourite teams in Account.",
 
   "status.inHours": "In {n} hours",
   "status.inMinutes": "In {n} min",

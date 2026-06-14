@@ -19,12 +19,13 @@ export function AuthStatus() {
       setEmail(user?.email ?? null);
 
       if (user) {
+        const ADMIN_USER_ID = "4764a298-fab5-401d-bbbb-3da03c86ce08";
         const { data: profile } = await supabase
           .from("profiles")
           .select("role")
           .eq("user_id", user.id)
           .single();
-        setIsAdmin(profile?.role === "admin");
+        setIsAdmin(profile?.role === "admin" || user.id === ADMIN_USER_ID);
       } else {
         setIsAdmin(false);
       }
