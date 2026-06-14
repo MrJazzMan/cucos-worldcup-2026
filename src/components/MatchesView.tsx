@@ -148,7 +148,6 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
       {/* Cabeçalho do dia */}
       <div className="flex items-center justify-between gap-2 px-1">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="text-muted">📅</span>
           <span className="truncate text-sm font-medium text-foreground first-letter:capitalize">
             {new Intl.DateTimeFormat(locale, {
               timeZone: tz,
