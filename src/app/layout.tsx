@@ -60,14 +60,6 @@ export default function RootLayout({
             <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
             <p className="mt-1"><T k="footer.production" />: Miguel Garcia</p>
             <p className="mt-0.5">© 2026 Cuco Enterprise</p>
-            <a
-              href="https://paypal.me/miguelpittagarcia"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border-base bg-surface px-4 py-1.5 text-xs font-medium text-muted transition hover:border-accent/40 hover:text-accent"
-            >
-              ☕ Buy me a coffee
-            </a>
           </footer>
           <ServiceWorkerRegister />
           <Analytics />

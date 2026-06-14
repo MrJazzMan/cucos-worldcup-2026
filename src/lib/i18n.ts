@@ -98,6 +98,7 @@ const pt: Dict = {
   "settings.close": "Fechar",
 
   "footer.production": "Produção",
+  "coffee.cta": "Paga-me um café ☕ 1€",
 };
 
 const en: Dict = {
@@ -189,6 +190,7 @@ const en: Dict = {
   "settings.close": "Close",
 
   "footer.production": "Production",
+  "coffee.cta": "Buy me a coffee ☕ €1",
 };
 
 const DICTS: Record<Lang, Dict> = { pt, en };
