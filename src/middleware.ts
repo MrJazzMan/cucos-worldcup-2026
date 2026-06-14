@@ -1,6 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 
+// User-agents de scrapers / AI crawlers conhecidos
+const BLOCKED_UA_PATTERNS = [
+  /GPTBot/i,
+  /ChatGPT-User/i,
+  /Claude-Web/i,
+  /ClaudeBot/i,
+  /anthropic-ai/i,
+  /Google-Extended/i,
+  /CCBot/i,
+  /Diffbot/i,
+  /Bytespider/i,
+  /PetalBot/i,
+  /PerplexityBot/i,
+  /YouBot/i,
+  /cohere-ai/i,
+  /Amazonbot/i,
+  /DataForSeoBot/i,
+  /scrapy/i,
+  /python-requests/i,
+  /Go-http-client/i,
+  /curl\//i,
+  /wget\//i,
+];
+
+function isBlockedBot(ua: string | null): boolean {
+  if (!ua) return false;
+  return BLOCKED_UA_PATTERNS.some((p) => p.test(ua));
+}
+
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 function getRequestOrigin(request: NextRequest) {
@@ -38,12 +67,26 @@ function createSupabaseMiddleware(
   );
 }
 
+function addSecurityHeaders(res: NextResponse): NextResponse {
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  return res;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const origin = getRequestOrigin(request);
+  const ua = request.headers.get("user-agent");
+
+  // Bloquear scrapers e bots de IA conhecidos
+  if (isBlockedBot(ua)) {
+    return new NextResponse("Access denied", { status: 403 });
+  }
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return NextResponse.next({ request });
+    return addSecurityHeaders(NextResponse.next({ request }));
   }
 
   const code = searchParams.get("code");
@@ -96,7 +139,7 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
   const supabase = createSupabaseMiddleware(request, () => response);
   await supabase.auth.getUser();
-  return response;
+  return addSecurityHeaders(response);
 }
 
 export const config = {
