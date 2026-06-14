@@ -55,9 +55,9 @@ export default function RootLayout({
             {children}
           </main>
           <footer className="mt-10 pb-8 text-center text-xs text-muted">
-            <p><T k="footer.production" />: Miguel Garcia</p>
+            <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
+            <p className="mt-1"><T k="footer.production" />: Miguel Garcia</p>
             <p className="mt-0.5">© 2026 Cuco Enterprise</p>
-            <p className="mt-2 text-muted/60">🐱 Dedicado ao Miiuuu</p>
           </footer>
           <ServiceWorkerRegister />
         </SettingsProvider>
