@@ -4,6 +4,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { T } from "@/components/Display";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -60,6 +62,8 @@ export default function RootLayout({
             <p className="mt-0.5">© 2026 Cuco Enterprise</p>
           </footer>
           <ServiceWorkerRegister />
+          <Analytics />
+          <SpeedInsights />
         </SettingsProvider>
       </body>
     </html>
