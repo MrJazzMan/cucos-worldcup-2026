@@ -46,12 +46,15 @@ async function apiFetch<T>(
   path: string,
   options?: { revalidate?: number }
 ): Promise<T> {
+  const revalidate = options?.revalidate ?? 300;
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
       "x-apisports-key": getApiKey(),
     },
-    // Default: cache curto para reduzir chamadas em páginas de leitura.
-    next: { revalidate: options?.revalidate ?? 300 },
+    // Sync/cron: sem cache. Páginas de leitura: cache curto.
+    ...(revalidate === 0
+      ? { cache: "no-store" as const }
+      : { next: { revalidate } }),
   });
 
   if (!res.ok) {
@@ -184,6 +187,12 @@ export async function fetchFixturesByDate(date: string) {
     `/fixtures?league=1&season=2026&date=${encodeURIComponent(date)}&timezone=UTC`,
     { revalidate: 0 }
   );
+}
+
+export async function fetchFixturesByIds(ids: number[]) {
+  if (!ids.length) return [];
+  const chunk = ids.slice(0, 20).join("-");
+  return apiFetch<ApiFixture[]>(`/fixtures?ids=${chunk}`, { revalidate: 0 });
 }
 
 export async function fetchTeams() {

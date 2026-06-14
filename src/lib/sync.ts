@@ -1,6 +1,7 @@
 import {
   fetchAllFixtures,
   fetchFixturesByDate,
+  fetchFixturesByIds,
   fetchLiveFixtures,
   mapFixtureToMatch,
 } from "@/lib/api-football";
@@ -52,15 +53,20 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       const yesterday = new Date(today);
       yesterday.setUTCDate(today.getUTCDate() - 1);
 
-      const [live, dayNow, dayPrev] = await Promise.all([
+      const [live, dayNow, dayPrev, staleLiveRows] = await Promise.all([
         fetchLiveFixtures(),
         fetchFixturesByDate(today.toISOString().slice(0, 10)),
         fetchFixturesByDate(yesterday.toISOString().slice(0, 10)),
+        admin.from("matches").select("fixture_id").eq("status", "live"),
       ]);
 
-      // Em live-sync incluímos hoje/ontem para apanhar transições live -> finished.
+      const staleLiveIds = (staleLiveRows.data ?? []).map((m) => m.fixture_id);
+      const staleFixtures =
+        staleLiveIds.length > 0 ? await fetchFixturesByIds(staleLiveIds) : [];
+
+      // Live + hoje/ontem + jogos ainda marcados live na BD (apanha FT que saiu do feed).
       const dedup = new Map<number, (typeof live)[number]>();
-      [...live, ...dayNow, ...dayPrev].forEach((f) =>
+      [...live, ...dayNow, ...dayPrev, ...staleFixtures].forEach((f) =>
         dedup.set(f.fixture.id, f)
       );
       fixtures = [...dedup.values()];
