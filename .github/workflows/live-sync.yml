@@ -25,5 +25,6 @@ jobs:
           fi
           BASE="${SITE_URL:-https://wc26.pt}"
           curl -fsS \
+            -A "wc26-cron/1.0 (+https://wc26.pt)" \
             -H "Authorization: Bearer $CRON_SECRET" \
             "${BASE}/api/sync?mode=live"
