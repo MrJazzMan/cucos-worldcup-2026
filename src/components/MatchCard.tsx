@@ -5,7 +5,7 @@ import { TeamFlag } from "@/components/TeamFlag";
 import { KickoffTime, TeamName, teamLabel } from "@/components/Display";
 import { useSettings } from "@/components/SettingsProvider";
 import { getChannelHref } from "@/lib/channels";
-import { parseVenue, venueCountryLabel, venueStateLabel } from "@/lib/venues";
+import { parseVenue } from "@/lib/venues";
 import type { Match } from "@/types";
 
 interface MatchCardProps {
@@ -76,11 +76,8 @@ export function MatchCard({ match }: MatchCardProps) {
   const awayLabel = teamLabel(match.away_team_name, lang);
   const venue = parseVenue(match.venue);
   const stadium = venue.stadium?.trim() ?? null;
-  const countryLabel = venueCountryLabel(venue.city, lang);
-  const stateLabel = venueStateLabel(venue.city, lang);
-  const location = venue.city
-    ? [venue.city, stateLabel, countryLabel].filter(Boolean).join(", ")
-    : null;
+  const cityDisplay = venue.city ?? null;
+  const cityFlag = venue.countryFlag ?? null;
 
   useEffect(() => {
     if (match.status !== "upcoming") return;
@@ -110,10 +107,12 @@ export function MatchCard({ match }: MatchCardProps) {
 
   return (
     <article
-      className={`animate-rise rounded-2xl border bg-surface px-4 py-5 shadow-sm transition-all hover:shadow-md ${
-        match.isFavourite
-          ? "border-amber-500/60 ring-1 ring-amber-500/30"
-          : "border-border-base"
+      className={`animate-rise rounded-2xl border bg-surface transition-all ${
+        isLive
+          ? "border-red-500/50 px-4 py-6 shadow-lg shadow-red-500/15 ring-1 ring-red-500/20 hover:shadow-xl hover:shadow-red-500/20"
+          : match.isFavourite
+            ? "border-amber-500/60 px-4 py-5 shadow-sm ring-1 ring-amber-500/30 hover:shadow-md"
+            : "border-border-base px-4 py-5 shadow-sm hover:shadow-md"
       }`}
     >
       {/* Topo: estado + favorito */}
@@ -145,19 +144,20 @@ export function MatchCard({ match }: MatchCardProps) {
           </p>
         </div>
 
-        {/* Centro: vs + hora/resultado */}
-        <div className="flex w-24 shrink-0 flex-col items-center gap-1">
-          <span className="text-[10px] font-medium uppercase text-muted">vs</span>
+        {/* Centro: hora/resultado */}
+        <div className="flex w-28 shrink-0 flex-col items-center gap-1">
           {(isLive || isFinished) && match.home_score != null ? (
             <p
-              className={`text-3xl font-bold tabular-nums ${
+              className={`flex items-center gap-2 text-4xl font-bold tabular-nums ${
                 isLive ? "text-red-500" : "text-foreground"
               }`}
             >
-              {match.home_score}-{match.away_score}
+              <span>{match.home_score}</span>
+              <span className="text-2xl font-light opacity-50">–</span>
+              <span>{match.away_score}</span>
             </p>
           ) : (
-            <p className="text-3xl font-bold tabular-nums text-foreground">
+            <p className="text-4xl font-bold tabular-nums text-foreground">
               <KickoffTime utc={match.kickoff_utc} />
             </p>
           )}
@@ -177,24 +177,22 @@ export function MatchCard({ match }: MatchCardProps) {
         </div>
       </div>
 
-      {/* Estádio */}
-      {stadium && (
+      {/* Localização: cidade + bandeira */}
+      {cityDisplay && (
         <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted">
-          <span>🏟️</span>
-          <span>{stadium}</span>
+          <span>📍</span>
+          <span>
+            {cityDisplay}
+            {cityFlag && <span className="ml-1">{cityFlag}</span>}
+          </span>
         </p>
       )}
 
-      {/* Localização */}
-      {location && (
-        <p className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-muted">
-          <span>📍</span>
-          <span>
-            {location}
-            {venue.countryFlag && (
-              <span className="ml-1">{venue.countryFlag}</span>
-            )}
-          </span>
+      {/* Estádio */}
+      {stadium && (
+        <p className="mt-1 flex items-center justify-center gap-1.5 text-xs text-muted">
+          <span>🏟</span>
+          <span>{stadium}</span>
         </p>
       )}
 

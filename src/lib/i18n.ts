@@ -31,7 +31,7 @@ const pt: Dict = {
   "status.inMinutes": "Dentro de {n} min",
 
   "status.live": "Ao vivo",
-  "status.finished": "Terminado",
+  "status.finished": "Final",
   "status.upcoming": "Por começar",
 
   "card.channelTBC": "Canal a confirmar",
@@ -117,7 +117,7 @@ const en: Dict = {
   "status.inMinutes": "In {n} min",
 
   "status.live": "Live",
-  "status.finished": "Finished",
+  "status.finished": "FT",
   "status.upcoming": "Upcoming",
 
   "card.channelTBC": "Channel TBC",
