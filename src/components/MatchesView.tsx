@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MatchCard } from "@/components/MatchCard";
+import { CoffeeBanner } from "@/components/CoffeeBanner";
 import { useSettings } from "@/components/SettingsProvider";
 import { dateKeyInTz, dayKeyWithOffset } from "@/lib/datetime";
 import type { Match } from "@/types";
@@ -172,14 +173,7 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
       </div>
 
       {/* Banner café */}
-      <a
-        href="https://paypal.me/miguelpittagarcia/1"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-accent/20 border border-amber-500/30 py-2.5 text-sm font-semibold text-amber-600 dark:text-amber-400 transition hover:from-amber-500/30 hover:to-accent/30"
-      >
-        {t("coffee.cta")}
-      </a>
+      <CoffeeBanner />
 
       {/* Filtro de favoritos */}
       {hasFavourites && (
