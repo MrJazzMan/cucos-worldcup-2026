@@ -85,10 +85,21 @@ export default async function ContaPage({
     .eq("user_id", user.id)
     .single();
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, location, role")
+    .eq("user_id", user.id)
+    .single();
+
   return (
     <div className="space-y-6">
       <AccountPanel
         user={{ id: user.id, email: user.email }}
+        profile={{
+          display_name: profile?.display_name ?? null,
+          location: (profile as { location?: string } | null)?.location ?? null,
+          role: (profile as { role?: string } | null)?.role ?? "user",
+        }}
         favourites={favourites ?? []}
         prefs={prefs ?? { ...DEFAULT_PREFS, user_id: user.id }}
         teams={teams}

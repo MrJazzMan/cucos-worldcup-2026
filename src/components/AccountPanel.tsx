@@ -8,6 +8,7 @@ import type { NotificationPrefs, TeamOption } from "@/types";
 
 interface AccountPanelProps {
   user: { id: string; email?: string };
+  profile: { display_name: string | null; location: string | null; role: string };
   favourites: { team_id: number; team_name: string }[];
   prefs: NotificationPrefs;
   teams: TeamOption[];
@@ -23,6 +24,7 @@ const NOTIF_LABELS: { key: keyof NotificationPrefs; i18nKey: string }[] = [
 
 export function AccountPanel({
   user,
+  profile,
   favourites,
   prefs,
   teams,
@@ -35,6 +37,23 @@ export function AccountPanel({
   const [notifPrefs, setNotifPrefs] = useState(prefs);
   const [pushStatus, setPushStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const [displayName, setDisplayName] = useState(profile.display_name ?? "");
+  const [location, setLocation] = useState(profile.location ?? "");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+
+  async function saveProfile() {
+    setProfileSaving(true);
+    setProfileSaved(false);
+    await supabase
+      .from("profiles")
+      .update({ display_name: displayName || null, location: location || null })
+      .eq("user_id", user.id);
+    setProfileSaving(false);
+    setProfileSaved(true);
+    setTimeout(() => setProfileSaved(false), 2500);
+  }
 
   async function toggleTeam(teamId: number) {
     const next = new Set(selected);
@@ -128,12 +147,63 @@ export function AccountPanel({
         <p className="text-sm text-emerald-600 dark:text-emerald-400">
           ✓ {t("auth.loggedIn")} — {user.email}
         </p>
+        {profile.role === "admin" && (
+          <a
+            href="/admin"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent transition hover:bg-accent/20"
+          >
+            ⚙️ {t("account.adminLink")}
+          </a>
+        )}
         <button
           onClick={signOut}
-          className="mt-3 text-sm text-muted underline hover:text-foreground"
+          className="mt-3 block text-sm text-muted underline hover:text-foreground"
         >
           {t("account.signOut")}
         </button>
+      </section>
+
+      <section>
+        <h3 className="mb-3 text-lg font-semibold text-foreground">
+          {t("profile.title")}
+        </h3>
+        <div className="space-y-3">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              {t("profile.displayName")}
+            </label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder={user.email?.split("@")[0]}
+              className="w-full rounded-xl border border-border-base bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              {t("profile.location")}
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder={t("profile.locationPlaceholder")}
+              className="w-full rounded-xl border border-border-base bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+            />
+          </div>
+          <button
+            onClick={saveProfile}
+            disabled={profileSaving}
+            className="rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+          >
+            {profileSaved
+              ? `✓ ${t("profile.saved")}`
+              : profileSaving
+                ? t("profile.saving")
+                : t("profile.save")}
+          </button>
+        </div>
       </section>
 
       <section>
