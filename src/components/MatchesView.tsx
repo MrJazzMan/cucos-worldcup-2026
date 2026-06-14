@@ -96,7 +96,7 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
           <h2 className="truncate text-sm font-bold uppercase text-foreground">
             {offset === 0 ? t("day.today") : offset === -1 ? t("day.yesterday") : t("day.tomorrow")}
           </h2>
-          <span className="truncate text-sm capitalize text-muted">
+          <span className="truncate text-sm text-muted first-letter:capitalize">
             {displayDate(selectedKey, tz, locale)}
           </span>
         </div>
