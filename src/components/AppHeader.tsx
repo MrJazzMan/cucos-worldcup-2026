@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SettingsMenu } from "@/components/SettingsMenu";
 import { AuthStatus } from "@/components/AuthStatus";
 import { useT } from "@/components/SettingsProvider";
+import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 const links = [
   { href: "/", key: "nav.matches" },
@@ -16,10 +18,31 @@ const links = [
 export function AppHeader() {
   const pathname = usePathname();
   const t = useT();
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowser();
+
+    supabase.auth.getUser().then(({ data }) => {
+      setLoggedIn(!!data.user);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setLoggedIn(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   function isActive(href: string) {
     return href === "/" ? pathname === "/" : pathname.startsWith(href);
   }
+
+  const visibleLinks = links.filter(
+    (link) => !(loggedIn && link.href === "/conta")
+  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-base bg-background/80 backdrop-blur-xl">
@@ -37,7 +60,7 @@ export function AppHeader() {
         </Link>
         <div className="flex items-center gap-2">
           <nav className="hidden gap-1 sm:flex">
-            {links.map((link) => (
+            {visibleLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -56,7 +79,7 @@ export function AppHeader() {
         </div>
       </div>
       <nav className="flex gap-1 overflow-x-auto border-t border-border-base px-3 py-2 sm:hidden">
-        {links.map((link) => (
+        {visibleLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
