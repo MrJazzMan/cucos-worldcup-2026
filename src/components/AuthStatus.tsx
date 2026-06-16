@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSettingsMenu } from "@/components/SettingsMenuContext";
+import { isSiteAdmin } from "@/lib/admin";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 export function AuthStatus() {
@@ -22,14 +23,13 @@ export function AuthStatus() {
       setEmail(user?.email ?? null);
 
       if (user) {
-        const ADMIN_USER_ID = "4764a298-fab5-401d-bbbb-3da03c86ce08";
         const { data: profile } = await supabase
           .from("profiles")
-          .select("display_name, role")
+          .select("display_name")
           .eq("user_id", user.id)
           .single();
         setDisplayName(profile?.display_name ?? null);
-        setIsAdmin(profile?.role === "admin" || user.id === ADMIN_USER_ID);
+        setIsAdmin(isSiteAdmin(user.id));
       } else {
         setDisplayName(null);
         setIsAdmin(false);

@@ -11,7 +11,6 @@ const links = [
   { href: "/", key: "nav.matches" },
   { href: "/grupos", key: "nav.groups" },
   { href: "/eliminatorias", key: "nav.knockouts" },
-  { href: "/conta", key: "nav.account" },
 ];
 
 export function AppHeader() {
