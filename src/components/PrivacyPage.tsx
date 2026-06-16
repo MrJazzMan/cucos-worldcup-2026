@@ -6,7 +6,7 @@ import { PRIVACY } from "@/lib/privacy-content";
 
 export function PrivacyPage() {
   const { lang } = useSettings();
-  const content = PRIVACY[lang];
+  const content = PRIVACY[lang === "pt" ? "pt" : "en"];
 
   return (
     <article className="space-y-6">

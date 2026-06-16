@@ -266,7 +266,7 @@ export function SettingsMenu() {
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
               {t("settings.language")}
             </label>
-            <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {LANGS.map((l) => (
                 <button
                   key={l.value}

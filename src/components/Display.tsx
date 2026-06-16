@@ -2,6 +2,7 @@
 
 import { useSettings } from "@/components/SettingsProvider";
 import { timeInTz, tzShortName } from "@/lib/datetime";
+import { usesPortugueseTeams, type Lang } from "@/lib/i18n";
 import { ptTeam } from "@/lib/team-names";
 
 /** Texto traduzido pela chave i18n. */
@@ -14,12 +15,12 @@ export function T({ k }: { k: string }) {
 export function TeamName({ name }: { name: string | null | undefined }) {
   const { lang } = useSettings();
   if (!name) return null;
-  return <>{lang === "pt" ? ptTeam(name) : name}</>;
+  return <>{usesPortugueseTeams(lang) ? ptTeam(name) : name}</>;
 }
 
-export function teamLabel(name: string | null | undefined, lang: string): string {
+export function teamLabel(name: string | null | undefined, lang: Lang): string {
   if (!name) return "";
-  return lang === "pt" ? ptTeam(name) : name;
+  return usesPortugueseTeams(lang) ? ptTeam(name) : name;
 }
 
 /** Hora do jogo no fuso escolhido. */

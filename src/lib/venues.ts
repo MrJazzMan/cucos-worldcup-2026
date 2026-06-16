@@ -1,5 +1,8 @@
 // Cidade / estádio dos jogos do Mundial 2026 (EUA, Canadá, México).
 
+import type { Lang } from "@/lib/i18n";
+import { usesPortugueseTeams } from "@/lib/i18n";
+
 const HOST_COUNTRY: Record<string, { flag: string; labelPt: string; labelEn: string }> = {
   USA: { flag: "🇺🇸", labelPt: "EUA", labelEn: "USA" },
   Canada: { flag: "🇨🇦", labelPt: "Canadá", labelEn: "Canada" },
@@ -65,23 +68,23 @@ export function parseVenue(venue: string | null | undefined): VenueDisplay {
 
 export function venueCountryLabel(
   city: string | null,
-  lang: "pt" | "en"
+  lang: Lang
 ): string | null {
   if (!city) return null;
   const hostMeta = CITY_HOST[city];
   if (!hostMeta) return null;
   const host = HOST_COUNTRY[hostMeta.country];
-  return lang === "pt" ? host.labelPt : host.labelEn;
+  return usesPortugueseTeams(lang) ? host.labelPt : host.labelEn;
 }
 
 export function venueStateLabel(
   city: string | null,
-  lang: "pt" | "en"
+  lang: Lang
 ): string | null {
   if (!city) return null;
   const hostMeta = CITY_HOST[city];
   if (!hostMeta) return null;
-  return lang === "pt" ? hostMeta.statePt : hostMeta.stateEn;
+  return usesPortugueseTeams(lang) ? hostMeta.statePt : hostMeta.stateEn;
 }
 
 export function formatVenueField(

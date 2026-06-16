@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { browserTimeZone } from "@/lib/datetime";
-import { localeFor, translate, type Lang } from "@/lib/i18n";
+import { localeFor, translate, detectLangFromBrowser, type Lang } from "@/lib/i18n";
 
 export type ThemeChoice = "system" | "light" | "dark";
 export type TzPref = "auto" | string;
@@ -50,8 +50,7 @@ function applyTheme(choice: ThemeChoice) {
 }
 
 function detectLang(): Lang {
-  if (typeof navigator === "undefined") return "pt";
-  return navigator.language?.toLowerCase().startsWith("pt") ? "pt" : "en";
+  return detectLangFromBrowser();
 }
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
@@ -83,7 +82,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
     localStorage.setItem(LS.lang, l);
-    document.documentElement.lang = l === "pt" ? "pt-PT" : "en";
+    document.documentElement.lang = localeFor(l);
   }, []);
 
   const setTheme = useCallback((t: ThemeChoice) => {

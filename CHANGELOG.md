@@ -4,6 +4,19 @@ Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changel
 
 ---
 
+## [2026-06-16] — Novas línguas (9 idiomas)
+
+### Adicionado
+- Suporte a **9 idiomas**: PT, PT-BR, EN, ES, FR, DE, IT, NL, PL.
+- Módulo `src/lib/i18n/` com ficheiros de tradução por língua.
+- Detecção automática do idioma do browser.
+
+### Alterado
+- Selector de idioma no painel lateral (grelha 2×3).
+- Nomes de equipas em português para PT e PT-BR.
+
+---
+
 ## [2026-06-16] — Política de privacidade e guia Analytics/AdSense
 
 ### Adicionado
