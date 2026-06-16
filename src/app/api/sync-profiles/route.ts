@@ -81,7 +81,10 @@ export async function POST(request: Request) {
 
     const client = new pg.Client({
       connectionString: dbUrl,
-      ssl: { rejectUnauthorized: false },
+      ssl: {
+        rejectUnauthorized: false,
+        checkServerIdentity: () => undefined,
+      },
     });
 
     try {
