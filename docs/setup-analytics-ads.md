@@ -28,47 +28,38 @@ Ou no dashboard: [vercel.com](https://vercel.com) → Projecto → Settings → 
 
 ---
 
-## Parte 2 — Google AdSense (pode demorar dias)
+## Parte 2 — Google AdSense
 
-### Pré-requisitos (já feitos no código)
-- [x] Política de privacidade em `https://wc26.pt/privacidade`
-- [x] Banner de cookies
-- [x] `https://wc26.pt/ads.txt` (automático quando configurado)
+### Estado actual (0.2.0)
 
-### Candidatura
+- [x] Site **wc26.pt verificado** no AdSense
+- [x] **Auto ads** activos (Ads → By site)
+- [x] Script no `<head>` — `src/app/layout.tsx` (tag literal, não `next/script`)
+- [x] `https://wc26.pt/ads.txt` → `google.com, pub-0320022425990569, DIRECT, …`
+- [x] Variável Vercel: `NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-0320022425990569`
 
-1. Abre [adsense.google.com](https://adsense.google.com).
-2. **Sites** → **Adicionar site** → `wc26.pt`.
-3. Cola o código no site — **já está integrado**; só precisas das variáveis.
-4. Aguarda aprovação (1–14 dias). O Google revê conteúdo, privacidade e tráfego.
+### Verificação do site (se precisares de repetir)
 
-### Após aprovação
+**Método A — AdSense code snippet** (recomendado)
 
-1. **Anúncios** → **Por unidade de anúncio** → **Anúncios display** → Responsivo.
-2. Nome: `Homepage banner` → Criar.
-3. Copia:
-   - **ID do editor** (`ca-pub-XXXXXXXXXXXXXXXX`)
-   - **ID do slot** (número, ex. `1234567890`)
+O código já está no site. No painel AdSense: ☑ I've placed the code → **Verify**.
 
-### Adicionar na Vercel
+**Método B — Ads.txt snippet**
 
-```bash
-vercel env add NEXT_PUBLIC_ADSENSE_CLIENT_ID production
-# ca-pub-XXXXXXXXXXXXXXXX
+Usar `https://wc26.pt/ads.txt` como alternativa.
 
-vercel env add NEXT_PUBLIC_ADSENSE_SLOT_HOME production
-# 1234567890
+> O crawler AdSense **não aceita cookies**. O script tem de aparecer como `<script async src="…adsbygoogle.js?client=ca-pub-…">` no HTML inicial — não basta preload.
 
-# Repetir para preview se quiseres testar em PRs
-```
+### Candidatura / revisão
 
-### Redeploy
+1. [adsense.google.com](https://adsense.google.com) → Sites → `wc26.pt`
+2. Após verificação: **Request review** (1–14 dias)
+3. Com **Auto ads ON**, não é obrigatório `NEXT_PUBLIC_ADSENSE_SLOT_HOME` — útil só para unidades manuais na homepage
 
-```bash
-vercel --prod
-```
+### Unidade manual (opcional)
 
-Ou: push para `main` (deploy automático) **depois** de guardar as variáveis.
+1. **Anúncios** → **Por unidade de anúncio** → Display responsivo
+2. Copiar **slot ID** → `NEXT_PUBLIC_ADSENSE_SLOT_HOME` na Vercel
 
 ---
 

@@ -1,6 +1,6 @@
 # Cucos World Cup 2026
 
-Aplicação web responsiva para adeptos portugueses seguirem o Mundial FIFA 2026.
+**v0.2.0** — Aplicação web responsiva para adeptos portugueses seguirem o Mundial FIFA 2026.
 
 Responde rapidamente a:
 - Que jogos há hoje?
@@ -34,12 +34,9 @@ Ver [.env.example](.env.example).
 Documentação completa em [`docs/`](docs/) (GitHub only — excluída do deploy Vercel).
 
 - [docs/README.md](docs/README.md) — índice
-- [docs/historico-e-setup.md](docs/historico-e-setup.md) — tudo o que fizemos
-- [docs/operacoes.md](docs/operacoes.md) — sync, admin, troubleshooting
-- [ARCHITECTURE.md](ARCHITECTURE.md)
-- [docs/data-sources.md](docs/data-sources.md)
-- [docs/deploy.md](docs/deploy.md)
-- [docs/notifications.md](docs/notifications.md)
+- [CHANGELOG.md](CHANGELOG.md) — releases
+- [docs/seo.md](docs/seo.md) — checklist SEO
+- [docs/setup-analytics-ads.md](docs/setup-analytics-ads.md) — GA4 + AdSense
 
 ## Licença
 

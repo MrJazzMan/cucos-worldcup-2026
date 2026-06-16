@@ -2,103 +2,71 @@
 
 Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changelog](https://keepachangelog.com/).
 
+Versão actual em produção: **0.2.0** (`wc26.pt`).
+
 ---
 
-## [2026-06-16] — Perfil com email/local, idioma EN default, selector no header
+## [0.2.0] — 2026-06-16 — Site público, monetização e internacionalização
+
+**Marco:** site indexável no Google, AdSense verificado, canais TV só para utilizadores registados.
 
 ### Adicionado
-- **12 idiomas** incluindo árabe 🇶🇦 🇦🇪 🇸🇦 (Qatar, Emirados, Arábia Saudita) com suporte RTL.
-- **LangSwitcher** no header (bandeiras) antes do menu ☰.
-- **ProfileSync** — grava email, idioma preferido e local aproximado (IP) no login Google.
-- Migration `004_profile_email_location.sql` — colunas `email`, `signup_country`, `preferred_lang`.
+- **12 idiomas** (EN default): PT, BR, ES, FR, DE, IT, NL, PL + árabe 🇶🇦 🇦🇪 🇸🇦 com RTL.
+- **LangSwitcher** no header (bandeiras).
+- **3 temas visuais:** Cyberpunk, FIFA 2026, Japan Classic (`src/lib/themes.ts`).
+- **ProfileSync** — email, idioma preferido e local (IP) no login Google.
+- Migration `004_profile_email_location.sql` — `email`, `signup_country`, `preferred_lang`.
+- Endpoint `/api/sync-profiles` — migration + backfill de emails.
+- **GA4** (`G-BEVP34KWFW`) com Consent Mode RGPD.
+- **AdSense** verificado — script literal no `<head>`, `/ads.txt`, Auto ads ON.
+- Página `/privacidade` (PT/EN).
+- Guia `docs/setup-analytics-ads.md` e checklist `docs/seo.md`.
 
 ### Alterado
-- Idioma **default: English** (antes PT).
-- Selector de idioma removido do painel Perfil (agora só no header).
+- **Jogos públicos** (equipas, horários, resultados, estádio) — SEO.
+- **Canais TV só com login** — dados removidos do HTML para visitantes anónimos.
+- Modal de login obrigatório **removido** (substituído por CTA nos cartões de jogo).
+- Eliminatorias ocultas até `NEXT_PUBLIC_SHOW_KNOCKOUTS=true`.
+- Integração **Supabase ↔ Vercel** (env vars Postgres sincronizadas).
 
-### Nota
-- Correr `004_profile_email_location.sql` no Supabase SQL Editor.
-- O Google **não envia GPS** — o local é detectado por IP na primeira sessão.
+### Corrigido
+- Script AdSense: tag `<script async>` no HTML inicial (crawler não via `next/script` preload).
+- Import `ProfileSync` em `layout.tsx`.
+
+### Variáveis Vercel (produção)
+| Variável | Estado |
+|----------|--------|
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | ✅ `G-BEVP34KWFW` |
+| `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | ✅ `ca-pub-0320022425990569` |
+| `NEXT_PUBLIC_ADSENSE_SLOT_HOME` | ⏳ opcional (Auto ads activos) |
 
 ---
 
-## [2026-06-16] — Ocultar eliminatórias (até haver jogos)
-
-### Alterado
-- Link «Eliminatórias» removido da navegação por defeito.
-- `/eliminatorias` redireciona para `/` até activar `NEXT_PUBLIC_SHOW_KNOCKOUTS=true`.
-
----
-
-## [2026-06-16] — Novas línguas (9 idiomas)
+## [0.1.0] — 2026-06-13 — MVP com login e painel de definições
 
 ### Adicionado
-- Suporte a **9 idiomas**: PT, PT-BR, EN, ES, FR, DE, IT, NL, PL.
-- Módulo `src/lib/i18n/` com ficheiros de tradução por língua.
-- Detecção automática do idioma do browser.
+- App Next.js 15 + Supabase (jogos API-Football, canais curados).
+- Login Google OAuth com modal obrigatório (depois revertido em 0.2.0).
+- Painel lateral ☰: Perfil, Notificações, Equipas favoritas, Aparência.
+- Admin canais em `/admin`.
+- Deploy Vercel + domínio `wc26.pt`.
+- `CHANGELOG.md`, `ARCHITECTURE.md`, documentação em `docs/`.
 
 ### Alterado
-- Selector de idioma no painel lateral (grelha 2×3).
-- Nomes de equipas em português para PT e PT-BR.
+- `/conta` redireciona para `/`; definições no painel lateral.
+- Avatar no header abre o painel de definições.
 
 ---
 
-## [2026-06-16] — Política de privacidade e guia Analytics/AdSense
+## Histórico detalhado (0.1.0 → 0.2.0)
 
-### Adicionado
-- Página `/privacidade` (PT/EN) com política RGPD para AdSense.
-- Link de privacidade no rodapé e no banner de cookies.
-- Guia `docs/setup-analytics-ads.md` com passos Vercel + Google.
+<details>
+<summary>Commits por área (Jun 2026)</summary>
 
-### Alterado
-- `/privacidade` acessível sem login (requisito AdSense/Google).
+- **Auth & perfil:** login modal → público; ProfileSync; migration 004; sync-profiles API.
+- **UI:** settings panel; temas Cyberpunk/FIFA/Japan; lang switcher header.
+- **i18n:** 9 → 12 línguas; EN default; árabe RTL.
+- **Analytics:** GA4, cookie consent, AdSense, ads.txt, verificação site.
+- **SEO:** jogos no SSR sem canais; robots.txt; sitemap.
 
----
-
-## [2026-06-16] — Google Analytics e AdSense
-
-### Adicionado
-- Integração **Google Analytics 4** (`NEXT_PUBLIC_GA_MEASUREMENT_ID`) com Consent Mode.
-- Integração **Google AdSense** (`NEXT_PUBLIC_ADSENSE_CLIENT_ID`, `NEXT_PUBLIC_ADSENSE_SLOT_HOME`).
-- Banner de consentimento de cookies (RGPD — PT/UE).
-- Rota dinâmica `/ads.txt` para verificação AdSense.
-- `.env.example` com variáveis de analytics e publicidade.
-
-### Alterado
-- Anúncio discreto na homepage (abaixo do banner café), só após aceitar cookies.
-
----
-
-## [2026-06-16] — Painel de definições unificado
-
-### Adicionado
-- `CHANGELOG.md` para registo de releases.
-- Painel lateral com navegação por secções: Perfil, Notificações, Equipas favoritas e Aparência.
-- `src/lib/admin.ts` — admin hardcoded apenas para o utilizador `4764a298-fab5-401d-bbbb-3da03c86ce08`.
-- Componentes `SettingsFavourites` e `SettingsNotifications` no painel de definições.
-- `src/lib/teams-client.ts` — carregamento de equipas no cliente.
-
-### Alterado
-- Perfil (nome, localização, fuso horário, idioma) movido para o painel direito.
-- Notificações e equipas favoritas integradas no painel; página Conta deixou de ser necessária.
-- «Terminar sessão» fixado no rodapé do painel lateral.
-- Avatar no header abre o painel de definições em vez de ir para `/conta`.
-- Link «Conta» removido da navegação principal.
-
-### Removido
-- `AccountPanel.tsx` — lógica migrada para o painel lateral.
-- Entrada `/conta` no sitemap (`/conta` redireciona para `/`).
-
----
-
-## [2026-06-16] — Login obrigatório com modal
-
-### Adicionado
-- Modal de login obrigatório (`LoginGate`) ao visitar o site sem sessão.
-- Traduções PT/EN para o modal de autenticação.
-
-### Alterado
-- Fluxo OAuth preserva a página de destino após login.
-- Erros de autenticação mostrados no modal em vez de redirecionar para `/conta`.
-
----
+</details>
