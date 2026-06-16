@@ -12,7 +12,8 @@ import {
 
 export async function getMatchesForDay(
   offset: DayOffset,
-  favouriteTeamIds: number[] = []
+  favouriteTeamIds: number[] = [],
+  includeChannels = false
 ): Promise<(Match & { isFavourite?: boolean })[]> {
   const date = getDateForOffset(offset);
   const supabase = await createSupabaseServer();
@@ -29,19 +30,22 @@ export async function getMatchesForDay(
 
   const wcMatches = matches.filter(isWorldCupMatch);
 
-  const fixtureIds = wcMatches.map((m) => m.fixture_id);
-  const { data: broadcasts } = await supabase
-    .from("broadcasts")
-    .select("fixture_id, channels")
-    .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
+  let broadcastMap = new Map<number, string[]>();
+  if (includeChannels) {
+    const fixtureIds = wcMatches.map((m) => m.fixture_id);
+    const { data: broadcasts } = await supabase
+      .from("broadcasts")
+      .select("fixture_id, channels")
+      .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
 
-  const broadcastMap = new Map(
-    (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
-  );
+    broadcastMap = new Map(
+      (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+    );
+  }
 
   return wcMatches.map((m) => ({
     ...m,
-    channels: broadcastMap.get(m.fixture_id) ?? [],
+    channels: includeChannels ? (broadcastMap.get(m.fixture_id) ?? []) : [],
     isFavourite:
       favouriteTeamIds.includes(m.home_team_id) ||
       favouriteTeamIds.includes(m.away_team_id),
@@ -49,7 +53,8 @@ export async function getMatchesForDay(
 }
 
 export async function getAllMatches(
-  favouriteTeamIds: number[] = []
+  favouriteTeamIds: number[] = [],
+  includeChannels = false
 ): Promise<(Match & { isFavourite?: boolean })[]> {
   const supabase = await createSupabaseServer();
   if (!supabase) return [];
@@ -63,17 +68,20 @@ export async function getAllMatches(
 
   const wcMatches = matches.filter(isWorldCupMatch);
 
-  const { data: broadcasts } = await supabase
-    .from("broadcasts")
-    .select("fixture_id, channels");
+  let broadcastMap = new Map<number, string[]>();
+  if (includeChannels) {
+    const { data: broadcasts } = await supabase
+      .from("broadcasts")
+      .select("fixture_id, channels");
 
-  const broadcastMap = new Map(
-    (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
-  );
+    broadcastMap = new Map(
+      (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+    );
+  }
 
   return wcMatches.map((m) => ({
     ...m,
-    channels: broadcastMap.get(m.fixture_id) ?? [],
+    channels: includeChannels ? (broadcastMap.get(m.fixture_id) ?? []) : [],
     isFavourite:
       favouriteTeamIds.includes(m.home_team_id) ||
       favouriteTeamIds.includes(m.away_team_id),

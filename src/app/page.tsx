@@ -4,28 +4,36 @@ import {
   getUserFavouriteTeamIds,
 } from "@/lib/matches";
 import { getMockMatchesForDate } from "@/lib/mock-data";
+import { createSupabaseServer } from "@/lib/supabase/server";
 import { getDateForOffset } from "@/lib/timezone";
 import type { Match } from "@/types";
 
-async function loadAllMatches(favouriteIds: number[]) {
+async function loadAllMatches(
+  favouriteIds: number[],
+  includeChannels: boolean
+) {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return mockWindow(favouriteIds);
+    return mockWindow(favouriteIds, includeChannels);
   }
 
   try {
-    const matches = await getAllMatches(favouriteIds);
+    const matches = await getAllMatches(favouriteIds, includeChannels);
     if (matches.length > 0) return matches;
-    return mockWindow(favouriteIds);
+    return mockWindow(favouriteIds, includeChannels);
   } catch {
-    return mockWindow(favouriteIds);
+    return mockWindow(favouriteIds, includeChannels);
   }
 }
 
-function mockWindow(favouriteIds: number[]): (Match & { isFavourite?: boolean })[] {
+function mockWindow(
+  favouriteIds: number[],
+  includeChannels: boolean
+): (Match & { isFavourite?: boolean })[] {
   const days = [-1, 0, 1] as const;
   const all = days.flatMap((d) => getMockMatchesForDate(getDateForOffset(d)));
   return all.map((m) => ({
     ...m,
+    channels: includeChannels ? m.channels : [],
     isFavourite:
       favouriteIds.includes(m.home_team_id) ||
       favouriteIds.includes(m.away_team_id),
@@ -33,10 +41,21 @@ function mockWindow(favouriteIds: number[]): (Match & { isFavourite?: boolean })
 }
 
 export default async function HomePage() {
-  const favouriteIds = await getUserFavouriteTeamIds().catch(() => [] as number[]);
-  const matches = await loadAllMatches(favouriteIds);
+  const supabase = await createSupabaseServer();
+  let loggedIn = false;
+  if (supabase) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    loggedIn = !!user;
+  }
 
-  return <MatchesView matches={matches} />;
+  const favouriteIds = loggedIn
+    ? await getUserFavouriteTeamIds().catch(() => [] as number[])
+    : [];
+  const matches = await loadAllMatches(favouriteIds, loggedIn);
+
+  return <MatchesView matches={matches} canViewChannels={loggedIn} />;
 }
 
 export const revalidate = 60;

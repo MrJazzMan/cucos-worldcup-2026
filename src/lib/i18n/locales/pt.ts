@@ -24,6 +24,7 @@ export const pt: Dict = {
   "status.finished": "Final",
   "status.upcoming": "Por começar",
   "card.channelTBC": "Canal a confirmar",
+  "card.channelsSignIn": "Inicia sessão com Google para ver os canais de TV",
   "card.flag": "Bandeira",
   "groups.title": "Grupos",
   "groups.subtitle": "Classificações do Mundial 2026",
@@ -69,7 +70,7 @@ export const pt: Dict = {
   "account.pushEnabled": "Notificações activadas!",
   "auth.modal.title": "Bem-vindo ao WC26",
   "auth.modal.subtitle":
-    "Inicia sessão com Google para ver jogos, horários e canais de TV.",
+    "Inicia sessão com Google para canais de TV, favoritos e notificações.",
   "auth.google": "Continuar com Google",
   "auth.apple": "Continuar com Apple",
   "auth.error.failed": "Falha ao iniciar sessão. Tenta outra vez.",

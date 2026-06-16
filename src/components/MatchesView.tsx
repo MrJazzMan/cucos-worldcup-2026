@@ -41,7 +41,13 @@ function dayLabel(
   return `${weekday.replace(".", "")} ${dayMonth}`;
 }
 
-export function MatchesView({ matches }: { matches: DayMatch[] }) {
+export function MatchesView({
+  matches,
+  canViewChannels = false,
+}: {
+  matches: DayMatch[];
+  canViewChannels?: boolean;
+}) {
   const router = useRouter();
   const { t, tz, locale, mounted } = useSettings();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -213,7 +219,11 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
       ) : (
         <div className="space-y-3">
           {visibleMatches.map((match) => (
-            <MatchCard key={match.fixture_id} match={match} />
+            <MatchCard
+              key={match.fixture_id}
+              match={match}
+              canViewChannels={canViewChannels}
+            />
           ))}
         </div>
       )}

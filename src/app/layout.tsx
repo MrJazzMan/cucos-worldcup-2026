@@ -5,12 +5,10 @@ import { ConsentProvider } from "@/components/ConsentProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { AdSenseScript } from "@/components/AdSenseScript";
-import { LoginGate } from "@/components/LoginGate";
 import { ProfileSync } from "@/components/ProfileSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { T } from "@/components/Display";
-import { createSupabaseServer } from "@/lib/supabase/server";
 import { THEME_INIT_SCRIPT } from "@/lib/themes";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -44,20 +42,11 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let initialLoggedIn = false;
-  const supabase = await createSupabaseServer();
-  if (supabase) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    initialLoggedIn = !!user;
-  }
-
   return (
     <html lang="en" dir="ltr" data-theme="dark" suppressHydrationWarning>
       <head>
@@ -69,7 +58,6 @@ export default async function RootLayout({
       >
         <SettingsProvider>
           <ConsentProvider>
-            <LoginGate initialLoggedIn={initialLoggedIn} />
             <ProfileSync />
             <AppHeader />
             <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">

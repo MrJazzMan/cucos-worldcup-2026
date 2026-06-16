@@ -24,6 +24,7 @@ export const en: Dict = {
   "status.finished": "FT",
   "status.upcoming": "Upcoming",
   "card.channelTBC": "Channel TBC",
+  "card.channelsSignIn": "Sign in with Google to see TV channels",
   "card.flag": "Flag",
   "groups.title": "Groups",
   "groups.subtitle": "2026 World Cup standings",
@@ -69,7 +70,7 @@ export const en: Dict = {
   "account.pushEnabled": "Notifications enabled!",
   "auth.modal.title": "Welcome to WC26",
   "auth.modal.subtitle":
-    "Sign in with Google to see matches, kick-off times and TV channels.",
+    "Sign in with Google for TV channels, favourites and notifications.",
   "auth.google": "Continue with Google",
   "auth.apple": "Continue with Apple",
   "auth.error.failed": "Sign-in failed. Please try again.",

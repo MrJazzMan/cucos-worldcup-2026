@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChannelLoginCta } from "@/components/ChannelLoginCta";
 import { TeamFlag } from "@/components/TeamFlag";
 import { KickoffTime, TeamName, teamLabel } from "@/components/Display";
 import { useSettings } from "@/components/SettingsProvider";
@@ -10,6 +11,7 @@ import type { Match } from "@/types";
 
 interface MatchCardProps {
   match: Match & { isFavourite?: boolean };
+  canViewChannels?: boolean;
 }
 
 function countdownLabel(
@@ -89,7 +91,7 @@ function channelBadgeClass(channel: string) {
   return `${BASE_BADGE} bg-surface-2 text-foreground border border-border-base`;
 }
 
-export function MatchCard({ match }: MatchCardProps) {
+export function MatchCard({ match, canViewChannels = false }: MatchCardProps) {
   const { t, lang } = useSettings();
   const [now, setNow] = useState(() => Date.now());
 
@@ -215,32 +217,36 @@ export function MatchCard({ match }: MatchCardProps) {
         </p>
       )}
 
-      {/* Canais */}
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
-        {match.channels && match.channels.length > 0 ? (
-          match.channels.map((channel) => {
-            const href = getChannelHref(channel);
-            const cls = channelBadgeClass(channel);
-            return href ? (
-              <a
-                key={channel}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${cls} transition hover:brightness-110`}
-              >
-                {channel}
-              </a>
-            ) : (
-              <span key={channel} className={cls}>
-                {channel}
-              </span>
-            );
-          })
-        ) : (
-          <span className="text-xs text-muted">{t("card.channelTBC")}</span>
-        )}
-      </div>
+      {/* Canais — só para utilizadores com sessão */}
+      {canViewChannels ? (
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+          {match.channels && match.channels.length > 0 ? (
+            match.channels.map((channel) => {
+              const href = getChannelHref(channel);
+              const cls = channelBadgeClass(channel);
+              return href ? (
+                <a
+                  key={channel}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${cls} transition hover:brightness-110`}
+                >
+                  {channel}
+                </a>
+              ) : (
+                <span key={channel} className={cls}>
+                  {channel}
+                </span>
+              );
+            })
+          ) : (
+            <span className="text-xs text-muted">{t("card.channelTBC")}</span>
+          )}
+        </div>
+      ) : (
+        <ChannelLoginCta />
+      )}
 
       {match.group_name && (
         <p className="mt-2 text-center text-[10px] uppercase tracking-wide text-muted">
