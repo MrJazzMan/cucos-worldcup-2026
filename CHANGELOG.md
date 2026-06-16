@@ -4,6 +4,24 @@ Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changel
 
 ---
 
+## [2026-06-16] — Perfil com email/local, idioma EN default, selector no header
+
+### Adicionado
+- **12 idiomas** incluindo árabe 🇶🇦 🇦🇪 🇸🇦 (Qatar, Emirados, Arábia Saudita) com suporte RTL.
+- **LangSwitcher** no header (bandeiras) antes do menu ☰.
+- **ProfileSync** — grava email, idioma preferido e local aproximado (IP) no login Google.
+- Migration `004_profile_email_location.sql` — colunas `email`, `signup_country`, `preferred_lang`.
+
+### Alterado
+- Idioma **default: English** (antes PT).
+- Selector de idioma removido do painel Perfil (agora só no header).
+
+### Nota
+- Correr `004_profile_email_location.sql` no Supabase SQL Editor.
+- O Google **não envia GPS** — o local é detectado por IP na primeira sessão.
+
+---
+
 ## [2026-06-16] — Ocultar eliminatórias (até haver jogos)
 
 ### Alterado

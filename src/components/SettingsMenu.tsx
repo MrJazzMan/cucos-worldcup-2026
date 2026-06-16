@@ -12,7 +12,6 @@ import { useSettingsMenu } from "@/components/SettingsMenuContext";
 import { isSiteAdmin } from "@/lib/admin";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { COMMON_TIMEZONES } from "@/lib/datetime";
-import { LANGS } from "@/lib/i18n";
 
 type PanelView = "home" | "profile" | "notifications" | "favourites" | "appearance";
 
@@ -37,7 +36,7 @@ const VIEW_TITLE: Record<Exclude<PanelView, "home">, string> = {
 };
 
 export function SettingsMenu() {
-  const { t, lang, setLang, theme, setTheme, tzPref, setTzPref } = useSettings();
+  const { t, theme, setTheme, tzPref, setTzPref } = useSettings();
   const { open, setOpen } = useSettingsMenu();
   const router = useRouter();
   const pathname = usePathname();
@@ -261,28 +260,6 @@ export function SettingsMenu() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
-              {t("settings.language")}
-            </label>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {LANGS.map((l) => (
-                <button
-                  key={l.value}
-                  onClick={() => setLang(l.value)}
-                  className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    lang === l.value
-                      ? "bg-accent text-white"
-                      : "bg-surface-2 text-muted hover:text-foreground"
-                  }`}
-                  type="button"
-                >
-                  <span className="mr-1">{l.flag}</span>
-                  {l.label}
-                </button>
-              ))}
-            </div>
           </div>
           <button
             onClick={saveProfile}

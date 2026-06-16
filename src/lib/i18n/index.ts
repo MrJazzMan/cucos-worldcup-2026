@@ -1,3 +1,4 @@
+import { ar } from "./locales/ar";
 import { br } from "./locales/br";
 import { de } from "./locales/de";
 import { en } from "./locales/en";
@@ -7,10 +8,10 @@ import { it } from "./locales/it";
 import { nl } from "./locales/nl";
 import { pl } from "./locales/pl";
 import { pt } from "./locales/pt";
-import { LANGS, LOCALES, type Dict, type Lang } from "./types";
+import { LANGS, LOCALES, isRtlLang, type Dict, type Lang } from "./types";
 
 export type { Dict, Lang };
-export { LANGS, LOCALES };
+export { LANGS, LOCALES, isRtlLang };
 
 const dictionaries: Record<Lang, Dict> = {
   pt,
@@ -22,6 +23,9 @@ const dictionaries: Record<Lang, Dict> = {
   it,
   nl,
   pl,
+  qa: ar,
+  ae: ar,
+  sa: ar,
 };
 
 export function translate(lang: Lang, key: string): string {
@@ -33,8 +37,12 @@ export function localeFor(lang: Lang): string {
 }
 
 export function detectLangFromBrowser(): Lang {
-  if (typeof navigator === "undefined") return "pt";
+  if (typeof navigator === "undefined") return "en";
   const l = navigator.language?.toLowerCase() ?? "";
+  if (l.startsWith("ar-qa") || l === "ar_qa") return "qa";
+  if (l.startsWith("ar-ae") || l.startsWith("ar-uae")) return "ae";
+  if (l.startsWith("ar-sa")) return "sa";
+  if (l.startsWith("ar")) return "sa";
   if (l.startsWith("pt-br") || l === "pt_br") return "br";
   if (l.startsWith("pt")) return "pt";
   if (l.startsWith("es")) return "es";
@@ -44,7 +52,7 @@ export function detectLangFromBrowser(): Lang {
   if (l.startsWith("nl")) return "nl";
   if (l.startsWith("it")) return "it";
   if (l.startsWith("en")) return "en";
-  return "pt";
+  return "en";
 }
 
 export function usesPortugueseTeams(lang: Lang): boolean {

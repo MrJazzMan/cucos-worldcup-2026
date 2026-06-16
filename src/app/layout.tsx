@@ -6,6 +6,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { AdSenseScript } from "@/components/AdSenseScript";
 import { LoginGate } from "@/components/LoginGate";
+import { ProfileSync } from "@/components/ProfileSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { T } from "@/components/Display";
@@ -59,7 +60,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="pt-PT" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" dir="ltr" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <GoogleAnalytics />
@@ -70,6 +71,7 @@ export default async function RootLayout({
         <SettingsProvider>
           <ConsentProvider>
             <LoginGate initialLoggedIn={initialLoggedIn} />
+            <ProfileSync />
             <AppHeader />
             <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
               {children}

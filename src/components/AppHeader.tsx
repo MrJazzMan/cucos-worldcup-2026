@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LangSwitcher } from "@/components/LangSwitcher";
 import { SettingsMenu } from "@/components/SettingsMenu";
 import { SettingsMenuProvider } from "@/components/SettingsMenuContext";
 import { AuthStatus } from "@/components/AuthStatus";
@@ -58,6 +59,7 @@ export function AppHeader() {
             ))}
           </nav>
           <AuthStatus />
+          <LangSwitcher />
           <SettingsMenu />
         </div>
       </div>

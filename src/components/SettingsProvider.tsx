@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { browserTimeZone } from "@/lib/datetime";
-import { localeFor, translate, detectLangFromBrowser, type Lang } from "@/lib/i18n";
+import { localeFor, translate, detectLangFromBrowser, isRtlLang, type Lang } from "@/lib/i18n";
 
 export type ThemeChoice = "system" | "light" | "dark";
 export type TzPref = "auto" | string;
@@ -55,7 +55,7 @@ function detectLang(): Lang {
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
-  const [lang, setLangState] = useState<Lang>("pt");
+  const [lang, setLangState] = useState<Lang>("en");
   const [theme, setThemeState] = useState<ThemeChoice>("system");
   const [tzPref, setTzPrefState] = useState<TzPref>("auto");
 
@@ -67,6 +67,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setLangState(storedLang ?? detectLang());
     setThemeState(storedTheme ?? "system");
     setTzPrefState(storedTz ?? "auto");
+    const resolvedLang = storedLang ?? detectLang();
+    document.documentElement.lang = localeFor(resolvedLang);
+    document.documentElement.dir = isRtlLang(resolvedLang) ? "rtl" : "ltr";
     setMounted(true);
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -83,6 +86,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     setLangState(l);
     localStorage.setItem(LS.lang, l);
     document.documentElement.lang = localeFor(l);
+    document.documentElement.dir = isRtlLang(l) ? "rtl" : "ltr";
   }, []);
 
   const setTheme = useCallback((t: ThemeChoice) => {
