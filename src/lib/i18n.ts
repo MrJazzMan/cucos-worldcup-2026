@@ -115,10 +115,12 @@ const pt: Dict = {
   "settings.close": "Fechar",
 
   "footer.production": "Produção",
+  "footer.privacy": "Privacidade",
   "coffee.cta": "Paga-me um café ☕ 1€",
 
   "consent.message":
-    "Usamos cookies para estatísticas (Google Analytics) e anúncios (Google AdSense). Aceitas?",
+    "Usamos cookies para estatísticas (Google Analytics) e anúncios (Google AdSense). ",
+  "consent.learnMore": "Política de privacidade",
   "consent.accept": "Aceitar",
   "consent.reject": "Recusar",
   "ads.label": "Publicidade",
@@ -230,10 +232,12 @@ const en: Dict = {
   "settings.close": "Close",
 
   "footer.production": "Production",
+  "footer.privacy": "Privacy",
   "coffee.cta": "Buy me a coffee ☕ €1",
 
   "consent.message":
-    "We use cookies for analytics (Google Analytics) and ads (Google AdSense). Accept?",
+    "We use cookies for analytics (Google Analytics) and ads (Google AdSense). ",
+  "consent.learnMore": "Privacy policy",
   "consent.accept": "Accept",
   "consent.reject": "Decline",
   "ads.label": "Advertisement",

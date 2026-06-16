@@ -4,6 +4,18 @@ Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changel
 
 ---
 
+## [2026-06-16] — Política de privacidade e guia Analytics/AdSense
+
+### Adicionado
+- Página `/privacidade` (PT/EN) com política RGPD para AdSense.
+- Link de privacidade no rodapé e no banner de cookies.
+- Guia `docs/setup-analytics-ads.md` com passos Vercel + Google.
+
+### Alterado
+- `/privacidade` acessível sem login (requisito AdSense/Google).
+
+---
+
 ## [2026-06-16] — Google Analytics e AdSense
 
 ### Adicionado

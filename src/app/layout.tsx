@@ -77,6 +77,11 @@ export default async function RootLayout({
             <footer className="mt-10 pb-8 text-center text-xs text-muted">
               <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
               <p className="mt-1"><T k="footer.production" />: Miguel Garcia</p>
+              <p className="mt-1">
+                <a href="/privacidade" className="text-muted hover:text-accent hover:underline">
+                  <T k="footer.privacy" />
+                </a>
+              </p>
               <p className="mt-0.5">© 2026 Cuco Enterprise</p>
             </footer>
             <CookieConsent />

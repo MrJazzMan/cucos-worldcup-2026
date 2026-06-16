@@ -49,7 +49,7 @@ function LoginGateContent({ initialLoggedIn }: { initialLoggedIn: boolean }) {
   }, [loggedIn]);
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
-  if (pathname === "/auth/callback") return null;
+  if (pathname === "/auth/callback" || pathname === "/privacidade") return null;
   if (loggedIn) return null;
 
   const errorMessage =
