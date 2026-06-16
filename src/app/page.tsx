@@ -5,6 +5,7 @@ import {
 } from "@/lib/matches";
 import { getMockMatchesForDate } from "@/lib/mock-data";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getDateForOffset } from "@/lib/timezone";
 import type { Match } from "@/types";
 
@@ -50,11 +51,16 @@ export default async function HomePage() {
     loggedIn = !!user;
 
     if (user) {
-      // Regista a última visita (fire-and-forget; RLS usa a sessão do utilizador).
-      await supabase
-        .from("profiles")
-        .update({ last_seen_at: new Date().toISOString() })
-        .eq("user_id", user.id);
+      // Regista a última visita. Usa service-role para não depender da RLS de UPDATE.
+      try {
+        const admin = createSupabaseAdmin();
+        await admin
+          .from("profiles")
+          .update({ last_seen_at: new Date().toISOString() })
+          .eq("user_id", user.id);
+      } catch {
+        // Não bloquear a página se a escrita falhar.
+      }
     }
   }
 
