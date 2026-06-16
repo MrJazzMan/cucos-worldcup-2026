@@ -12,14 +12,9 @@ import { useSettingsMenu } from "@/components/SettingsMenuContext";
 import { isSiteAdmin } from "@/lib/admin";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { COMMON_TIMEZONES } from "@/lib/datetime";
+import { CLASSIC_THEME_OPTIONS, STYLE_THEME_OPTIONS } from "@/lib/themes";
 
 type PanelView = "home" | "profile" | "notifications" | "favourites" | "appearance";
-
-const THEME_OPTIONS = [
-  { value: "system", key: "settings.theme.system", icon: "🖥️" },
-  { value: "light", key: "settings.theme.light", icon: "☀️" },
-  { value: "dark", key: "settings.theme.dark", icon: "🌙" },
-] as const;
 
 const MENU_ITEMS: { view: PanelView; icon: string; labelKey: string }[] = [
   { view: "profile", icon: "👤", labelKey: "settings.section.profile" },
@@ -287,26 +282,50 @@ export function SettingsMenu() {
 
     if (view === "appearance") {
       return (
-        <div>
-          <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
-            {t("settings.theme")}
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {THEME_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setTheme(opt.value)}
-                className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors ${
-                  theme === opt.value
-                    ? "bg-accent text-white"
-                    : "bg-surface-2 text-muted hover:text-foreground"
-                }`}
-                type="button"
-              >
-                <span className="mr-1">{opt.icon}</span>
-                {t(opt.key)}
-              </button>
-            ))}
+        <div className="space-y-5">
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
+              {t("settings.theme")}
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {CLASSIC_THEME_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setTheme(opt.value)}
+                  className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors ${
+                    theme === opt.value
+                      ? "bg-accent text-white"
+                      : "bg-surface-2 text-muted hover:text-foreground"
+                  }`}
+                  type="button"
+                >
+                  <span className="mr-1">{opt.icon}</span>
+                  {t(opt.key)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
+              {t("settings.theme.styles")}
+            </label>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {STYLE_THEME_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setTheme(opt.value)}
+                  className={`rounded-xl px-3 py-3 text-sm font-semibold transition-colors ${
+                    theme === opt.value
+                      ? "bg-accent text-white shadow-lg shadow-accent/25"
+                      : "bg-surface-2 text-muted hover:text-foreground"
+                  }`}
+                  type="button"
+                >
+                  <span className="mr-1.5">{opt.icon}</span>
+                  {t(opt.key)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       );

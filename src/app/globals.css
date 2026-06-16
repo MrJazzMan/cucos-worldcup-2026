@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant dark (
+  &:where(
+    [data-theme="dark"],
+    [data-theme="dark"] *,
+    [data-theme="cyberpunk"],
+    [data-theme="cyberpunk"] *,
+    [data-theme="fifa2026"],
+    [data-theme="fifa2026"] *
+  )
+);
 
 /* ---- Tema claro (default) ---- */
 :root,
@@ -31,6 +40,48 @@
   --glow: rgba(249, 115, 22, 0.22);
 }
 
+/* ---- Cyberpunk ---- */
+[data-theme="cyberpunk"] {
+  --background: #07000f;
+  --background-2: #0f001a;
+  --surface: #140822;
+  --surface-2: #1c0f30;
+  --border-base: #3d1f6e;
+  --foreground: #e8f4ff;
+  --muted: #9d8fc9;
+  --accent: #00f5ff;
+  --accent-soft: rgba(0, 245, 255, 0.14);
+  --glow: rgba(255, 0, 170, 0.28);
+}
+
+/* ---- FIFA 2026 ---- */
+[data-theme="fifa2026"] {
+  --background: #061428;
+  --background-2: #0a1f3d;
+  --surface: #0f2847;
+  --surface-2: #15325a;
+  --border-base: #1e4a7a;
+  --foreground: #f5f9ff;
+  --muted: #8eb4d9;
+  --accent: #d4af37;
+  --accent-soft: rgba(212, 175, 55, 0.16);
+  --glow: rgba(0, 166, 81, 0.22);
+}
+
+/* ---- Japan classic ---- */
+[data-theme="japan"] {
+  --background: #f7f2e8;
+  --background-2: #efe6d6;
+  --surface: #fffdf8;
+  --surface-2: #f5ebe0;
+  --border-base: #c4b5a0;
+  --foreground: #2a1810;
+  --muted: #6b5c4f;
+  --accent: #c41e3a;
+  --accent-soft: rgba(196, 30, 58, 0.1);
+  --glow: rgba(30, 58, 95, 0.12);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-background-2: var(--background-2);
@@ -48,7 +99,9 @@
 html {
   color-scheme: light;
 }
-html[data-theme="dark"] {
+html[data-theme="dark"],
+html[data-theme="cyberpunk"],
+html[data-theme="fifa2026"] {
   color-scheme: dark;
 }
 
@@ -61,6 +114,37 @@ body {
     linear-gradient(180deg, var(--background-2), var(--background) 40%);
   background-attachment: fixed;
   min-height: 100vh;
+}
+
+[data-theme="cyberpunk"] body {
+  background-image:
+    linear-gradient(rgba(0, 245, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.04) 1px, transparent 1px),
+    radial-gradient(50rem 50rem at 100% 0%, var(--glow), transparent 55%),
+    radial-gradient(40rem 40rem at 0% 100%, var(--accent-soft), transparent 50%),
+    linear-gradient(180deg, var(--background-2), var(--background) 45%);
+  background-size: 28px 28px, 28px 28px, auto, auto, auto;
+}
+
+[data-theme="fifa2026"] body {
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212, 175, 55, 0.15), transparent),
+    radial-gradient(60rem 40rem at 100% 100%, rgba(0, 166, 81, 0.12), transparent 60%),
+    linear-gradient(165deg, var(--background-2) 0%, var(--background) 50%, #04101f 100%);
+}
+
+[data-theme="japan"] body {
+  background-image:
+    radial-gradient(ellipse 70% 45% at 85% 10%, rgba(196, 30, 58, 0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 10% 90%, rgba(30, 58, 95, 0.08), transparent),
+    repeating-linear-gradient(
+      -12deg,
+      transparent,
+      transparent 48px,
+      rgba(30, 58, 95, 0.03) 48px,
+      rgba(30, 58, 95, 0.03) 49px
+    ),
+    linear-gradient(180deg, var(--background-2), var(--background) 55%);
 }
 
 @keyframes pulse-live {

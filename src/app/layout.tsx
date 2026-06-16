@@ -11,6 +11,7 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { T } from "@/components/Display";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { THEME_INIT_SCRIPT } from "@/lib/themes";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -43,8 +44,6 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-const themeInitScript = `(function(){try{var c=localStorage.getItem('cucos-theme')||'system';var d=c==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):c;document.documentElement.setAttribute('data-theme',d);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
-
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -62,7 +61,7 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr" data-theme="dark" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <GoogleAnalytics />
       </head>
       <body

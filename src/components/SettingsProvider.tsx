@@ -10,8 +10,9 @@ import {
 } from "react";
 import { browserTimeZone } from "@/lib/datetime";
 import { localeFor, translate, detectLangFromBrowser, isRtlLang, type Lang } from "@/lib/i18n";
+import { applyTheme, type ThemeChoice } from "@/lib/themes";
 
-export type ThemeChoice = "system" | "light" | "dark";
+export type { ThemeChoice };
 export type TzPref = "auto" | string;
 
 interface SettingsContextValue {
@@ -41,12 +42,6 @@ function systemPrefersDark(): boolean {
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-color-scheme: dark)").matches
   );
-}
-
-function applyTheme(choice: ThemeChoice) {
-  const resolved =
-    choice === "system" ? (systemPrefersDark() ? "dark" : "light") : choice;
-  document.documentElement.setAttribute("data-theme", resolved);
 }
 
 function detectLang(): Lang {
