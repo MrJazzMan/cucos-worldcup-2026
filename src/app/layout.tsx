@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
+import { LoginGate } from "@/components/LoginGate";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { T } from "@/components/Display";
+import { createSupabaseServer } from "@/lib/supabase/server";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -38,11 +40,20 @@ export const viewport: Viewport = {
 
 const themeInitScript = `(function(){try{var c=localStorage.getItem('cucos-theme')||'system';var d=c==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):c;document.documentElement.setAttribute('data-theme',d);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let initialLoggedIn = false;
+  const supabase = await createSupabaseServer();
+  if (supabase) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    initialLoggedIn = !!user;
+  }
+
   return (
     <html lang="pt-PT" data-theme="dark" suppressHydrationWarning>
       <head>
@@ -52,6 +63,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans text-foreground antialiased`}
       >
         <SettingsProvider>
+          <LoginGate initialLoggedIn={initialLoggedIn} />
           <AppHeader />
           <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
             {children}

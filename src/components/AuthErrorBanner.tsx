@@ -24,19 +24,12 @@ export function AuthErrorBanner() {
   }, []);
 
   useEffect(() => {
-    if (!error || pathname === "/conta") return;
-    router.replace(
-      `/conta?error=${encodeURIComponent(error)}${errorCode ? `&error_code=${encodeURIComponent(errorCode)}` : ""}${errorDesc ? `&error_description=${encodeURIComponent(errorDesc)}` : ""}`
-    );
-  }, [error, errorCode, errorDesc, pathname, router]);
-
-  useEffect(() => {
-    if (loggedIn && error && pathname === "/conta") {
-      router.replace("/conta");
+    if (loggedIn && error) {
+      router.replace(pathname);
     }
   }, [loggedIn, error, pathname, router]);
 
-  if (!error || pathname !== "/conta" || loggedIn) return null;
+  if (!error || loggedIn) return null;
 
   const message =
     error === "auth"

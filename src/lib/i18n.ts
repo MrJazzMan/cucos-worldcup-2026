@@ -80,6 +80,9 @@ const pt: Dict = {
   "account.notif.final": "Resultado final",
   "account.enablePush": "Activar notificações push",
   "account.enabling": "A activar…",
+  "auth.modal.title": "Bem-vindo ao WC26",
+  "auth.modal.subtitle":
+    "Inicia sessão com Google para ver jogos, horários e canais de TV.",
   "auth.google": "Continuar com Google",
   "auth.apple": "Continuar com Apple",
   "auth.error.failed": "Falha ao iniciar sessão. Tenta outra vez.",
@@ -172,6 +175,9 @@ const en: Dict = {
   "account.notif.final": "Final result",
   "account.enablePush": "Enable push notifications",
   "account.enabling": "Enabling…",
+  "auth.modal.title": "Welcome to WC26",
+  "auth.modal.subtitle":
+    "Sign in with Google to see matches, kick-off times and TV channels.",
   "auth.google": "Continue with Google",
   "auth.apple": "Continue with Apple",
   "auth.error.failed": "Sign-in failed. Please try again.",

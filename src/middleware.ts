@@ -101,17 +101,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Erros OAuth do Supabase às vezes caem na homepage
+  // Erros OAuth do Supabase às vezes caem na homepage — mantém na mesma página
   if (oauthError && pathname === "/") {
     const url = request.nextUrl.clone();
-    url.pathname = "/conta";
+    url.searchParams.set("error", oauthError);
+    const desc = searchParams.get("error_description");
+    if (desc) url.searchParams.set("error_description", desc);
     return NextResponse.redirect(url);
   }
 
   // Troca PKCE no middleware — cookies do pedido ficam disponíveis aqui
   if (pathname === "/auth/callback" && code) {
-    let next = searchParams.get("next") ?? "/conta";
-    if (!next.startsWith("/")) next = "/conta";
+    let next = searchParams.get("next") ?? "/";
+    if (!next.startsWith("/")) next = "/";
 
     const redirectUrl = new URL(next, origin);
 
@@ -121,7 +123,7 @@ export async function middleware(request: NextRequest) {
 
     if (error) {
       console.error("[auth/callback]", error.message);
-      const errorUrl = new URL("/conta", origin);
+      const errorUrl = new URL("/", origin);
       errorUrl.searchParams.set("error", "auth");
       errorUrl.searchParams.set("error_code", error.message);
       const errorResponse = NextResponse.redirect(errorUrl);
@@ -135,12 +137,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname === "/auth/callback") {
-    return NextResponse.redirect(new URL("/conta?error=auth", request.url));
+    return NextResponse.redirect(new URL("/?error=auth", request.url));
   }
 
   const response = NextResponse.next({ request });
   const supabase = createSupabaseMiddleware(request, () => response);
   await supabase.auth.getUser();
+
   return addSecurityHeaders(response);
 }
 

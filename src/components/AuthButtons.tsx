@@ -3,7 +3,7 @@
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { useT } from "@/components/SettingsProvider";
 
-export function AuthButtons() {
+export function AuthButtons({ next: nextProp }: { next?: string }) {
   const t = useT();
 
   function getAuthCallbackUrl() {
@@ -15,7 +15,11 @@ export function AuthButtons() {
 
   async function signIn(provider: "google" | "apple") {
     const supabase = createSupabaseBrowser();
-    const redirectTo = getAuthCallbackUrl();
+    const next =
+      nextProp ??
+      new URLSearchParams(window.location.search).get("next") ??
+      window.location.pathname;
+    const redirectTo = `${getAuthCallbackUrl()}?next=${encodeURIComponent(next)}`;
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
