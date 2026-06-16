@@ -52,6 +52,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <GoogleAnalytics />
+        <AdSenseScript />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans text-foreground antialiased`}
@@ -74,7 +75,6 @@ export default function RootLayout({
               <p className="mt-0.5">© 2026 Cuco Enterprise</p>
             </footer>
             <CookieConsent />
-            <AdSenseScript />
             <ServiceWorkerRegister />
             <Analytics />
             <SpeedInsights />
