@@ -6,6 +6,14 @@ Versão actual em produção: **0.2.0** (`wc26.pt`).
 
 ---
 
+## [Unreleased]
+
+### Adicionado
+- `profiles.last_seen_at` — última visita com sessão activa (migration `005`, `ProfileSync`).
+- Plano de normalização de equipas em `006_teams_normalization_PLAN.sql` (tabela `teams`, FK em `favourite_teams`, `user_follows` futuro). Comentado, não aplicado.
+
+---
+
 ## [0.2.0] — 2026-06-16 — Site público, monetização e internacionalização
 
 **Marco:** site indexável no Google, AdSense verificado, canais TV só para utilizadores registados.
