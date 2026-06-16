@@ -116,6 +116,12 @@ const pt: Dict = {
 
   "footer.production": "Produção",
   "coffee.cta": "Paga-me um café ☕ 1€",
+
+  "consent.message":
+    "Usamos cookies para estatísticas (Google Analytics) e anúncios (Google AdSense). Aceitas?",
+  "consent.accept": "Aceitar",
+  "consent.reject": "Recusar",
+  "ads.label": "Publicidade",
 };
 
 const en: Dict = {
@@ -225,6 +231,12 @@ const en: Dict = {
 
   "footer.production": "Production",
   "coffee.cta": "Buy me a coffee ☕ €1",
+
+  "consent.message":
+    "We use cookies for analytics (Google Analytics) and ads (Google AdSense). Accept?",
+  "consent.accept": "Accept",
+  "consent.reject": "Decline",
+  "ads.label": "Advertisement",
 };
 
 const DICTS: Record<Lang, Dict> = { pt, en };

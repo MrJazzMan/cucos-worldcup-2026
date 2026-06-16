@@ -1,0 +1,35 @@
+"use client";
+
+import { useConsent } from "@/components/ConsentProvider";
+import { useT } from "@/components/SettingsProvider";
+
+export function CookieConsent() {
+  const { consent, accept, reject } = useConsent();
+  const t = useT();
+
+  if (consent !== "pending") return null;
+
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-border-base bg-surface/95 p-4 shadow-2xl backdrop-blur-md">
+      <div className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted">{t("consent.message")}</p>
+        <div className="flex shrink-0 gap-2">
+          <button
+            type="button"
+            onClick={reject}
+            className="rounded-xl border border-border-base px-4 py-2 text-sm font-semibold text-muted transition hover:text-foreground"
+          >
+            {t("consent.reject")}
+          </button>
+          <button
+            type="button"
+            onClick={accept}
+            className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
+          >
+            {t("consent.accept")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

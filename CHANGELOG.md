@@ -4,6 +4,20 @@ Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changel
 
 ---
 
+## [2026-06-16] — Google Analytics e AdSense
+
+### Adicionado
+- Integração **Google Analytics 4** (`NEXT_PUBLIC_GA_MEASUREMENT_ID`) com Consent Mode.
+- Integração **Google AdSense** (`NEXT_PUBLIC_ADSENSE_CLIENT_ID`, `NEXT_PUBLIC_ADSENSE_SLOT_HOME`).
+- Banner de consentimento de cookies (RGPD — PT/UE).
+- Rota dinâmica `/ads.txt` para verificação AdSense.
+- `.env.example` com variáveis de analytics e publicidade.
+
+### Alterado
+- Anúncio discreto na homepage (abaixo do banner café), só após aceitar cookies.
+
+---
+
 ## [2026-06-16] — Painel de definições unificado
 
 ### Adicionado

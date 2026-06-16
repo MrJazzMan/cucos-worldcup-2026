@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MatchCard } from "@/components/MatchCard";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
+import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { useSettings } from "@/components/SettingsProvider";
 import { dateKeyInTz, dayKeyWithOffset } from "@/lib/datetime";
 import type { Match } from "@/types";
@@ -174,6 +175,11 @@ export function MatchesView({ matches }: { matches: DayMatch[] }) {
 
       {/* Banner café */}
       <CoffeeBanner />
+
+      <AdSenseUnit
+        slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME ?? ""}
+        className="my-1"
+      />
 
       {/* Filtro de favoritos */}
       {hasFavourites && (

@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
+import { ConsentProvider } from "@/components/ConsentProvider";
+import { CookieConsent } from "@/components/CookieConsent";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { AdSenseScript } from "@/components/AdSenseScript";
 import { LoginGate } from "@/components/LoginGate";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
@@ -58,24 +62,29 @@ export default async function RootLayout({
     <html lang="pt-PT" data-theme="dark" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <GoogleAnalytics />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans text-foreground antialiased`}
       >
         <SettingsProvider>
-          <LoginGate initialLoggedIn={initialLoggedIn} />
-          <AppHeader />
-          <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
-            {children}
-          </main>
-          <footer className="mt-10 pb-8 text-center text-xs text-muted">
-            <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
-            <p className="mt-1"><T k="footer.production" />: Miguel Garcia</p>
-            <p className="mt-0.5">© 2026 Cuco Enterprise</p>
-          </footer>
-          <ServiceWorkerRegister />
-          <Analytics />
-          <SpeedInsights />
+          <ConsentProvider>
+            <LoginGate initialLoggedIn={initialLoggedIn} />
+            <AppHeader />
+            <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+              {children}
+            </main>
+            <footer className="mt-10 pb-8 text-center text-xs text-muted">
+              <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
+              <p className="mt-1"><T k="footer.production" />: Miguel Garcia</p>
+              <p className="mt-0.5">© 2026 Cuco Enterprise</p>
+            </footer>
+            <CookieConsent />
+            <AdSenseScript />
+            <ServiceWorkerRegister />
+            <Analytics />
+            <SpeedInsights />
+          </ConsentProvider>
         </SettingsProvider>
       </body>
     </html>
