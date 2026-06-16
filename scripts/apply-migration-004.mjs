@@ -21,7 +21,10 @@ function loadEnv(path) {
   }
 }
 
-loadEnv(join(__dirname, "../.env.vercel"));
+loadEnv(join(__dirname, "../.env.local"));
+if (!process.env.POSTGRES_URL_NON_POOLING && !process.env.POSTGRES_URL) {
+  loadEnv(join(__dirname, "../.env.vercel"));
+}
 
 const url =
   process.env.POSTGRES_URL_NON_POOLING ?? process.env.POSTGRES_URL;
