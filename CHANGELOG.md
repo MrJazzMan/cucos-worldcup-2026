@@ -4,6 +4,14 @@ Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changel
 
 ---
 
+## [2026-06-16] — Ocultar eliminatórias (até haver jogos)
+
+### Alterado
+- Link «Eliminatórias» removido da navegação por defeito.
+- `/eliminatorias` redireciona para `/` até activar `NEXT_PUBLIC_SHOW_KNOCKOUTS=true`.
+
+---
+
 ## [2026-06-16] — Novas línguas (9 idiomas)
 
 ### Adicionado

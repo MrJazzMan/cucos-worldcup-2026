@@ -1,8 +1,12 @@
+import { redirect } from "next/navigation";
 import { MatchCard } from "@/components/MatchCard";
 import { T } from "@/components/Display";
+import { KNOCKOUTS_ENABLED } from "@/lib/features";
 import { getKnockoutRounds } from "@/lib/matches";
 
 export default async function EliminatoriasPage() {
+  if (!KNOCKOUTS_ENABLED) redirect("/");
+
   const rounds = await getKnockoutRounds();
 
   return (

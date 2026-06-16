@@ -5,13 +5,14 @@ import { usePathname } from "next/navigation";
 import { SettingsMenu } from "@/components/SettingsMenu";
 import { SettingsMenuProvider } from "@/components/SettingsMenuContext";
 import { AuthStatus } from "@/components/AuthStatus";
+import { KNOCKOUTS_ENABLED } from "@/lib/features";
 import { useT } from "@/components/SettingsProvider";
 
 const links = [
   { href: "/", key: "nav.matches" },
   { href: "/grupos", key: "nav.groups" },
-  { href: "/eliminatorias", key: "nav.knockouts" },
-];
+  { href: "/eliminatorias", key: "nav.knockouts", knockouts: true },
+] as const;
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -21,7 +22,9 @@ export function AppHeader() {
     return href === "/" ? pathname === "/" : pathname.startsWith(href);
   }
 
-  const visibleLinks = links;
+  const visibleLinks = links.filter(
+    (link) => !("knockouts" in link && link.knockouts) || KNOCKOUTS_ENABLED
+  );
 
   return (
     <SettingsMenuProvider>
