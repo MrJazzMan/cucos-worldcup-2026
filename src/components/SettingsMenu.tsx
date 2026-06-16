@@ -2,12 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
+import { AuthButtons } from "@/components/AuthButtons";
 import { useSettings } from "@/components/SettingsProvider";
+import { useSettingsMenu } from "@/components/SettingsMenuContext";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { COMMON_TIMEZONES } from "@/lib/datetime";
 import { LANGS } from "@/lib/i18n";
+
+const ADMIN_USER_ID = "4764a298-fab5-401d-bbbb-3da03c86ce08";
 
 const THEME_OPTIONS = [
   { value: "system", key: "settings.theme.system", icon: "🖥️" },
@@ -17,10 +21,16 @@ const THEME_OPTIONS = [
 
 export function SettingsMenu() {
   const { t, lang, setLang, theme, setTheme, tzPref, setTzPref } = useSettings();
+  const { open, setOpen } = useSettingsMenu();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [streakDays, setStreakDays] = useState(0);
+  const [displayName, setDisplayName] = useState("");
+  const [location, setLocation] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,15 +50,39 @@ export function SettingsMenu() {
       document.removeEventListener("mousedown", onClick);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, setOpen]);
 
   useEffect(() => {
-    if (!open) return;
     const supabase = createSupabaseBrowser();
+
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
     });
-  }, [open]);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!open || !user) return;
+
+    const supabase = createSupabaseBrowser();
+    supabase
+      .from("profiles")
+      .select("display_name, location, role")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        setDisplayName(data?.display_name ?? "");
+        setLocation(data?.location ?? "");
+        setIsAdmin(data?.role === "admin" || user.id === ADMIN_USER_ID);
+      });
+  }, [open, user]);
 
   useEffect(() => {
     if (!user) {
@@ -92,21 +126,42 @@ export function SettingsMenu() {
     }
   }, [user]);
 
+  async function saveProfile() {
+    if (!user) return;
+    setProfileSaving(true);
+    setProfileSaved(false);
+    const supabase = createSupabaseBrowser();
+    await supabase
+      .from("profiles")
+      .update({ display_name: displayName || null, location: location || null })
+      .eq("user_id", user.id);
+    setProfileSaving(false);
+    setProfileSaved(true);
+    setTimeout(() => setProfileSaved(false), 2500);
+  }
+
   async function signOut() {
     const supabase = createSupabaseBrowser();
     await supabase.auth.signOut();
     setOpen(false);
-    router.push("/conta");
+    router.push("/");
     router.refresh();
   }
 
-  const username = user?.email?.split("@")[0] ?? "Convidado";
+  const username =
+    displayName.trim() ||
+    user?.email?.split("@")[0] ||
+    "Convidado";
   const initial = username[0]?.toUpperCase() ?? "C";
+  const streakLabel =
+    (streakDays || 1) === 1
+      ? t("settings.streakDays").replace("{n}", String(streakDays || 1))
+      : t("settings.streakDaysPlural").replace("{n}", String(streakDays || 1));
 
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
         aria-label={t("settings.title")}
         aria-expanded={open}
         className="grid h-9 w-9 place-items-center rounded-lg border border-border-base bg-surface-2 text-foreground transition-colors hover:brightness-110"
@@ -131,23 +186,23 @@ export function SettingsMenu() {
           <button
             onClick={() => setOpen(false)}
             className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[1px]"
-            aria-label="Fechar menu"
+            aria-label={t("settings.closeMenu")}
           />
-          <aside className="fixed right-0 top-0 z-50 h-dvh w-[min(24rem,88vw)] border-l border-border-base bg-surface p-5 shadow-2xl">
-            <div className="mb-5 flex items-center justify-between">
+          <aside className="fixed right-0 top-0 z-50 flex h-dvh w-[min(24rem,88vw)] flex-col border-l border-border-base bg-surface shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border-base p-5">
               <p className="text-2xl font-extrabold text-foreground">
-                Menu
+                {t("settings.menu")}
               </p>
               <button
                 onClick={() => setOpen(false)}
                 className="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-surface-2 hover:text-foreground"
-                aria-label="Fechar menu"
+                aria-label={t("settings.closeMenu")}
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-5">
+            <div className="flex-1 space-y-5 overflow-y-auto p-5">
               <section className="rounded-2xl bg-surface-2 p-3">
                 <div className="flex items-center gap-3">
                   <span className="grid h-10 w-10 place-items-center rounded-full bg-accent text-sm font-bold text-white">
@@ -158,34 +213,91 @@ export function SettingsMenu() {
                       {username}
                     </p>
                     {user ? (
-                      <p className="truncate text-sm text-orange-500">
-                        🔥 {streakDays || 1} dia{(streakDays || 1) > 1 ? "s" : ""} seguidos
-                      </p>
+                      <>
+                        <p className="truncate text-xs text-muted">{user.email}</p>
+                        <p className="truncate text-sm text-orange-500">
+                          🔥 {streakLabel}
+                        </p>
+                      </>
                     ) : (
-                      <p className="truncate text-sm text-muted">Inicia sessão para guardar progresso</p>
+                      <p className="truncate text-sm text-muted">
+                        {t("settings.guestPrompt")}
+                      </p>
                     )}
                   </div>
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-border-base bg-surface-2">
-                <Link
-                  href="/conta"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-2 px-3 py-3 text-base font-semibold text-foreground"
-                >
-                  <span>⚙️</span>
-                  Definições
-                </Link>
-                <button
-                  onClick={signOut}
-                  className="flex w-full items-center gap-2 border-t border-border-base px-3 py-3 text-left text-base font-bold text-red-500"
-                  type="button"
-                >
-                  <span>↪</span>
-                  Sair
-                </button>
-              </section>
+              {user ? (
+                <>
+                  <section>
+                    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+                      {t("profile.title")}
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="mb-1.5 block text-sm font-medium text-foreground">
+                          {t("profile.displayName")}
+                        </label>
+                        <input
+                          type="text"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder={user.email?.split("@")[0]}
+                          className="w-full rounded-xl border border-border-base bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-sm font-medium text-foreground">
+                          {t("profile.location")}
+                        </label>
+                        <input
+                          type="text"
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          placeholder={t("profile.locationPlaceholder")}
+                          className="w-full rounded-xl border border-border-base bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+                        />
+                      </div>
+                      <button
+                        onClick={saveProfile}
+                        disabled={profileSaving}
+                        className="w-full rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-50"
+                        type="button"
+                      >
+                        {profileSaved
+                          ? `✓ ${t("profile.saved")}`
+                          : profileSaving
+                            ? t("profile.saving")
+                            : t("profile.save")}
+                      </button>
+                    </div>
+                  </section>
+
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-3 py-3 text-sm font-semibold text-accent transition hover:bg-accent/20"
+                    >
+                      ⚙️ {t("account.adminLink")}
+                    </Link>
+                  )}
+
+                  <button
+                    onClick={signOut}
+                    className="flex w-full items-center gap-2 rounded-xl border border-border-base bg-surface-2 px-3 py-3 text-left text-base font-bold text-red-500"
+                    type="button"
+                  >
+                    <span>↪</span>
+                    {t("account.signOut")}
+                  </button>
+                </>
+              ) : (
+                <section>
+                  <AuthButtons next={pathname} />
+                </section>
+              )}
 
               <section>
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
@@ -201,6 +313,7 @@ export function SettingsMenu() {
                           ? "bg-accent text-white"
                           : "bg-surface-2 text-muted hover:text-foreground"
                       }`}
+                      type="button"
                     >
                       <span className="mr-1">{l.flag}</span>
                       {l.label}
@@ -223,6 +336,7 @@ export function SettingsMenu() {
                           ? "bg-accent text-white"
                           : "bg-surface-2 text-muted hover:text-foreground"
                       }`}
+                      type="button"
                     >
                       <span className="mr-1">{opt.icon}</span>
                       {t(opt.key)}

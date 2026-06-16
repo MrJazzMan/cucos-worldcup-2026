@@ -91,6 +91,11 @@ const pt: Dict = {
   "auth.loggedIn": "Sessão iniciada",
 
   "settings.title": "Definições",
+  "settings.menu": "Menu",
+  "settings.closeMenu": "Fechar menu",
+  "settings.guestPrompt": "Inicia sessão para guardar progresso",
+  "settings.streakDays": "{n} dia seguido",
+  "settings.streakDaysPlural": "{n} dias seguidos",
   "settings.language": "Idioma",
   "settings.theme": "Tema",
   "settings.theme.system": "Sistema",
@@ -186,6 +191,11 @@ const en: Dict = {
   "auth.loggedIn": "Signed in",
 
   "settings.title": "Settings",
+  "settings.menu": "Menu",
+  "settings.closeMenu": "Close menu",
+  "settings.guestPrompt": "Sign in to save your progress",
+  "settings.streakDays": "{n} day streak",
+  "settings.streakDaysPlural": "{n} day streak",
   "settings.language": "Language",
   "settings.theme": "Theme",
   "settings.theme.system": "System",

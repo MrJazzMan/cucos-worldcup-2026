@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SettingsMenu } from "@/components/SettingsMenu";
+import { SettingsMenuProvider } from "@/components/SettingsMenuContext";
 import { AuthStatus } from "@/components/AuthStatus";
 import { useT } from "@/components/SettingsProvider";
-import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 const links = [
   { href: "/", key: "nav.matches" },
@@ -18,33 +17,15 @@ const links = [
 export function AppHeader() {
   const pathname = usePathname();
   const t = useT();
-  const [loggedIn, setLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const supabase = createSupabaseBrowser();
-
-    supabase.auth.getUser().then(({ data }) => {
-      setLoggedIn(!!data.user);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setLoggedIn(!!session?.user);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   function isActive(href: string) {
     return href === "/" ? pathname === "/" : pathname.startsWith(href);
   }
 
-  const visibleLinks = links.filter(
-    (link) => !(loggedIn && link.href === "/conta")
-  );
+  const visibleLinks = links;
 
   return (
+    <SettingsMenuProvider>
     <header className="sticky top-0 z-50 border-b border-border-base bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
@@ -94,5 +75,6 @@ export function AppHeader() {
         ))}
       </nav>
     </header>
+    </SettingsMenuProvider>
   );
 }

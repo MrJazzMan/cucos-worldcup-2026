@@ -3,11 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSettingsMenu } from "@/components/SettingsMenuContext";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 export function AuthStatus() {
   const pathname = usePathname();
+  const { setOpen } = useSettingsMenu();
   const [email, setEmail] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -22,11 +25,13 @@ export function AuthStatus() {
         const ADMIN_USER_ID = "4764a298-fab5-401d-bbbb-3da03c86ce08";
         const { data: profile } = await supabase
           .from("profiles")
-          .select("role")
+          .select("display_name, role")
           .eq("user_id", user.id)
           .single();
+        setDisplayName(profile?.display_name ?? null);
         setIsAdmin(profile?.role === "admin" || user.id === ADMIN_USER_ID);
       } else {
+        setDisplayName(null);
         setIsAdmin(false);
       }
     }
@@ -37,7 +42,10 @@ export function AuthStatus() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setEmail(session?.user?.email ?? null);
-      if (!session?.user) setIsAdmin(false);
+      if (!session?.user) {
+        setDisplayName(null);
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -45,7 +53,8 @@ export function AuthStatus() {
 
   if (!email) return null;
 
-  const initial = email[0]?.toUpperCase() ?? "?";
+  const label = displayName?.trim() || email.split("@")[0];
+  const initial = label[0]?.toUpperCase() ?? "?";
 
   return (
     <div className="flex items-center gap-1.5">
@@ -59,20 +68,19 @@ export function AuthStatus() {
           Admin
         </Link>
       )}
-      <Link
-        href="/conta"
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
         title={email}
-        className={`flex items-center gap-1.5 rounded-full border border-border-base bg-surface-2 px-2 py-1 ${
-          pathname.startsWith("/conta") ? "ring-1 ring-accent/40" : ""
-        }`}
+        className="flex items-center gap-1.5 rounded-full border border-border-base bg-surface-2 px-2 py-1 transition hover:brightness-110"
       >
         <span className="grid h-6 w-6 place-items-center rounded-full bg-accent text-xs font-bold text-white">
           {initial}
         </span>
         <span className="hidden max-w-[7rem] truncate text-xs font-medium text-foreground sm:block">
-          {email.split("@")[0]}
+          {label}
         </span>
-      </Link>
+      </button>
     </div>
   );
 }
