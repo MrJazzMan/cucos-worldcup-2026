@@ -4,7 +4,6 @@ import { AppHeader } from "@/components/AppHeader";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
-import { AdSenseScript } from "@/components/AdSenseScript";
 import { ProfileSync } from "@/components/ProfileSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
@@ -42,6 +41,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,7 +53,14 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <GoogleAnalytics />
-        <AdSenseScript />
+        {ADSENSE_CLIENT_ID ? (
+          // Tag literal no HTML inicial — obrigatório para verificação AdSense (crawler não vê preload do next/script)
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+            crossOrigin="anonymous"
+          />
+        ) : null}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans text-foreground antialiased`}
