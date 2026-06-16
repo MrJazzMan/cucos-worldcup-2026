@@ -41,11 +41,9 @@ export function ProfileSync() {
         preferred_lang: Lang;
         signup_country?: string;
         location?: string;
-        last_seen_at: string;
       } = {
         email: email ?? undefined,
         preferred_lang: lang,
-        last_seen_at: new Date().toISOString(),
       };
 
       if (!profile?.signup_country) {

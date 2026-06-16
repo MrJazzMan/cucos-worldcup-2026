@@ -48,6 +48,14 @@ export default async function HomePage() {
       data: { user },
     } = await supabase.auth.getUser();
     loggedIn = !!user;
+
+    if (user) {
+      // Regista a última visita (fire-and-forget; RLS usa a sessão do utilizador).
+      await supabase
+        .from("profiles")
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+    }
   }
 
   const favouriteIds = loggedIn
