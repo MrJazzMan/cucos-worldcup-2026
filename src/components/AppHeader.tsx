@@ -7,6 +7,7 @@ import { SettingsMenu } from "@/components/SettingsMenu";
 import { SettingsMenuProvider } from "@/components/SettingsMenuContext";
 import { AuthStatus } from "@/components/AuthStatus";
 import { KNOCKOUTS_ENABLED } from "@/lib/features";
+import Logo from "@/components/Logo";
 import { useT } from "@/components/SettingsProvider";
 
 const links = [
@@ -32,13 +33,19 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 border-b border-border-base bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
-          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-accent to-amber-400 text-lg shadow-lg shadow-accent/30">
-            ⚽
-          </span>
-          <div>
-            <p className="text-lg font-bold leading-tight text-foreground">
-              WC26
-            </p>
+          <div className="flex flex-col justify-center gap-0.5">
+            <Logo
+              height={22}
+              textColor="var(--foreground)"
+              accentColor="#F2522E"
+              className="shrink-0 sm:hidden"
+            />
+            <Logo
+              height={28}
+              textColor="var(--foreground)"
+              accentColor="#F2522E"
+              className="hidden shrink-0 sm:block"
+            />
             <p className="text-xs text-muted">{t("header.subtitle")}</p>
           </div>
         </Link>
