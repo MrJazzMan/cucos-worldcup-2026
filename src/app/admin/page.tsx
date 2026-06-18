@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CHANNEL_LINKS, PT_CHANNELS } from "@/lib/channels";
+import { CHANNEL_LINKS, CHANNEL_REGIONS, channelsOutsidePresets } from "@/lib/channels";
 import { ptTeam } from "@/lib/team-names";
 
 interface AdminMatch {
@@ -106,7 +106,8 @@ export default function AdminPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Admin — Canais TV</h1>
         <p className="mt-1 text-sm text-muted">
-          Curadoria manual de transmissões em Portugal
+          Canais OndeBola (ex. Sport.Tv1) vêm do sync automático. Acrescenta outros
+          por região — ficam guardados mesmo após o próximo sync.
         </p>
       </div>
 
@@ -140,7 +141,10 @@ export default function AdminPage() {
         </p>
       ) : (
         <div className="space-y-4">
-          {matches.map((match) => (
+          {matches.map((match) => {
+            const syncedChannels = channelsOutsidePresets(match.channels);
+
+            return (
             <div
               key={match.fixture_id}
               className="rounded-2xl border border-border-base bg-surface p-4"
@@ -151,34 +155,67 @@ export default function AdminPage() {
               <p className="text-xs text-muted">
                 {match.match_date} · ID {match.fixture_id}
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {PT_CHANNELS.map((ch) => {
-                  const active = match.channels.includes(ch);
-                  const link = CHANNEL_LINKS[ch];
-                  return (
-                    <button
-                      key={ch}
-                      onClick={() =>
-                        toggleChannel(match.fixture_id, ch, match.channels)
-                      }
-                      disabled={saving === match.fixture_id}
-                      title={link ?? undefined}
-                      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-                        active
-                          ? "bg-accent text-white"
-                          : "bg-surface-2 text-muted hover:text-foreground"
-                      }`}
-                    >
-                      {ch}
-                      {link && (
-                        <span className="ml-1 text-xs opacity-70">▶</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+
+              {syncedChannels.length > 0 && (
+                <div className="mt-3">
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted">
+                    OndeBola / sync
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {syncedChannels.map((ch) => (
+                      <button
+                        key={ch}
+                        type="button"
+                        onClick={() =>
+                          toggleChannel(match.fixture_id, ch, match.channels)
+                        }
+                        disabled={saving === match.fixture_id}
+                        className="rounded-lg bg-accent/15 px-3 py-1.5 text-sm font-medium text-accent ring-1 ring-accent/30 transition hover:bg-accent/25"
+                      >
+                        {ch} ×
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {CHANNEL_REGIONS.map((region) => (
+                <div key={region.id} className="mt-3">
+                  <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted">
+                    {region.label}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {region.channels.map((ch) => {
+                      const active = match.channels.includes(ch);
+                      const link = CHANNEL_LINKS[ch];
+                      return (
+                        <button
+                          key={ch}
+                          type="button"
+                          onClick={() =>
+                            toggleChannel(match.fixture_id, ch, match.channels)
+                          }
+                          disabled={saving === match.fixture_id}
+                          title={link ?? undefined}
+                          className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                            active
+                              ? "bg-accent text-white"
+                              : "bg-surface-2 text-muted hover:text-foreground"
+                          }`}
+                        >
+                          {ch}
+                          {link && (
+                            <span className="ml-1 text-xs opacity-70">▶</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

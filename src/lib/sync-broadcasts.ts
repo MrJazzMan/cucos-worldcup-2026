@@ -1,4 +1,5 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
+import { mergeBroadcastChannels } from "@/lib/channels";
 import {
   carregarAgenda,
   canalParaJogo,
@@ -66,6 +67,14 @@ export async function syncBroadcastsFromOndeBola(options?: {
     return { synced: 0, source: "ondebola", reason: "sem jogos na BD" };
   }
 
+  const { data: existingBroadcasts } = await admin
+    .from("broadcasts")
+    .select("fixture_id, channels");
+
+  const existingMap = new Map(
+    (existingBroadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+  );
+
   const broadcasts: {
     fixture_id: number;
     channels: string[];
@@ -78,7 +87,10 @@ export async function syncBroadcastsFromOndeBola(options?: {
 
     broadcasts.push({
       fixture_id: m.fixture_id,
-      channels: parseCanaisLista(canaisStr),
+      channels: mergeBroadcastChannels(
+        parseCanaisLista(canaisStr),
+        existingMap.get(m.fixture_id) ?? []
+      ),
       notes: `OndeBola — ${m.home_team_name} vs ${m.away_team_name}`,
     });
   }
