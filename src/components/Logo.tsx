@@ -26,7 +26,7 @@ export default function Logo({
         x="65"
         y="33"
         textAnchor="middle"
-        fontFamily="var(--font-space-grotesk, var(--font-sans, system-ui), sans-serif)"
+        style={{ fontFamily: "var(--font-space-grotesk), system-ui, sans-serif" }}
         fontSize="36"
         fontWeight="700"
         letterSpacing="0.5"

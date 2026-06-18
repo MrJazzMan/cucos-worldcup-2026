@@ -55,7 +55,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" data-theme="dark" suppressHydrationWarning>
+    <html
+      lang="en"
+      dir="ltr"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable}`}
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <GoogleAnalytics />
@@ -69,7 +75,7 @@ export default function RootLayout({
         ) : null}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} flex min-h-screen flex-col font-sans text-foreground antialiased`}
+        className="flex min-h-screen flex-col font-sans text-foreground antialiased"
       >
         <SettingsProvider>
           <ConsentProvider>
