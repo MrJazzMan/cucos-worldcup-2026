@@ -80,10 +80,12 @@ export async function middleware(request: NextRequest) {
   const origin = getRequestOrigin(request);
   const ua = request.headers.get("user-agent");
 
-  // Bloquear scrapers e bots de IA conhecidos.
-  // Rotas /api/ são isentas: têm a sua própria auth (CRON_SECRET) e são
-  // chamadas por clientes legítimos não-browser (cron do GitHub Actions via curl).
-  if (!pathname.startsWith("/api/") && isBlockedBot(ua)) {
+  // Rotas /api/ e /feed/ são isentas: auth própria ou URL secreta; clientes não-browser.
+  if (
+    !pathname.startsWith("/api/") &&
+    !pathname.startsWith("/feed/") &&
+    isBlockedBot(ua)
+  ) {
     return new NextResponse("Access denied", { status: 403 });
   }
 

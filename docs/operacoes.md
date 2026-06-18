@@ -90,6 +90,24 @@ vercel --prod --yes
 
 ---
 
+## Feed RSS (jogos + canais)
+
+URL secreta (não indexada): `https://wc26.pt/feed/TEU_RSS_FEED_TOKEN`
+
+**Vercel** → Environment Variables:
+
+| Nome | Valor |
+|------|-------|
+| `RSS_FEED_TOKEN` | String aleatória ≥16 chars (ex. `openssl rand -hex 24`) |
+
+Sem esta variável o endpoint responde 404. Actualiza a cada 5 minutos; inclui todos os jogos do Mundial com canais da BD.
+
+```bash
+curl -s "https://wc26.pt/feed/TEU_RSS_FEED_TOKEN" | head
+```
+
+---
+
 ## Variáveis locais
 
 Editar `.env.local` (ou `env.local` visível no Finder).
