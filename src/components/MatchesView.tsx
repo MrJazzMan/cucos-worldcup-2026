@@ -219,7 +219,7 @@ export function MatchesView({
           </p>
         </div>
       ) : (
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:grid-cols-3">
           {visibleMatches.map((match) => (
             <MatchCard
               key={match.fixture_id}

@@ -63,8 +63,8 @@ function channelBadgeClass(channel: string) {
     return `${BASE_BADGE} bg-[#3565f2] text-white`;
   }
 
-  // Sport TV — azul escuro com amarelo dourado
-  if (upper.includes("SPORT TV")) {
+  // Sport TV — azul escuro com amarelo dourado (Sport TV, Sport.Tv1, Sport.TV5, …)
+  if (/SPORT\.?\s*TV/i.test(channel)) {
     return `${BASE_BADGE} bg-[#0f1a3a] text-[#ffd230] border border-[#ffd230]/30`;
   }
 
@@ -128,7 +128,7 @@ export function MatchCard({ match, canViewChannels = false }: MatchCardProps) {
 
   return (
     <article
-      className={`animate-rise rounded-2xl border bg-surface transition-all ${
+      className={`flex h-full flex-col animate-rise rounded-2xl border bg-surface transition-all ${
         isLive
           ? "border-red-500/50 px-4 py-6 shadow-lg shadow-red-500/15 ring-1 ring-red-500/20 hover:shadow-xl hover:shadow-red-500/20"
           : match.isFavourite
@@ -217,42 +217,44 @@ export function MatchCard({ match, canViewChannels = false }: MatchCardProps) {
         </p>
       )}
 
-      {/* Canais — só para utilizadores com sessão */}
-      {canViewChannels ? (
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
-          {match.channels && match.channels.length > 0 ? (
-            match.channels.map((channel) => {
-              const href = getChannelHref(channel);
-              const cls = channelBadgeClass(channel);
-              return href ? (
-                <a
-                  key={channel}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`${cls} transition hover:brightness-110`}
-                >
-                  {channel}
-                </a>
-              ) : (
-                <span key={channel} className={cls}>
-                  {channel}
-                </span>
-              );
-            })
-          ) : (
-            <span className="text-xs text-muted">{t("card.channelTBC")}</span>
-          )}
-        </div>
-      ) : (
-        <ChannelLoginCta />
-      )}
+      {/* Canais — alinhados na base do card */}
+      <div className="mt-auto pt-3">
+        {canViewChannels ? (
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            {match.channels && match.channels.length > 0 ? (
+              match.channels.map((channel) => {
+                const href = getChannelHref(channel);
+                const cls = channelBadgeClass(channel);
+                return href ? (
+                  <a
+                    key={channel}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${cls} transition hover:brightness-110`}
+                  >
+                    {channel}
+                  </a>
+                ) : (
+                  <span key={channel} className={cls}>
+                    {channel}
+                  </span>
+                );
+              })
+            ) : (
+              <span className="text-xs text-muted">{t("card.channelTBC")}</span>
+            )}
+          </div>
+        ) : (
+          <ChannelLoginCta />
+        )}
 
-      {match.group_name && (
-        <p className="mt-2 text-center text-[10px] uppercase tracking-wide text-muted">
-          {match.group_name}
-        </p>
-      )}
+        {match.group_name && (
+          <p className="mt-2 text-center text-[10px] uppercase tracking-wide text-muted">
+            {match.group_name}
+          </p>
+        )}
+      </div>
     </article>
   );
 }
