@@ -114,7 +114,7 @@ export function MatchesView({
 
   if (!mounted) {
     return (
-      <div className="space-y-3">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-40 animate-pulse rounded-2xl bg-surface" />
         ))}
@@ -127,6 +127,7 @@ export function MatchesView({
 
   return (
     <div className="space-y-4">
+      <div className="mx-auto w-full max-w-2xl space-y-4">
       {/* Seletor de dias — scroll horizontal */}
       <div
         ref={scrollRef}
@@ -201,10 +202,11 @@ export function MatchesView({
           {t("matches.myMatches")}
         </button>
       )}
+      </div>
 
       {/* Lista de jogos */}
       {visibleMatches.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border-base bg-surface/50 px-6 py-12 text-center">
+        <div className="mx-auto w-full max-w-7xl rounded-2xl border border-dashed border-border-base bg-surface/50 px-6 py-12 text-center">
           <p className="text-lg font-medium text-foreground">
             {showOnlyFavourites
               ? t("matches.noFavMatches")
@@ -217,7 +219,7 @@ export function MatchesView({
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {visibleMatches.map((match) => (
             <MatchCard
               key={match.fixture_id}

@@ -31,7 +31,7 @@ export function AppHeader() {
   return (
     <SettingsMenuProvider>
     <header className="sticky top-0 z-50 border-b border-border-base bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-3">
+      <div className="flex w-full items-center justify-between gap-2 px-6 py-3">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex flex-col justify-center gap-0.5">
             <Logo
@@ -68,7 +68,7 @@ export function AppHeader() {
           <SettingsMenu />
         </div>
       </div>
-      <nav className="flex gap-1 overflow-x-auto border-t border-border-base px-3 py-2 sm:hidden">
+      <nav className="flex gap-1 overflow-x-auto border-t border-border-base px-6 py-2 sm:hidden">
         {visibleLinks.map((link) => (
           <Link
             key={link.href}
