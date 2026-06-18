@@ -37,13 +37,11 @@ export function AppHeader() {
             <Logo
               height={22}
               textColor="var(--foreground)"
-              accentColor="#F2522E"
               className="shrink-0 sm:hidden"
             />
             <Logo
               height={28}
               textColor="var(--foreground)"
-              accentColor="#F2522E"
               className="hidden shrink-0 sm:block"
             />
             <p className="text-xs text-muted">{t("header.subtitle")}</p>

@@ -21,9 +21,9 @@
   --border-base: #e0d4c5;
   --foreground: #1a1410;
   --muted: #7a6a5a;
-  --accent: #ea580c;
-  --accent-soft: rgba(234, 88, 12, 0.12);
-  --glow: rgba(234, 88, 12, 0.18);
+  --accent: #E0451F;
+  --accent-soft: rgba(224, 69, 31, 0.12);
+  --glow: rgba(224, 69, 31, 0.18);
 }
 
 /* ---- Tema escuro ---- */
@@ -35,9 +35,9 @@
   --border-base: #332b22;
   --foreground: #faf7f4;
   --muted: #9c9289;
-  --accent: #f97316;
-  --accent-soft: rgba(249, 115, 22, 0.14);
-  --glow: rgba(249, 115, 22, 0.22);
+  --accent: #E0451F;
+  --accent-soft: rgba(224, 69, 31, 0.14);
+  --glow: rgba(224, 69, 31, 0.22);
 }
 
 /* ---- Cyberpunk ---- */

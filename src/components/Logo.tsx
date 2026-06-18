@@ -1,14 +1,12 @@
 type LogoProps = {
   height?: number;
   textColor?: string;
-  accentColor?: string;
   className?: string;
 };
 
 export default function Logo({
   height = 28,
   textColor = "#1B2A41",
-  accentColor = "#F2522E",
   className,
 }: LogoProps) {
   const width = (height * 130) / 48;
@@ -34,7 +32,14 @@ export default function Logo({
       >
         WC26
       </text>
-      <rect x="39" y="40" width="52" height="5" rx="2.5" fill={accentColor} />
+      <rect
+        x="39"
+        y="40"
+        width="52"
+        height="5"
+        rx="2.5"
+        style={{ fill: "var(--accent)" }}
+      />
     </svg>
   );
 }
