@@ -2,7 +2,7 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-**Versão actual:** `0.2.0` (2026-06-16) — site público + AdSense verificado.
+**Versão actual:** `0.3.0` (2026-06-19) — branding, layout desktop, jogo em destaque, RSS.
 
 ## Índice
 
@@ -18,17 +18,21 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [operacoes.md](operacoes.md) | Comandos do dia-a-dia |
 | [coding-guidelines.md](coding-guidelines.md) | Convenções de código |
 
-## Estado actual (0.2.0)
+## Estado actual (0.3.0)
 
 | Área | Estado |
 |------|--------|
 | **Produção** | https://wc26.pt |
 | **Jogos** | Públicos (SEO) — equipas, horários, resultados |
-| **Canais TV** | Só com login Google |
+| **Layout homepage** | Destaque full-width + grelha 2 colunas (desktop) |
+| **Bandeiras** | `circle-flags` → `public/flags/` (build) |
+| **Canais TV** | Só com login Google; OndeBola + curadoria PT/UK/USA/Qatar |
+| **Feed RSS** | `/feed/{RSS_FEED_TOKEN}` (secreto, env Vercel) |
 | **GA4** | `G-BEVP34KWFW` + Consent Mode |
 | **AdSense** | Verificado, Auto ads ON (`ca-pub-0320022425990569`) |
 | **Idiomas** | 12 (EN default) |
 | **Temas** | Sistema / Claro / Escuro + Cyberpunk / FIFA 2026 / Japan |
+| **Branding** | Logo SVG, coral `#E0451F`, favicon «26» |
 | **Supabase** | Integração directa com Vercel |
 
 ## Modelo de acesso
@@ -64,6 +68,7 @@ GA4 + AdSense ──► após consentimento de cookies (anúncios visíveis)
 
 | Versão | Data | Resumo |
 |--------|------|--------|
+| **0.3.0** | 2026-06-19 | Branding, destaque, layout 2 colunas, RSS, canais multi-região |
 | **0.2.0** | 2026-06-16 | Público + SEO, AdSense, 12 línguas, temas |
 | **0.1.0** | 2026-06-13 | MVP login + painel definições + deploy |
 

@@ -1,6 +1,6 @@
 # Operações do dia-a-dia
 
-Última actualização: 2026-06-13.
+Última actualização: 2026-06-19.
 
 ## Sync de jogos (API-Football)
 
@@ -72,7 +72,18 @@ Resposta exemplo:
 
 URL: https://wc26.pt/admin
 
-Canais disponíveis: RTP1, RTP2, RTP3, SIC, TVI, Sport TV, DAZN, **LV** (YouTube).
+**Canais OndeBola** (ex. `Sport.Tv1`) vêm do sync automático — aparecem na secção «OndeBola / sync».
+
+**Curadoria manual** por região (toggle por jogo):
+
+| Região | Exemplos |
+|--------|----------|
+| Portugal | RTP1–3, SIC, TVI, Sport.Tv1–5, DAZN, LV |
+| UK | BBC One/Two/iPlayer, ITV, ITV X |
+| USA | Fox, FS1, Telemundo, Peacock, … |
+| Qatar | beIN Sports, Al Kass, Qatar TV |
+
+O sync OndeBola **faz merge** com canais manuais já activados (não os apaga).
 
 Clicar nos botões para activar/desactivar canais por jogo.
 

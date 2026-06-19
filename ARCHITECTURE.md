@@ -67,13 +67,14 @@ CREATE POLICY "profiles_admin_select_all" ON profiles FOR SELECT USING (
 
 | Componente | Função |
 |------------|--------|
-| `MatchCard` | Cartão de jogo com score, equipas, venue, canais, badge ao vivo |
-| `MatchesView` | Lista diária com seletor de dias scrollável + filtro "Os meus jogos" |
-| `AppHeader` | Cabeçalho sticky com nav, avatar do utilizador e badge Admin |
+| `MatchCard` | Cartão de jogo — bandeiras circulares, score/hora discretos, venue, canais na base |
+| `FeaturedMatch` | Jogo em destaque full-width (Portugal → live → próximo → último final) |
+| `MatchesView` | Seletor de dias + destaque + grelha 2 colunas + filtro «Os meus jogos» |
+| `AppHeader` | Cabeçalho full-width com logo SVG, nav, avatar e badge Admin |
 | `AuthStatus` | Avatar/nome do utilizador logado; badge Admin se role=admin |
 | `AccountPanel` | Painel de conta: perfil, favoritos, notificações push |
-| `CoffeeBanner` | Banner "Paga-me um café" / "Buy me a coffee" (PT/EN) |
-| `TeamFlag` | Bandeira + logo da equipa com fallback |
+| `CoffeeBanner` | Banner «Paga-me um café» / «Buy me a coffee» (PT/EN) |
+| `TeamFlag` / `CircleFlag` | Bandeira circular (`circle-flags` → `public/flags/`) com fallback iniciais |
 
 ## Internacionalização (i18n)
 
@@ -105,9 +106,10 @@ Todas as horas apresentadas ao utilizador usam o fuso do browser (auto-detectado
 - **Vercel Speed Insights** — Core Web Vitals por página
 - **Buy Me a Coffee** — `buymeacoffee.com/miguelgarcia` (botão PT/EN na homepage)
 
-## Favicon
+## Favicon e logo
 
-Ícone ⚽ com gradiente laranja → âmbar (`#f97316` → `#fbbf24`) em formato ICO multi-resolução (16px a 256px). Localizado em `src/app/favicon.ico` (Next.js App Router) e `public/favicon.ico`.
+- **Logo** — componente `Logo.tsx` (SVG, Space Grotesk, sublinhado `var(--accent)`).
+- **Favicon** — `src/app/icon.svg` e `public/icon.svg`: «26» em coral `#E0451F` sobre fundo arredondado.
 
 ## Paleta de cores
 
@@ -115,7 +117,7 @@ Todas as horas apresentadas ao utilizador usam o fuso do browser (auto-detectado
 |-------|-------|------|
 | background | `#faf6f0` (creme) | `#0e0b08` (castanho escuro) |
 | surface | `#ffffff` | `#1b1612` |
-| accent | `#ea580c` (laranja) | `#f97316` (laranja) |
+| accent | `#E0451F` (coral) | `#E0451F` (coral) |
 | foreground | `#1a1410` | `#faf7f4` |
 
 ## Deploy
@@ -139,6 +141,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 API_FOOTBALL_KEY
 CRON_SECRET
+RSS_FEED_TOKEN          # feed RSS privado /feed/{token}
 NEXT_PUBLIC_VAPID_PUBLIC_KEY
 VAPID_PRIVATE_KEY
 VAPID_SUBJECT

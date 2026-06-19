@@ -1,6 +1,6 @@
 # Fontes de dados
 
-Última actualização: 2026-06-13.
+Última actualização: 2026-06-19.
 
 ## API-Football
 
@@ -27,20 +27,24 @@
 - **Free:** só épocas 2022–2024 — não serve para WC26
 - **Pro ($19/mês):** necessário para `season=2026`
 
-## Canais TV Portugal
+## Canais TV
 
 **Fonte principal:** [OndeBola.com](https://ondebola.com/) — scrape HTML (port do Leopardo).
 
 - Módulo: `src/lib/ondebola.ts`
 - Sync: `GET /api/sync-broadcasts` (cron diário 07:00 UTC)
 - Match fuzzy: equipas + hora ±90 min (como Leopardo `canal_para_jogo`)
-- Fallback manual: `/admin` (RTP1, SIC, TVI, Sport TV, DAZN, **LV** YouTube, etc.)
+- Nomes literais do scrape (ex. `Sport.Tv1`, `Sport.TV5`) — **não normalizados**
+- **Merge no sync:** canais OndeBola + presets manuais já activados (`mergeBroadcastChannels` em `src/lib/channels.ts`)
+- **Curadoria manual:** `/admin` — listas PT, UK, USA, Qatar (`PT_CHANNELS`, etc.)
 
 Fontes de referência adicionais:
 - Comunicados RTP / Sport TV / SIC
 - Guia oficial FIFA de broadcasters
 - Imprensa desportiva portuguesa
 
-## Bandeiras e logos
+## Bandeiras
 
-Logos de equipas via `media.api-sports.io` (API-Football), com cache via `next/image`.
+**Equipas:** pacote [`circle-flags`](https://github.com/HatScripts/circle-flags) — SVGs em `public/flags/` (sync no `postinstall`/`build`). Mapa nome → código ISO em `src/lib/team-flag-codes.ts`.
+
+**Logos API-Football:** já não usados nos cartões de jogo (substituídos por bandeiras circulares).

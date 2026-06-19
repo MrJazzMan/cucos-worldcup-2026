@@ -2,15 +2,46 @@
 
 Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changelog](https://keepachangelog.com/).
 
-Versão actual em produção: **0.2.0** (`wc26.pt`).
+Versão actual em produção: **0.3.0** (`wc26.pt`).
 
 ---
 
 ## [Unreleased]
 
+_(nada por agora)_
+
+---
+
+## [0.3.0] — 2026-06-19 — Branding, layout desktop e jogo em destaque
+
+**Marco:** nova identidade visual, homepage optimizada para ecrãs largos, feed RSS privado, canais TV multi-região.
+
 ### Adicionado
-- `profiles.last_seen_at` — última visita com sessão activa (migration `005`, `ProfileSync`).
-- Plano de normalização de equipas em `006_teams_normalization_PLAN.sql` (tabela `teams`, FK em `favourite_teams`, `user_follows` futuro). Comentado, não aplicado.
+- **Logo SVG** (`Logo.tsx`) com Space Grotesk e sublinhado `var(--accent)`.
+- **Favicon** novo (`app/icon.svg`, `public/icon.svg`) — «26» em coral.
+- **Jogo em destaque** (`FeaturedMatch`) — card full-width com borda `--accent`; prioridade: Portugal (não terminado) → ao vivo → próximo → último final.
+- **Bandeiras circulares** via pacote [`circle-flags`](https://github.com/HatScripts/circle-flags) — `TeamFlag` / `CircleFlag`; sync para `public/flags/` no `postinstall` e `build` (`scripts/sync-circle-flags.mjs`).
+- **Feed RSS** em `/feed/{RSS_FEED_TOKEN}` — jogos + canais; variável `RSS_FEED_TOKEN` na Vercel (ver `docs/operacoes.md`).
+- **Listas de canais por região** no admin: Portugal, UK, USA, Qatar (`src/lib/channels.ts`).
+- **Merge de broadcasts** no sync OndeBola — preserva canais manuais ao actualizar scrape.
+- **Badge Sport.TV** — styling para variantes OndeBola (`Sport.Tv1`, `Sport.TV5`, …).
+
+### Alterado
+- **Cor de acento** light/dark → `#E0451F` (coral); `--accent-soft` e `--glow` alinhados.
+- **Header** full-width (`px-6`); logótipo usa `--accent` via CSS (sem cor hardcoded).
+- **Homepage desktop** — controlos (dias, café, favoritos) em `max-w-2xl`; grelha de jogos em `max-w-7xl`, máx. **2 colunas**.
+- **MatchCard** — bandeiras dominantes (76px), hora/resultado mais discretos; local em 2 linhas (cidade + bandeira anfitriã, estádio); canais alinhados na base do card (`mt-auto`).
+- **Admin** — secções OndeBola/sync + toggles por região; removido `Sport TV` genérico em favor de `Sport.Tv1–5`.
+
+### Corrigido
+- Space Grotesk no logo SVG via `style` (não atributo `font-family`).
+- Bandeiras 404 na Vercel — ficheiros estáticos em `public/flags/` em vez de `readFile` em `node_modules`.
+- Hora duplicada no `FeaturedMatch` (removida do topo; mantida ao centro).
+
+### Variáveis Vercel (novas)
+| Variável | Uso |
+|----------|-----|
+| `RSS_FEED_TOKEN` | URL secreta do feed RSS (`/feed/…`) |
 
 ---
 

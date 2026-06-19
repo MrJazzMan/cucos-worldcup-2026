@@ -1,6 +1,6 @@
 # Cucos World Cup 2026
 
-**v0.2.0** — Aplicação web responsiva para adeptos portugueses seguirem o Mundial FIFA 2026.
+**v0.3.0** — Aplicação web responsiva para adeptos portugueses seguirem o Mundial FIFA 2026.
 
 Responde rapidamente a:
 - Que jogos há hoje?
