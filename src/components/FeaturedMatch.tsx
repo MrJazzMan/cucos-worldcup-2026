@@ -3,7 +3,6 @@
 import { MatchChannels } from "@/components/match/MatchChannels";
 import { MatchTeamsLayout } from "@/components/match/MatchTeamsLayout";
 import { MatchVenue } from "@/components/match/MatchVenue";
-import { KickoffTime } from "@/components/Display";
 import { useSettings } from "@/components/SettingsProvider";
 import {
   formatKickoffCountdown,
@@ -53,11 +52,6 @@ export function FeaturedMatch({
           )}
           {statusLabel}
         </span>
-        {isUpcoming && (
-          <span className="text-sm font-semibold tabular-nums text-muted">
-            <KickoffTime utc={match.kickoff_utc} />
-          </span>
-        )}
         <span
           className={`ml-auto text-lg ${match.isFavourite ? "text-amber-400" : "text-muted/30"}`}
           aria-hidden
