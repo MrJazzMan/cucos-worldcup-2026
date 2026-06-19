@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "sh -c 'kill $(lsof -t -i:3000) 2>/dev/null || true; rm -rf .next && next dev'",
-    "build": "next build",
+    "build": "node scripts/sync-circle-flags.mjs && next build",
+    "postinstall": "node scripts/sync-circle-flags.mjs",
     "start": "next start",
     "lint": "next lint"
   },

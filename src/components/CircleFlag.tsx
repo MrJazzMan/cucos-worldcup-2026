@@ -14,7 +14,7 @@ export function CircleFlag({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/flags/${code}`}
+      src={`/flags/${code}.svg`}
       width={size}
       height={size}
       alt={title ?? ""}
