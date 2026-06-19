@@ -84,6 +84,7 @@ export async function middleware(request: NextRequest) {
   if (
     !pathname.startsWith("/api/") &&
     !pathname.startsWith("/feed/") &&
+    !pathname.startsWith("/flags/") &&
     isBlockedBot(ua)
   ) {
     return new NextResponse("Access denied", { status: 403 });

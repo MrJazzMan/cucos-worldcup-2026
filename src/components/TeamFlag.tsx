@@ -1,28 +1,30 @@
-import Image from "next/image";
+import { CircleFlag } from "@/components/CircleFlag";
+import { getTeamFlagCode } from "@/lib/team-flag-codes";
 
 interface TeamFlagProps {
   name: string;
-  logo: string | null;
+  teamId?: number;
   size?: number;
+  className?: string;
 }
 
-export function TeamFlag({ name, logo, size = 32 }: TeamFlagProps) {
-  if (logo) {
+export function TeamFlag({
+  name,
+  teamId,
+  size = 48,
+  className,
+}: TeamFlagProps) {
+  const code = getTeamFlagCode(name, teamId);
+
+  if (code) {
     return (
-      <Image
-        src={logo}
-        alt={`Bandeira ${name}`}
-        width={size}
-        height={size}
-        className="rounded-full object-cover"
-        unoptimized
-      />
+      <CircleFlag code={code} size={size} className={className} title={name} />
     );
   }
 
   return (
     <div
-      className="flex items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-muted"
+      className={`flex shrink-0 items-center justify-center rounded-full bg-surface-2 text-xs font-bold text-muted ${className ?? ""}`}
       style={{ width: size, height: size }}
       aria-label={name}
     >

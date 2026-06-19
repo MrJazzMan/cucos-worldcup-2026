@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { useSettings } from "@/components/SettingsProvider";
 import { dateKeyInTz, dayKeyWithOffset } from "@/lib/datetime";
+import { pickFeaturedMatch } from "@/lib/featured-match";
 import type { Match } from "@/types";
 
 type DayMatch = Match & { isFavourite?: boolean };
@@ -95,6 +97,19 @@ export function MatchesView({
     [dayMatches, showOnlyFavourites]
   );
 
+  const featuredMatch = useMemo(
+    () => pickFeaturedMatch(visibleMatches),
+    [visibleMatches]
+  );
+
+  const gridMatches = useMemo(
+    () =>
+      featuredMatch
+        ? visibleMatches.filter((m) => m.fixture_id !== featuredMatch.fixture_id)
+        : visibleMatches,
+    [visibleMatches, featuredMatch]
+  );
+
   const hasLiveToday = useMemo(
     () =>
       matches.some(
@@ -114,10 +129,13 @@ export function MatchesView({
 
   if (!mounted) {
     return (
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-40 animate-pulse rounded-2xl bg-surface" />
-        ))}
+      <div className="mx-auto w-full max-w-7xl space-y-3">
+        <div className="h-52 animate-pulse rounded-2xl bg-surface" />
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-48 animate-pulse rounded-2xl bg-surface" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -219,14 +237,24 @@ export function MatchesView({
           </p>
         </div>
       ) : (
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-stretch gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {visibleMatches.map((match) => (
-            <MatchCard
-              key={match.fixture_id}
-              match={match}
+        <div className="mx-auto w-full max-w-7xl space-y-4">
+          {featuredMatch && (
+            <FeaturedMatch
+              match={featuredMatch}
               canViewChannels={canViewChannels}
             />
-          ))}
+          )}
+          {gridMatches.length > 0 && (
+            <div className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
+              {gridMatches.map((match) => (
+                <MatchCard
+                  key={match.fixture_id}
+                  match={match}
+                  canViewChannels={canViewChannels}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

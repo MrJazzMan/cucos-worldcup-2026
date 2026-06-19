@@ -9,6 +9,12 @@ const HOST_COUNTRY: Record<string, { flag: string; labelPt: string; labelEn: str
   Mexico: { flag: "🇲🇽", labelPt: "México", labelEn: "Mexico" },
 };
 
+const HOST_COUNTRY_CODE: Record<keyof typeof HOST_COUNTRY, string> = {
+  USA: "us",
+  Canada: "ca",
+  Mexico: "mx",
+};
+
 type CityHostMeta = {
   country: keyof typeof HOST_COUNTRY;
   statePt: string;
@@ -43,12 +49,19 @@ export interface VenueDisplay {
   stadium: string | null;
   countryFlag: string | null;
   countryLabel: string | null;
+  hostCountryCode: string | null;
 }
 
 /** Parse venue guardado como "Cidade · Estádio" ou só estadio. */
 export function parseVenue(venue: string | null | undefined): VenueDisplay {
   if (!venue) {
-    return { city: null, stadium: null, countryFlag: null, countryLabel: null };
+    return {
+      city: null,
+      stadium: null,
+      countryFlag: null,
+      countryLabel: null,
+      hostCountryCode: null,
+    };
   }
 
   const parts = venue.split(" · ").map((p) => p.trim());
@@ -63,6 +76,7 @@ export function parseVenue(venue: string | null | undefined): VenueDisplay {
     stadium,
     countryFlag: host?.flag ?? null,
     countryLabel: host?.labelPt ?? null,
+    hostCountryCode: hostMeta ? HOST_COUNTRY_CODE[hostMeta.country] : null,
   };
 }
 

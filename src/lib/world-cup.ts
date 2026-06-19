@@ -2,6 +2,9 @@
 export const WC_LEAGUE_ID = 1;
 export const WC_SEASON = 2026;
 
+/** API-Football team id — Seleção de Portugal */
+export const PORTUGAL_TEAM_ID = 27;
+
 /** Ronda pertence ao Mundial 2026? */
 export function isWorldCupRound(round: string | null | undefined): boolean {
   if (!round) return false;
