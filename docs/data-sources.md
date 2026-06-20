@@ -15,7 +15,7 @@
 | `GET /fixtures?league=1&season=2026` | Calendário completo |
 | `GET /fixtures?live=all` | Jogos ao vivo |
 | `GET /fixtures?ids=id1-id2-…` | Batch até 20 — scores + **events** (marcadores) |
-| `GET /standings?league=1&season=2026` | Classificações de grupo |
+| `GET /standings?league=1&season=2026` | Mapa **equipa → grupo** (48 equipas); fallback de leitura em `/grupos` |
 | `GET /fixtures/rounds?league=1&season=2026` | Rondas eliminatórias |
 
 ### Frequência de sync
@@ -27,8 +27,24 @@
 | 07:00 UTC | Vercel cron → `/api/sync-broadcasts` |
 | Durante jogos | QStash → `/api/sync/live` (~5 min por jogo) |
 | Homepage | `router.refresh()` 30s/90s (lê Supabase) |
+| `/grupos` | ISR 60s; pontos calculados dos jogos `finished` na BD |
 
 Detalhes: [operacoes.md](operacoes.md), [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md).
+
+### Classificações de grupo (`/grupos`)
+
+**Não** usamos os pontos do endpoint `/standings` directamente — a API atrasa-se face aos fixtures (ex.: Alemanha P=1 enquanto o 2.º jogo já tinha terminado).
+
+| Dado | Fonte |
+|------|--------|
+| Resultados (score, status) | Tabela `matches` (sync live/full) |
+| Equipa pertence a que grupo | `buildTeamGroupMap()` ← `/standings` |
+| P, W, D, L, GD, Pts | `computeStandingsFromMatches()` em `src/lib/standings.ts` |
+| Cache | Tabela `group_standings` (migration `013`) |
+
+**Armadilha API:** nos fixtures, `league.round` vem como `"Group Stage - 1"` (jornada), **não** `"Group E"`. Por isso `group_name` fica NULL na BD e é preciso o mapa equipa→grupo.
+
+**Atribuição equipa→grupo:** estática durante o torneio (48 equipas); pontos derivam sempre dos jogos terminados na BD.
 
 ### Plano API
 

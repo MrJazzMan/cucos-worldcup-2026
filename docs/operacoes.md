@@ -1,6 +1,6 @@
 # Operações do dia-a-dia
 
-Última actualização: 2026-06-20.
+Última actualização: 2026-06-21.
 
 ## Sync de jogos (API-Football)
 
@@ -11,10 +11,22 @@ curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync
 Resposta esperada:
 
 ```json
-{"ok":true,"synced":72,"goalsSynced":48,"source":"api-football","liveSyncScheduled":{"fixtures":3,"slotsQueued":84,"slotsSkipped":0,"slotsFailed":0}}
+{
+  "ok": true,
+  "synced": 72,
+  "goalsSynced": 48,
+  "standingsSynced": 12,
+  "standingsGroupMatches": 72,
+  "standingsTeamsMapped": 48,
+  "source": "api-football",
+  "liveSyncScheduled": { "fixtures": 8, "slotsQueued": 0, "slotsSkipped": 224, "slotsFailed": 0 }
+}
 ```
 
 - `synced` varia conforme jogos publicados na API (máx. ~104)
+- `standingsSynced` = n.º de grupos gravados (esperado **12**)
+- `standingsGroupMatches` = jogos de fase de grupos considerados no cálculo
+- `standingsTeamsMapped` = equipas no mapa equipa→grupo (esperado **48**); se **0**, `/standings` falhou
 - Se `source: mock-fallback` → API key em falta ou plano Free (sem 2026)
 
 ### Sync live (durante jogos)
@@ -22,6 +34,8 @@ Resposta esperada:
 ```bash
 curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync/live
 ```
+
+Resposta inclui `standingsSynced`, `standingsGroupMatches`, `standingsTeamsMapped` (mesmo formato que o sync full, sem `liveSyncScheduled` se não correr schedule).
 
 No modo `live`, o sync usa:
 - fixtures em directo (`live=all`)
@@ -80,6 +94,38 @@ Ver mensagens agendadas: Upstash Console → QStash → Logs.
 Com o separador **Hoje** aberto, a página refresca sozinha (**30s** se há jogos ao
 vivo, **90s** caso contrário). Os cartões mostram marcador, minuto e etiqueta
 "Ao vivo / Live".
+
+---
+
+## Classificações de grupo (`/grupos`)
+
+Actualizadas automaticamente em cada sync live/full. Pontos calculados a partir dos jogos `finished` na BD — **não** copiados directamente de `/standings` da API.
+
+**Migration obrigatória:** `013_group_standings.sql`
+
+```bash
+# Repor calendário + classificações (se algo correu mal)
+curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync
+```
+
+Verificar na BD:
+
+```sql
+-- Alemanha no Grupo E (exemplo)
+SELECT m.match_date, m.home_team_name, m.home_score, m.away_score, m.away_team_name, m.status
+FROM matches m
+WHERE m.home_team_name ILIKE '%Germany%' OR m.away_team_name ILIKE '%Germany%'
+ORDER BY m.kickoff_utc;
+
+SELECT rows FROM group_standings WHERE group_name = 'Grupo E';
+```
+
+| Sintoma | Acção |
+|---------|--------|
+| Pontos desactualizados | Hard refresh (`Cmd+Shift+R`); `/api/sync/live` |
+| `standingsSynced: 0` | Ver `standingsTeamsMapped`; se 0 → retry (rate limit API) |
+| `standingsGroupMatches: 0` | Correr `/api/sync` full — calendário pode ter sido apagado |
+| Equipa com P errado mas jogos OK na homepage | Pontos vêm da BD; confirmar `status = finished` e scores no fixture |
 
 ---
 
@@ -201,6 +247,8 @@ Nunca commitar ficheiros com chaves.
 | QStash 403 / sync live não corre | Cloudflare: allow `/api/sync/live`; confirmar `SITE_URL=https://wc26.pt` no Vercel |
 | `slotsFailed` > 0 no schedule | Ver logs Vercel; confirmar `QSTASH_TOKEN` e migration `010_live_sync_slots` |
 | Safari falha no callback OAuth | Limpar Website Data (`wc26.pt`, `supabase.co`, `localhost`) e repetir login em `wc26.pt` |
+| Classificações `/grupos` atrasadas | `/api/sync/live`; ver secção Classificações acima |
+| `standingsTeamsMapped: 0` | Rate limit API-Football `/standings`; aguardar e repetir sync |
 
 ---
 
