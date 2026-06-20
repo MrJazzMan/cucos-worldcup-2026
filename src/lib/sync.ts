@@ -23,9 +23,23 @@ async function purgeNonWorldCupMatches(
   const { data: all } = await admin.from("matches").select("fixture_id");
   if (!all?.length) return;
 
-  const validIds = new Set(
-    (await fetchAllFixtures()).map((f) => f.fixture.id)
-  );
+  const fixtures = await fetchAllFixtures();
+  if (!fixtures.length) {
+    console.warn(
+      "purgeNonWorldCupMatches: fetchAllFixtures vazio — purge ignorado"
+    );
+    return;
+  }
+
+  const validIds = new Set(fixtures.map((f) => f.fixture.id));
+
+  // Protege contra respostas parciais / rate-limit que apagariam o calendário inteiro.
+  if (validIds.size < 40) {
+    console.warn(
+      `purgeNonWorldCupMatches: só ${validIds.size} fixtures válidos — purge ignorado`
+    );
+    return;
+  }
 
   const toDelete = all
     .filter((m) => !validIds.has(m.fixture_id))
@@ -106,9 +120,8 @@ export async function syncMatches(mode: "full" | "live" = "full") {
 
     if (mode === "full") {
       await purgeMockMatches(admin);
+      await purgeNonWorldCupMatches(admin);
     }
-
-    await purgeNonWorldCupMatches(admin);
 
     return {
       synced: rows.length,

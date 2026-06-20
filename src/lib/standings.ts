@@ -235,7 +235,12 @@ export async function syncGroupStandings(): Promise<number> {
   const matches = await loadGroupStageMatchesForSync();
   const groups = computeStandingsFromMatches(matches);
 
-  if (!groups.length) return 0;
+  if (!groups.length) {
+    console.warn(
+      `syncGroupStandings: 0 grupos (${matches.length} jogos de grupo na BD)`
+    );
+    return 0;
+  }
 
   const admin = createSupabaseAdmin();
   const now = new Date().toISOString();
