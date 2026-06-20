@@ -5,6 +5,7 @@ import {
   fetchLiveFixtures,
   mapFixtureToMatch,
 } from "@/lib/api-football";
+import { syncGoalEventsForFixtures } from "@/lib/match-events";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { MOCK_MATCHES } from "@/lib/mock-data";
 
@@ -86,13 +87,24 @@ export async function syncMatches(mode: "full" | "live" = "full") {
 
     if (error) throw error;
 
+    const eventFixtureIds = rows
+      .filter((r) => r.status === "live" || r.status === "finished")
+      .map((r) => r.fixture_id);
+    const goalsSynced = await syncGoalEventsForFixtures(eventFixtureIds, {
+      resyncLive: mode === "live",
+    });
+
     if (mode === "full") {
       await purgeMockMatches(admin);
     }
 
     await purgeNonWorldCupMatches(admin);
 
-    return { synced: rows.length, source: "api-football" };
+    return {
+      synced: rows.length,
+      goalsSynced,
+      source: "api-football",
+    };
   } catch (err) {
     console.error("Sync error:", err);
     await seedMockMatches(admin);

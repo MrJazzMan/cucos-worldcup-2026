@@ -2,7 +2,9 @@
 
 import { KickoffTime, TeamName } from "@/components/Display";
 import { MatchFinishedKickoff } from "@/components/match/MatchFinishedKickoff";
+import { MatchTeamScorers } from "@/components/match/MatchTeamScorers";
 import { TeamFlag } from "@/components/TeamFlag";
+import { goalsForTeam } from "@/lib/match-events";
 import type { Match } from "@/types";
 
 type MatchTeamsLayoutProps = {
@@ -15,22 +17,50 @@ type MatchTeamsLayoutProps = {
 
 const SIZES = {
   card: {
-    flag: 76,
+    flag: 68,
     name: "text-sm font-bold leading-tight sm:text-base",
     score: "text-2xl",
     scoreDash: "text-lg",
-    center: "w-20",
-    gap: "gap-3",
+    center: "w-[4.5rem]",
+    gap: "gap-2.5",
+    teamGap: "gap-1.5",
   },
   featured: {
-    flag: 104,
+    flag: 96,
     name: "text-base font-bold leading-tight sm:text-lg",
     score: "text-4xl",
     scoreDash: "text-2xl",
     center: "w-28",
     gap: "gap-4",
+    teamGap: "gap-2",
   },
 } as const;
+
+function TeamColumn({
+  teamId,
+  teamName,
+  goals,
+  sizes,
+  variant,
+}: {
+  teamId: number;
+  teamName: string;
+  goals: ReturnType<typeof goalsForTeam>;
+  sizes: (typeof SIZES)[keyof typeof SIZES];
+  variant: "card" | "featured";
+}) {
+  return (
+    <div
+      className={`flex min-w-0 flex-1 flex-col items-center text-center ${sizes.teamGap}`}
+    >
+      <TeamFlag name={teamName} teamId={teamId} size={sizes.flag} />
+      <p className={`${sizes.name} text-foreground`}>
+        <TeamName name={teamName} />
+      </p>
+      <MatchTeamScorers goals={goals} variant={variant} />
+    </div>
+  );
+}
 
 export function MatchTeamsLayout({
   match,
@@ -42,24 +72,24 @@ export function MatchTeamsLayout({
   const sizes = SIZES[variant];
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
+  const showScoreboard = isLive || isFinished;
+  const homeGoals = goalsForTeam(match.goal_events, match.home_team_id);
+  const awayGoals = goalsForTeam(match.goal_events, match.away_team_id);
 
   return (
-    <div className={`flex items-center justify-between ${sizes.gap}`}>
-      <div className="flex min-w-0 flex-1 flex-col items-center gap-2.5 text-center">
-        <TeamFlag
-          name={match.home_team_name}
-          teamId={match.home_team_id}
-          size={sizes.flag}
-        />
-        <p className={`${sizes.name} text-foreground`}>
-          <TeamName name={match.home_team_name} />
-        </p>
-      </div>
+    <div className={`flex items-start justify-between ${sizes.gap}`}>
+      <TeamColumn
+        teamId={match.home_team_id}
+        teamName={match.home_team_name}
+        goals={showScoreboard ? homeGoals : []}
+        sizes={sizes}
+        variant={variant}
+      />
 
       <div
-        className={`flex ${sizes.center} shrink-0 flex-col items-center justify-center gap-1`}
+        className={`flex ${sizes.center} shrink-0 flex-col items-center justify-center gap-1 self-center`}
       >
-        {(isLive || isFinished) && match.home_score != null ? (
+        {showScoreboard && match.home_score != null ? (
           <p
             className={`flex items-center gap-1.5 font-bold tabular-nums ${sizes.score} ${
               isLive ? "text-red-500" : "text-foreground"
@@ -91,16 +121,13 @@ export function MatchTeamsLayout({
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col items-center gap-2.5 text-center">
-        <TeamFlag
-          name={match.away_team_name}
-          teamId={match.away_team_id}
-          size={sizes.flag}
-        />
-        <p className={`${sizes.name} text-foreground`}>
-          <TeamName name={match.away_team_name} />
-        </p>
-      </div>
+      <TeamColumn
+        teamId={match.away_team_id}
+        teamName={match.away_team_name}
+        goals={showScoreboard ? awayGoals : []}
+        sizes={sizes}
+        variant={variant}
+      />
     </div>
   );
 }

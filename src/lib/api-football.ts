@@ -214,3 +214,18 @@ export async function fetchTeams() {
     { team: { id: number; name: string; logo: string } }[]
   >("/teams?league=1&season=2026", { revalidate: 3600 });
 }
+
+export interface ApiFixtureEvent {
+  time: { elapsed: number; extra: number | null };
+  team: { id: number; name: string };
+  player: { id: number | null; name: string | null };
+  type: string;
+  detail: string;
+}
+
+export async function fetchFixtureEvents(fixtureId: number) {
+  return apiFetch<ApiFixtureEvent[]>(
+    `/fixtures/events?fixture=${fixtureId}`,
+    { revalidate: 0 }
+  );
+}

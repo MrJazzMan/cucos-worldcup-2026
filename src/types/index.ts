@@ -21,6 +21,17 @@ export interface Match {
   group_name: string | null;
   venue: string | null;
   channels?: string[];
+  goal_events?: MatchGoalEvent[];
+}
+
+export type MatchGoalDetail = "Normal Goal" | "Penalty" | "Own Goal" | "Free Kick";
+
+export interface MatchGoalEvent {
+  player: string;
+  minute: number;
+  extra: number | null;
+  team_id: number;
+  detail: MatchGoalDetail | string;
 }
 
 export interface Broadcast {

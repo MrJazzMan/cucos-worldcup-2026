@@ -46,6 +46,11 @@ export const MOCK_MATCHES: Omit<Match, "channels">[] = [
     away_score: 1,
     status: "finished",
     minute: 90,
+    goal_events: [
+      { player: "Ronaldo", minute: 34, extra: null, team_id: 27, detail: "Penalty" },
+      { player: "Leão", minute: 78, extra: null, team_id: 27, detail: "Normal Goal" },
+      { player: "Bakambu", minute: 61, extra: null, team_id: 801, detail: "Normal Goal" },
+    ],
     round: "Group Stage - 1",
     group_name: "Grupo K",
     venue: "MetLife Stadium",
@@ -64,6 +69,10 @@ export const MOCK_MATCHES: Omit<Match, "channels">[] = [
     away_score: 1,
     status: "live",
     minute: 67,
+    goal_events: [
+      { player: "Vinícius Jr.", minute: 23, extra: null, team_id: 10, detail: "Normal Goal" },
+      { player: "En-Nesyri", minute: 55, extra: null, team_id: 15, detail: "Normal Goal" },
+    ],
     round: "Group Stage - 2",
     group_name: "Grupo C",
     venue: "Hard Rock Stadium",
