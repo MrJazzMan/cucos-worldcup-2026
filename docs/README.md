@@ -2,13 +2,13 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-**Versão actual:** `0.4.0` (2026-06-19) — fase final, canais públicos, animações, bottom nav.
+**Versão actual:** `0.4.0` — sync live QStash, marcadores, calendário iCal, painel novidades (ver [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md)).
 
 ## Índice
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [**sessao-handoff-jun-2026.md**](sessao-handoff-jun-2026.md) | **Handoff sessão** — estado, pendências, ficheiros |
+| [**sessao-handoff-jun-2026.md**](sessao-handoff-jun-2026.md) | **Handoff Jun 2026** — QStash, marcadores, migrations, ops |
 | [historico-e-setup.md](historico-e-setup.md) | Stack, Supabase, Vercel, domínio, dados reais |
 | [deploy.md](deploy.md) | Vercel, variáveis, crons, pós-deploy |
 | [setup-analytics-ads.md](setup-analytics-ads.md) | GA4 + AdSense (verificação, env vars) |
@@ -27,7 +27,10 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | **Jogos** | Públicos (SEO) — equipas, horários, resultados, **canais TV** |
 | **Fase final** | https://wc26.pt/fasefinal — bracket desktop + preview FIFA |
 | **Layout homepage** | `max-w-7xl` alinhado; destaque + grelha 2 colunas |
-| **Favoritos** | Estrela nos cards (requer login) |
+| **Marcadores** | Golos por equipa (live + final) |
+| **Sync live** | QStash + refresh 30s na homepage |
+| **Calendário** | iCal favoritos (login) |
+| **Novidades** | Banner 1× na homepage |
 | **Mobile nav** | Bottom bar 5 itens (< 640px) |
 | **Bandeiras** | `circle-flags` → `public/flags/` (build) |
 | **Feed RSS** | `/feed/{RSS_FEED_TOKEN}` (secreto, env Vercel) |

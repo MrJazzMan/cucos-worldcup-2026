@@ -145,4 +145,17 @@ export const en: Dict = {
   "consent.accept": "Accept",
   "consent.reject": "Decline",
   "ads.label": "Advertisement",
+  "whatsNew.title": "What's new",
+  "whatsNew.dismiss": "Got it",
+  "whatsNew.close": "Close what's new",
+  "whatsNew.item.scorers":
+    "Goal scorers on live and finished matches — see who scored and when.",
+  "whatsNew.item.liveScores":
+    "Scores update almost in real time during matches — the page refreshes automatically.",
+  "whatsNew.item.finishedTime":
+    "Kick-off time shown on finished matches.",
+  "whatsNew.item.calendar":
+    "Phone calendar — when signed in, subscribe to your favourite teams' matches (Profile menu).",
+  "whatsNew.item.readability":
+    "Larger text for scorers, city and stadium — easier to read.",
 };

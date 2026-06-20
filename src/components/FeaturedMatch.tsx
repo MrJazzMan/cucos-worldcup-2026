@@ -80,7 +80,7 @@ export function FeaturedMatch({
       />
 
       <div className="mt-5">
-        <MatchVenue venue={match.venue} />
+        <MatchVenue venue={match.venue} variant="featured" />
       </div>
 
       <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">

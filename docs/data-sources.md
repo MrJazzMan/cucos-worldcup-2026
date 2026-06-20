@@ -1,6 +1,6 @@
 # Fontes de dados
 
-Última actualização: 2026-06-19.
+Última actualização: 2026-06-21.
 
 ## API-Football
 
@@ -14,13 +14,21 @@
 |----------|-----|
 | `GET /fixtures?league=1&season=2026` | Calendário completo |
 | `GET /fixtures?live=all` | Jogos ao vivo |
+| `GET /fixtures?ids=id1-id2-…` | Batch até 20 — scores + **events** (marcadores) |
 | `GET /standings?league=1&season=2026` | Classificações de grupo |
 | `GET /fixtures/rounds?league=1&season=2026` | Rondas eliminatórias |
 
 ### Frequência de sync
 
-- Cron Vercel: 06:00 UTC (`/api/sync`), 07:00 UTC (`/api/sync-broadcasts`)
-- Durante o torneio: sync manual via `curl` recomendado (ver [operacoes.md](operacoes.md))
+| Quando | Como |
+|--------|------|
+| 05:00 UTC | Vercel cron → `/api/sync/schedule` (agenda QStash) |
+| 06:00 UTC | Vercel cron → `/api/sync` (full + agenda) |
+| 07:00 UTC | Vercel cron → `/api/sync-broadcasts` |
+| Durante jogos | QStash → `/api/sync/live` (~5 min por jogo) |
+| Homepage | `router.refresh()` 30s/90s (lê Supabase) |
+
+Detalhes: [operacoes.md](operacoes.md), [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md).
 
 ### Plano API
 

@@ -17,7 +17,7 @@ function goalSuffix(detail: string): string {
 export function MatchTeamScorers({ goals, variant }: MatchTeamScorersProps) {
   if (!goals.length) return null;
 
-  const textSize = variant === "featured" ? "text-sm" : "text-xs";
+  const textSize = variant === "featured" ? "text-base" : "text-sm";
 
   return (
     <ul

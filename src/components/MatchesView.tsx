@@ -13,6 +13,7 @@ import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
+import { WhatsNewBanner } from "@/components/WhatsNewBanner";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { useSettings } from "@/components/SettingsProvider";
 import { dateKeyInTz, dayKeyWithOffset } from "@/lib/datetime";
@@ -264,6 +265,9 @@ export function MatchesView({
           )}
         </div>
       </div>
+
+      {/* Novidades (1× por versão, localStorage) */}
+      <WhatsNewBanner />
 
       {/* Banner café */}
       <div className="w-full rounded-2xl border border-border-base bg-surface/60 px-4 py-2.5">

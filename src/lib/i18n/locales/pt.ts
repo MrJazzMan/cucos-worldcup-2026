@@ -145,4 +145,17 @@ export const pt: Dict = {
   "consent.accept": "Aceitar",
   "consent.reject": "Recusar",
   "ads.label": "Publicidade",
+  "whatsNew.title": "Novidades",
+  "whatsNew.dismiss": "Entendi",
+  "whatsNew.close": "Fechar novidades",
+  "whatsNew.item.scorers":
+    "Marcadores nos jogos ao vivo e terminados — vês quem marcou e em que minuto.",
+  "whatsNew.item.liveScores":
+    "Resultados quase em tempo real durante os jogos — a página actualiza-se sozinha.",
+  "whatsNew.item.finishedTime":
+    "Hora de início visível nos jogos já terminados.",
+  "whatsNew.item.calendar":
+    "Calendário no telemóvel — com sessão iniciada, subscreve os jogos das tuas equipas favoritas (menu Perfil).",
+  "whatsNew.item.readability":
+    "Marcadores, cidade e estádio com texto maior — mais fácil de ler.",
 };

@@ -54,6 +54,11 @@ git push -u origin main
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role (sync, push, admin) |
 | `API_FOOTBALL_KEY` | Chave API-Football |
 | `CRON_SECRET` | Token para proteger crons |
+| `SITE_URL` | URL pública (`https://wc26.pt`) — callbacks QStash |
+| `QSTASH_URL` | Região QStash (ex. `https://qstash-eu-central-1.upstash.io`) |
+| `QSTASH_TOKEN` | Token Upstash QStash |
+| `QSTASH_CURRENT_SIGNING_KEY` | Verificação webhooks QStash |
+| `QSTASH_NEXT_SIGNING_KEY` | Rotação signing keys |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Chave pública Web Push |
 | `VAPID_PRIVATE_KEY` | Chave privada Web Push |
 | `NEXT_PUBLIC_SITE_URL` | URL de produção |
@@ -101,9 +106,14 @@ curl -X POST -H "Authorization: Bearer $CRON_SECRET" https://<dominio>/api/seed-
 
 ## Crons
 
-Definidos em `vercel.json`:
-- Sync live: cada minuto
-- Sync completo: cada 5 minutos
-- Push notifications: cada minuto
+Definidos em `vercel.json` (plano Hobby = 1×/dia cada):
 
-Nota: plano Vercel Hobby limita crons a 1x/dia. Para produção durante o torneio, usar plano Pro ou Supabase Edge Functions como alternativa.
+| Hora UTC | Path | Função |
+|----------|------|--------|
+| 05:00 | `/api/sync/schedule` | Agenda slots QStash (próx. 48 h) |
+| 06:00 | `/api/sync` | Sync completo API-Football + agenda |
+| 07:00 | `/api/sync-broadcasts?today=1` | Canais OndeBola |
+
+**Sync live durante jogos:** Upstash QStash (não Vercel cron). Ver [operacoes.md](operacoes.md).
+
+O Vercel envia `Authorization: Bearer $CRON_SECRET` automaticamente nos crons.

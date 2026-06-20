@@ -8,7 +8,22 @@ Versão actual em produção: **0.4.0** (`wc26.pt`).
 
 ## [Unreleased]
 
-_(nada por agora)_
+### Adicionado
+- Painel **Novidades** na homepage (1× por versão, `localStorage`).
+- Sync live agendado por jogo via **Upstash QStash** (`/api/sync/live`, `/api/sync/schedule`).
+- **Marcadores** (`goal_events`) nos cartões ao vivo/terminados.
+- Feed **iCal** para equipas favoritas (login, `/calendar/[token]`).
+- Migration `010_live_sync_slots.sql` (dedupe slots QStash).
+
+### Alterado
+- Tipografia maior: marcadores, cidade e estádio nos cartões.
+- Sync de marcadores em batch (`/fixtures?ids=`) para evitar rate limit API-Football.
+- GitHub Actions live-sync desactivado (backup manual); QStash substitui.
+- Crons Vercel: +05:00 UTC `/api/sync/schedule`.
+
+### Corrigido
+- Hora de **kickoff** (não fim estimado) nos jogos terminados.
+- Layout cartões com muitos marcadores (`items-start`, coluna central centrada).
 
 ---
 

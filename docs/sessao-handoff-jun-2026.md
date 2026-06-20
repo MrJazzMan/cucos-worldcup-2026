@@ -1,7 +1,7 @@
-# Handoff de sessão — Junho 2026
+# Handoff de sessão — Junho 2026 (sync live, marcadores, QStash)
 
-Documento para retomar trabalho noutra sessão. **Última actualização:** 2026-06-19.  
-**Commits recentes em `main`:** `d92df4e` → `91c628e` → `04fe67e` (ver `git log`).
+Documento para retomar trabalho noutra sessão. **Última actualização:** 2026-06-21.  
+**Commit principal:** `8529827` — `feat(sync): schedule live match updates with Upstash QStash`
 
 ---
 
@@ -9,136 +9,159 @@ Documento para retomar trabalho noutra sessão. **Última actualização:** 2026
 
 | Área | Estado |
 |------|--------|
-| Homepage | Pública; canais visíveis **sem login**; layout `max-w-7xl` alinhado |
-| Favoritos | Estrela clicável nos cards (login opcional); filtro «Os meus jogos» |
-| `/fasefinal` | Chave eliminatória — preview FIFA 2026 + bracket simétrico desktop |
-| `/eliminatorias` | Redirect 308 → `/fasefinal` |
-| `/grupos` | Tabelas com colunas alinhadas (`table-fixed` + `colgroup`) |
-| Mobile nav | Bottom bar (Jogos, Grupos, Fase final, Favoritos, Perfil) |
-| Animações | Pop estrela (1), hover card (2), pulso ao vivo (3) — ver `globals.css` |
-
-**Já não é necessário:** `NEXT_PUBLIC_SHOW_KNOCKOUTS` (flag removida; `src/lib/features.ts` apagado).
+| **Sync live** | Upstash QStash — polling por jogo (kickoff−15 … +125 min, cada 5 min) |
+| **Marcadores** | Golos ao vivo/terminados sob cada equipa (`goal_events` na BD) |
+| **Homepage refresh** | 30s se há jogos live hoje; 90s caso contrário |
+| **Calendário iCal** | Login → Perfil → link subscrição (`/calendar/[token]`) |
+| **Novidades (UI)** | Painel 1× por versão (`WhatsNewBanner`, `WHATS_NEW_VERSION`) |
+| **Tipografia** | Marcadores + local/estádio em `text-sm` nos cards |
 
 ---
 
-## Rotas
+## Para o utilizador final (resumo)
 
-| Rota | Ficheiro | Notas |
-|------|----------|-------|
-| `/` | `src/app/page.tsx` | `MatchesView`; canais sempre carregados |
-| `/grupos` | `src/app/grupos/page.tsx` | Classificações API-Football |
-| `/fasefinal` | `src/app/fasefinal/page.tsx` | Página canónica eliminatórias |
-| `/eliminatorias` | `src/app/eliminatorias/page.tsx` | `permanentRedirect("/fasefinal")` |
-| `/conta` | `src/app/conta/page.tsx` | Redirect → `/` (conta no menu Perfil) |
+1. **Marcadores** — quem marcou e em que minuto (live e final).
+2. **Quase tempo real** — durante jogos, resultados actualizam sozinhos (QStash + refresh da página).
+3. **Hora de início** nos jogos terminados (não hora de fim).
+4. **Calendário** no telemóvel para equipas favoritas (com login).
+5. **Texto maior** para marcadores, cidade e estádio.
+
+Painel **Novidades** na homepage: aparece uma vez por browser até clicar «Entendi». Para mostrar de novo, bump `WHATS_NEW_VERSION` em `src/lib/whats-new.ts`.
 
 ---
 
-## Fase Final — arquitectura
+## Arquitectura sync
 
 ```
-src/lib/knockout-bracket.ts      — rondas, placeholders FIFA (KNOCKOUT_SKELETON), buildKnockoutColumns()
-src/lib/knockout-bracket-tree.ts — árvore recursiva metade esquerda/direita
-src/components/KnockoutBracket.tsx           — wrapper: desktop + mobile
-src/components/knockout/KnockoutBracketDesktop.tsx  — lg+: chave simétrica + conectores
-src/components/knockout/BracketSlotCard.tsx  — card partilhado (match / preview / TBD)
+┌─────────────────────────────────────────────────────────────┐
+│  Vercel Cron 05:00  →  GET /api/sync/schedule               │
+│  Vercel Cron 06:00  →  GET /api/sync (full + schedule)      │
+└────────────────────────────┬────────────────────────────────┘
+                             │ publica slots (notBefore)
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Upstash QStash  →  POST /api/sync/live (assinatura)        │
+│  ~28 pings/jogo: kickoff−15 … +115 (5 min) + +125 final     │
+└────────────────────────────┬────────────────────────────────┘
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│  syncMatches("live")  →  API-Football  →  Supabase matches  │
+│  syncGoalEventsForFixtures  →  goal_events (batch /ids)     │
+└────────────────────────────┬────────────────────────────────┘
+                             ▼
+                    Visitantes (router.refresh 30s)
 ```
 
-- **Desktop (`lg+`):** metade esquerda (8×32 avos → meia) | centro (Final + 3.º) | metade direita espelhada.
-- **Mobile (`< lg`):** colunas horizontais com scroll (layout anterior).
-- **Sem jogos na DB:** `preview={true}` — placeholders `2A`, `V73`, etc.
-- **Com jogos:** calendário com `MatchCard` abaixo da chave.
-
-Dados: `getKnockoutRounds()` em `matches.ts` — Supabase primeiro, API-Football fallback; broadcasts incluídos.
+**Importante:** sync **não é por utilizador** — um ping QStash actualiza a BD para todos.
 
 ---
 
-## Modelo de acesso (actualizado)
+## Ficheiros-chave
 
+| Ficheiro | Função |
+|----------|--------|
+| `src/lib/live-sync-schedule.ts` | Gera slots; publica QStash; dedupe `live_sync_slots` |
+| `src/lib/qstash.ts` | Cliente QStash + verificação assinatura |
+| `src/app/api/sync/live/route.ts` | Callback QStash + GET manual (CRON_SECRET) |
+| `src/app/api/sync/schedule/route.ts` | Cron diário agenda slots |
+| `src/lib/match-events.ts` | Mapeia eventos API → `goal_events` |
+| `src/components/match/MatchTeamScorers.tsx` | UI marcadores |
+| `src/components/match/MatchVenue.tsx` | Cidade + estádio |
+| `src/components/WhatsNewBanner.tsx` | Painel novidades |
+| `src/lib/whats-new.ts` | Versão + localStorage |
+| `supabase/migrations/009_goal_events.sql` | Coluna `goal_events` |
+| `supabase/migrations/010_live_sync_slots.sql` | Tabela dedupe (RLS on, sem políticas) |
+| `vercel.json` | Crons 05:00 schedule, 06:00 sync, 07:00 broadcasts |
+
+---
+
+## Variáveis Vercel (Production)
+
+| Variável | Obrigatório | Notas |
+|----------|-------------|-------|
+| `QSTASH_URL` | Sim | `https://qstash-eu-central-1.upstash.io` |
+| `QSTASH_TOKEN` | Sim | Upstash Console |
+| `QSTASH_CURRENT_SIGNING_KEY` | Sim | Verificação POST `/api/sync/live` |
+| `QSTASH_NEXT_SIGNING_KEY` | Sim | Rotação de chaves |
+| `SITE_URL` | Sim | `https://wc26.pt` (URL callbacks QStash) |
+| `CRON_SECRET` | Sim | Crons + testes manuais |
+
+Ver [operacoes.md](operacoes.md) e [deploy.md](deploy.md).
+
+---
+
+## Cloudflare (wc26.pt)
+
+Domínio atrás do Cloudflare. **Configuration rule** no domínio (não account-level WAF Enterprise):
+
+- **When:** URI Path wildcard `/api/sync/live*`
+- **Then:** Browser Integrity Check → Off
+
+Sem isto, QStash/GitHub Actions podem receber **403**.
+
+---
+
+## Migrations Supabase (correr se ainda não)
+
+- `007_finished_utc.sql` — estimativa fim (sync only; UI mostra kickoff)
+- `008_calendar_token.sql` — token iCal em `profiles`
+- `009_goal_events.sql` — JSONB marcadores
+- `010_live_sync_slots.sql` — dedupe QStash (**Run and enable RLS**)
+
+---
+
+## Comandos operacionais
+
+```bash
+# Sync completo + agenda slots
+curl -H "Authorization: Bearer $CRON_SECRET" https://wc26.pt/api/sync
+
+# Sync live manual
+curl -H "Authorization: Bearer $CRON_SECRET" https://wc26.pt/api/sync/live
+
+# Agendar slots QStash (próx. 48 h)
+curl -H "Authorization: Bearer $CRON_SECRET" https://wc26.pt/api/sync/schedule
+
+# Ver slots futuros (Supabase SQL)
+# SELECT m.home_team_name, m.away_team_name, s.slot_at
+# FROM live_sync_slots s JOIN matches m ON m.fixture_id = s.fixture_id
+# WHERE s.slot_at > now() ORDER BY s.slot_at LIMIT 30;
 ```
-Visitante anónimo  → jogos + grupos + fase final + canais TV + SEO
-Utilizador logado  → + favoritos (estrela nos cards) + notificações + perfil
-Admin              → /admin (canais)
-```
 
-- `ChannelLoginCta` **removido**; `MatchChannels` mostra badges directamente.
-- `LoginGate` **não bloqueia** — só banner opcional de erro OAuth (não montado no layout).
-- Estrela sem login → abre menu Perfil (`SettingsMenu`).
+**GitHub Actions** `.github/workflows/live-sync.yml` — só `workflow_dispatch` (emergência).
 
 ---
 
-## Micro-animações (`src/app/globals.css`)
+## UX / animações (sessões anteriores, já em prod)
 
-| Classe / keyframes | Onde | Duração | reduced-motion |
-|--------------------|------|---------|----------------|
-| `favourite-pop` / `.favourite-star-pop` | `MatchFavouriteToggle` | 280ms | `animation: none` |
-| `.match-card` hover | `MatchCard` (não Featured) | 200ms | sem translateY |
-| `live-pulse-ring` / `.live-pulse` | `LivePulseDot` | 1.4s loop | anel off, ponto fixo |
-| `rise` / `.animate-rise` | entrada de cards (mount) | 400ms | — |
-
-**Pendente (diff proposto, não aplicado):**
-
-1. **Indicador do dia a deslizar** — barra de pills em `MatchesView.tsx`; medir `getBoundingClientRect`; `.day-tab-indicator` 300ms; sem slide no mount inicial.
-2. **Entrada em sequência ao trocar dia** — reutilizar/estender `@keyframes rise`; `animation-delay` ~80ms por card; `key={selectedDay}` no contentor; saída instantânea.
-
-Ver conversa / diff guardado no histórico do agente para Peça 1.
+- Indicador coral deslizante nos separadores de dia (~300ms)
+- Entrada escalonada dos cartões ao mudar de dia (80ms stagger)
+- Featured match: hora grande ao centro; sem duplicar hora no badge upcoming
 
 ---
 
-## Layout homepage
+## Troubleshooting
 
-- Contentor único `max-w-7xl` para barra de dias, café, favoritos e grelha.
-- Barra de dias: pills `flex-1` no desktop; indicador coral ainda **inline no botão** (não deslizante).
-- Featured + grelha 2 colunas; featured excluído da grelha via `pickFeaturedMatch`.
-
----
-
-## i18n — Fase Final (PT)
-
-| Chave | Valor |
-|-------|-------|
-| `knockouts.title` | Fase Final - Eliminatórias |
-| `knockouts.previewHint` | Os jogos reais aparecem aqui à medida que o torneio avança. |
-| `nav.knockouts` | Eliminatórias (header — ainda não renomeado) |
-| `nav.bottom.knockouts` | Fase final |
-
-Subtítulo `knockouts.subtitle` deixou de ser renderizado em `/fasefinal`.
+| Sintoma | Acção |
+|---------|--------|
+| `QSTASH_TOKEN não configurado` | Env vars Vercel + redeploy |
+| QStash 403 | Regra Cloudflare `/api/sync/live` |
+| Marcadores vazios | `/api/sync` full; ver rate limit nos logs |
+| `slotsFailed` > 0 | Logs Vercel; limite QStash free 1k msgs/dia |
+| Painel novidades outra vez | Bump `WHATS_NEW_VERSION` |
 
 ---
 
-## Ficheiros tocados nesta sessão (referência)
+## Próximos passos opcionais
 
-**Novos:** `fasefinal/page.tsx`, `KnockoutBracket.tsx`, `knockout/*`, `knockout-bracket.ts`, `knockout-bracket-tree.ts`, `MatchFavouriteToggle.tsx`, `LivePulseDot.tsx`
-
-**Removidos:** `ChannelLoginCta.tsx`, `features.ts`
-
-**Principais alterações:** `MatchesView`, `MatchCard`, `FeaturedMatch`, `MatchChannels`, `matches.ts`, `LoginGate`, `AppHeader`, `BottomNav`, `grupos/page.tsx`, `globals.css`, todos os `locales/*.ts`, `layout.tsx` (footer sem «Produção»)
+- [ ] Endpoint admin read-only «próximos syncs» (opcional)
+- [ ] Traduções `whatsNew.*` para ES/FR/… (fallback EN activo)
+- [ ] Bump `package.json` → `0.5.0` no próximo tag
 
 ---
 
 ## Workflow acordado
 
-1. Implementar → **commit & push** → utilizador valida em prod (hard refresh).
-2. Animações / refactors grandes: **mostrar diff → confirmar → aplicar → commit**.
-3. Versão npm: ainda `0.3.0` em `package.json`; changelog preparado como **0.4.0** abaixo.
-
----
-
-## Próximos passos sugeridos
-
-- [ ] Aplicar Peça 1 + 2 (transição de dia)
-- [ ] Actualizar `auth.modal.subtitle` (ainda menciona canais só com login)
-- [ ] Opcional: renomear nav header «Eliminatórias» → «Fase final»
-- [ ] Quando existirem jogos KO na DB: validar ordem FIFA vs `KNOCKOUT_SKELETON`
-- [ ] Refinar conectores do bracket desktop (espessura / alinhamento vertical)
-- [ ] Bump `package.json` → `0.4.0` no próximo release tag
-
----
-
-## Comandos úteis
-
-```bash
-npm run dev
-npm run build
-git log -5 --oneline
-vercel --prod   # se deploy manual necessário
-```
+1. Implementar → commit & push → validar em prod.
+2. Documentação em `docs/` (não vai para Vercel).
+3. Novidades utilizador: bump versão em `whats-new.ts` quando houver features visíveis.

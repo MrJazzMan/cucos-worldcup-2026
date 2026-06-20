@@ -85,7 +85,7 @@ export function MatchCard({
       />
 
       <div className="mt-4">
-        <MatchVenue venue={match.venue} />
+        <MatchVenue venue={match.venue} variant="card" />
       </div>
 
       <div className="mt-auto flex flex-col pt-4">
