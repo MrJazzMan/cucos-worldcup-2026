@@ -1,6 +1,7 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { DayOffset, GroupStanding, Match, TeamOption } from "@/types";
+import { isKnockoutRound, sortKnockoutRoundNames } from "@/lib/knockout-bracket";
 import { isWorldCupMatch } from "@/lib/world-cup";
 import { getDateForOffset, formatMatchDate } from "@/lib/timezone";
 import {
@@ -12,8 +13,7 @@ import {
 
 export async function getMatchesForDay(
   offset: DayOffset,
-  favouriteTeamIds: number[] = [],
-  includeChannels = false
+  favouriteTeamIds: number[] = []
 ): Promise<(Match & { isFavourite?: boolean })[]> {
   const date = getDateForOffset(offset);
   const supabase = await createSupabaseServer();
@@ -29,23 +29,19 @@ export async function getMatchesForDay(
   if (error || !matches) return [];
 
   const wcMatches = matches.filter(isWorldCupMatch);
+  const fixtureIds = wcMatches.map((m) => m.fixture_id);
+  const { data: broadcasts } = await supabase
+    .from("broadcasts")
+    .select("fixture_id, channels")
+    .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
 
-  let broadcastMap = new Map<number, string[]>();
-  if (includeChannels) {
-    const fixtureIds = wcMatches.map((m) => m.fixture_id);
-    const { data: broadcasts } = await supabase
-      .from("broadcasts")
-      .select("fixture_id, channels")
-      .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
-
-    broadcastMap = new Map(
-      (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
-    );
-  }
+  const broadcastMap = new Map(
+    (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+  );
 
   return wcMatches.map((m) => ({
     ...m,
-    channels: includeChannels ? (broadcastMap.get(m.fixture_id) ?? []) : [],
+    channels: broadcastMap.get(m.fixture_id) ?? [],
     isFavourite:
       favouriteTeamIds.includes(m.home_team_id) ||
       favouriteTeamIds.includes(m.away_team_id),
@@ -53,8 +49,7 @@ export async function getMatchesForDay(
 }
 
 export async function getAllMatches(
-  favouriteTeamIds: number[] = [],
-  includeChannels = false
+  favouriteTeamIds: number[] = []
 ): Promise<(Match & { isFavourite?: boolean })[]> {
   const supabase = await createSupabaseServer();
   if (!supabase) return [];
@@ -68,20 +63,17 @@ export async function getAllMatches(
 
   const wcMatches = matches.filter(isWorldCupMatch);
 
-  let broadcastMap = new Map<number, string[]>();
-  if (includeChannels) {
-    const { data: broadcasts } = await supabase
-      .from("broadcasts")
-      .select("fixture_id, channels");
+  const { data: broadcasts } = await supabase
+    .from("broadcasts")
+    .select("fixture_id, channels");
 
-    broadcastMap = new Map(
-      (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
-    );
-  }
+  const broadcastMap = new Map(
+    (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+  );
 
   return wcMatches.map((m) => ({
     ...m,
-    channels: includeChannels ? (broadcastMap.get(m.fixture_id) ?? []) : [],
+    channels: broadcastMap.get(m.fixture_id) ?? [],
     isFavourite:
       favouriteTeamIds.includes(m.home_team_id) ||
       favouriteTeamIds.includes(m.away_team_id),
@@ -147,20 +139,64 @@ export async function getGroupStandings(): Promise<GroupStanding[]> {
   }
 }
 
+function groupKnockoutMatchesFromDb(
+  matches: Match[]
+): { round: string; matches: Match[] }[] {
+  const knockout = matches.filter(
+    (m) => isKnockoutRound(m.round) && !m.group_name
+  );
+
+  const byRound = new Map<string, Match[]>();
+  for (const match of knockout) {
+    const round = match.round!;
+    const list = byRound.get(round) ?? [];
+    list.push(match);
+    byRound.set(round, list);
+  }
+
+  return sortKnockoutRoundNames([...byRound.keys()]).map((round) => ({
+    round,
+    matches: (byRound.get(round) ?? []).sort(
+      (a, b) =>
+        new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime()
+    ),
+  }));
+}
+
 export async function getKnockoutRounds(): Promise<
   { round: string; matches: Match[] }[]
 > {
+  const supabase = await createSupabaseServer();
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("matches")
+      .select("*")
+      .order("kickoff_utc", { ascending: true });
+
+    if (!error && data?.length) {
+      const wcMatches = data.filter(isWorldCupMatch) as Match[];
+      const fixtureIds = wcMatches
+        .filter((m) => isKnockoutRound(m.round) && !m.group_name)
+        .map((m) => m.fixture_id);
+      const { data: broadcasts } = await supabase
+        .from("broadcasts")
+        .select("fixture_id, channels")
+        .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
+      const broadcastMap = new Map(
+        (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+      );
+      const wcWithChannels = wcMatches.map((m) => ({
+        ...m,
+        channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
+      }));
+      const fromDb = groupKnockoutMatchesFromDb(wcWithChannels);
+      if (fromDb.length > 0) return fromDb;
+    }
+  }
+
   try {
     const rounds = await fetchRounds();
-    const knockoutRounds = rounds.filter(
-      (r) =>
-        !r.toLowerCase().includes("group") &&
-        (r.toLowerCase().includes("round") ||
-          r.toLowerCase().includes("final") ||
-          r.toLowerCase().includes("quarter") ||
-          r.toLowerCase().includes("semi") ||
-          r.toLowerCase().includes("3rd"))
-    );
+    const knockoutRounds = rounds.filter((r) => isKnockoutRound(r));
 
     const result = [];
     for (const round of knockoutRounds) {

@@ -128,7 +128,7 @@ function NavItem({ label, active, onClick, href, icon }: NavItemProps) {
   const content = (
     <>
       {icon}
-      <span className="max-w-full truncate text-[10px] font-semibold leading-tight">
+      <span className="max-w-full truncate text-xs font-semibold leading-tight">
         {label}
       </span>
     </>
@@ -160,7 +160,8 @@ export function BottomNav() {
     pathname === "/" && searchParams.get("favourites") === "1";
   const matchesActive = pathname === "/" && !favouritesActive;
   const groupsActive = pathname.startsWith("/grupos");
-  const knockoutsActive = pathname.startsWith("/eliminatorias");
+  const knockoutsActive =
+    pathname.startsWith("/fasefinal") || pathname.startsWith("/eliminatorias");
   const profileActive =
     menuOpen || pathname.startsWith("/admin") || pathname === "/conta";
 
@@ -198,7 +199,7 @@ export function BottomNav() {
         <NavItem
           label={t("nav.bottom.knockouts")}
           active={knockoutsActive}
-          href="/eliminatorias"
+          href="/fasefinal"
           icon={
             <IconTrophy className={knockoutsActive ? "text-accent" : undefined} />
           }

@@ -10,7 +10,7 @@ export function CoffeeBanner() {
       href="https://www.buymeacoffee.com/miguelgarcia"
       target="_blank"
       rel="noopener noreferrer"
-      className="flex justify-center"
+      className="flex w-full justify-center"
     >
       {lang === "en" ? (
         <img

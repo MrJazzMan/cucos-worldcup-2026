@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { MatchFavouriteToggle } from "@/components/match/MatchFavouriteToggle";
 import { MatchChannels } from "@/components/match/MatchChannels";
 import { MatchTeamsLayout } from "@/components/match/MatchTeamsLayout";
 import { MatchVenue } from "@/components/match/MatchVenue";
@@ -9,11 +11,15 @@ import type { Match } from "@/types";
 
 interface MatchCardProps {
   match: Match & { isFavourite?: boolean };
-  canViewChannels?: boolean;
+  loggedIn?: boolean;
 }
 
-export function MatchCard({ match, canViewChannels = false }: MatchCardProps) {
+export function MatchCard({
+  match,
+  loggedIn = false,
+}: MatchCardProps) {
   const { t } = useSettings();
+  const [isFavourite, setIsFavourite] = useState(!!match.isFavourite);
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
   const liveMinute = useLiveMinute(isLive, match.minute);
@@ -34,12 +40,12 @@ export function MatchCard({ match, canViewChannels = false }: MatchCardProps) {
 
   return (
     <article
-      className={`flex h-full flex-col animate-rise rounded-2xl border bg-surface transition-all ${
+      className={`match-card flex h-full flex-col animate-rise rounded-2xl border bg-surface ${
         isLive
-          ? "border-red-500/50 px-4 py-5 shadow-lg shadow-red-500/15 ring-1 ring-red-500/20 hover:shadow-xl hover:shadow-red-500/20"
-          : match.isFavourite
-            ? "border-amber-500/60 px-4 py-5 shadow-sm ring-1 ring-amber-500/30 hover:shadow-md"
-            : "border-border-base px-4 py-5 shadow-sm hover:shadow-md"
+          ? "match-card--live border-red-500/50 px-4 py-5 shadow-lg shadow-red-500/15 ring-1 ring-red-500/20"
+          : isFavourite
+            ? "match-card--favourite border-amber-500/60 px-4 py-5 shadow-sm ring-1 ring-amber-500/30"
+            : "border-border-base px-4 py-5 shadow-sm"
       }`}
     >
       <div className="mb-3 flex items-center justify-between">
@@ -51,12 +57,11 @@ export function MatchCard({ match, canViewChannels = false }: MatchCardProps) {
           )}
           {badgeText}
         </span>
-        <span
-          className={`text-base ${match.isFavourite ? "text-amber-400" : "text-muted/40"}`}
-          aria-hidden
-        >
-          {match.isFavourite ? "★" : "☆"}
-        </span>
+        <MatchFavouriteToggle
+          match={{ ...match, isFavourite }}
+          loggedIn={loggedIn}
+          onChange={setIsFavourite}
+        />
       </div>
 
       <MatchTeamsLayout
@@ -73,7 +78,6 @@ export function MatchCard({ match, canViewChannels = false }: MatchCardProps) {
         <div className="flex flex-wrap items-center justify-center gap-1.5">
           <MatchChannels
             channels={match.channels}
-            canViewChannels={canViewChannels}
             emptyLabel={t("card.channelTBC")}
           />
         </div>

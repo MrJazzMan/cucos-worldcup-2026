@@ -5,14 +5,13 @@ import { usePathname } from "next/navigation";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SettingsMenu } from "@/components/SettingsMenu";
 import { AuthStatus } from "@/components/AuthStatus";
-import { KNOCKOUTS_ENABLED } from "@/lib/features";
 import Logo from "@/components/Logo";
 import { useT } from "@/components/SettingsProvider";
 
 const links = [
   { href: "/", key: "nav.matches" },
   { href: "/grupos", key: "nav.groups" },
-  { href: "/eliminatorias", key: "nav.knockouts", knockouts: true },
+  { href: "/fasefinal", key: "nav.knockouts" },
 ] as const;
 
 export function AppHeader() {
@@ -22,10 +21,6 @@ export function AppHeader() {
   function isActive(href: string) {
     return href === "/" ? pathname === "/" : pathname.startsWith(href);
   }
-
-  const visibleLinks = links.filter(
-    (link) => !("knockouts" in link && link.knockouts) || KNOCKOUTS_ENABLED
-  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-base bg-background/80 backdrop-blur-xl">
@@ -47,7 +42,7 @@ export function AppHeader() {
         </Link>
         <div className="flex items-center gap-2">
           <nav className="hidden gap-1 sm:flex">
-            {visibleLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

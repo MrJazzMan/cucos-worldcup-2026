@@ -30,6 +30,8 @@ export const ar: Dict = {
   "status.finished": "انتهت",
   "status.upcoming": "لم تبدأ بعد",
   "card.channelTBC": "القناة قيد التحديد",
+  "card.favouriteAdd": "إضافة الفرق إلى المفضلة",
+  "card.favouriteRemove": "إزالة الفرق من المفضلة",
   "card.flag": "علم",
   "groups.title": "المجموعات",
   "groups.subtitle": "ترتيب كأس العالم 2026",
@@ -45,6 +47,17 @@ export const ar: Dict = {
   "knockouts.empty.title": "الجدول غير متاح بعد",
   "knockouts.empty.subtitle":
     "ستُنشر مباريات خروج المغلوب مع تقدّم البطولة.",
+  "knockouts.round.r32": "دور الـ32",
+  "knockouts.round.r16": "دور الـ16",
+  "knockouts.round.qf": "ربع النهائي",
+  "knockouts.round.sf": "نصف النهائي",
+  "knockouts.round.third": "مركز ثالث",
+  "knockouts.round.final": "النهائي",
+  "knockouts.tbd": "يُحدَّد لاحقًا",
+  "knockouts.scrollHint": "مرّر لاستكشاف الجدول",
+  "knockouts.schedule": "الجدول",
+  "knockouts.previewHint":
+    "جدول متوقع لكأس العالم 2026 — ستظهر المباريات الحقيقية هنا مع تقدّم البطولة.",
   "account.title": "الحساب",
   "account.needSupabase": "قم بإعداد Supabase لتفعيل تسجيل الدخول.",
   "account.signInPrompt":

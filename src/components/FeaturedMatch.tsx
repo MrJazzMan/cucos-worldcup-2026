@@ -1,5 +1,6 @@
 "use client";
 
+import { MatchFavouriteToggle } from "@/components/match/MatchFavouriteToggle";
 import { MatchChannels } from "@/components/match/MatchChannels";
 import { MatchTeamsLayout } from "@/components/match/MatchTeamsLayout";
 import { MatchVenue } from "@/components/match/MatchVenue";
@@ -13,12 +14,12 @@ import type { Match } from "@/types";
 
 interface FeaturedMatchProps {
   match: Match & { isFavourite?: boolean };
-  canViewChannels?: boolean;
+  loggedIn?: boolean;
 }
 
 export function FeaturedMatch({
   match,
-  canViewChannels = false,
+  loggedIn = false,
 }: FeaturedMatchProps) {
   const { t } = useSettings();
   const isLive = match.status === "live";
@@ -52,12 +53,7 @@ export function FeaturedMatch({
           )}
           {statusLabel}
         </span>
-        <span
-          className={`ml-auto text-lg ${match.isFavourite ? "text-amber-400" : "text-muted/30"}`}
-          aria-hidden
-        >
-          {match.isFavourite ? "★" : "☆"}
-        </span>
+        <MatchFavouriteToggle match={match} loggedIn={loggedIn} size="md" />
       </div>
 
       <MatchTeamsLayout
@@ -73,7 +69,6 @@ export function FeaturedMatch({
       <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
         <MatchChannels
           channels={match.channels}
-          canViewChannels={canViewChannels}
           emptyLabel={t("card.channelTBC")}
         />
       </div>

@@ -30,6 +30,8 @@ export const fr: Dict = {
   "status.finished": "Terminé",
   "status.upcoming": "À venir",
   "card.channelTBC": "Chaîne à confirmer",
+  "card.favouriteAdd": "Ajouter les équipes aux favoris",
+  "card.favouriteRemove": "Retirer les équipes des favoris",
   "card.flag": "Drapeau",
   "groups.title": "Groupes",
   "groups.subtitle": "Classements de la Coupe du monde 2026",
@@ -45,6 +47,17 @@ export const fr: Dict = {
   "knockouts.empty.title": "Tableau pas encore disponible",
   "knockouts.empty.subtitle":
     "Les matchs à élimination directe seront publiés au fur et à mesure du tournoi.",
+  "knockouts.round.r32": "Seizièmes",
+  "knockouts.round.r16": "Huitièmes",
+  "knockouts.round.qf": "Quarts",
+  "knockouts.round.sf": "Demi-finales",
+  "knockouts.round.third": "3e place",
+  "knockouts.round.final": "Finale",
+  "knockouts.tbd": "À définir",
+  "knockouts.scrollHint": "Glissez pour voir le tableau",
+  "knockouts.schedule": "Calendrier",
+  "knockouts.previewHint":
+    "Tableau prévisionnel de la Coupe du monde 2026 — les matchs réels s'afficheront ici au fil du tournoi.",
   "account.title": "Compte",
   "account.needSupabase": "Configurez Supabase pour activer l'authentification.",
   "account.signInPrompt":

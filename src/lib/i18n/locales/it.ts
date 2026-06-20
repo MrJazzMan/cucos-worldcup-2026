@@ -31,6 +31,8 @@ export const it: Dict = {
   "status.finished": "Finale",
   "status.upcoming": "In arrivo",
   "card.channelTBC": "Canale da confermare",
+  "card.favouriteAdd": "Aggiungi squadre ai preferiti",
+  "card.favouriteRemove": "Rimuovi squadre dai preferiti",
   "card.flag": "Bandiera",
   "groups.title": "Gironi",
   "groups.subtitle": "Classifiche Mondiale 2026",
@@ -46,6 +48,17 @@ export const it: Dict = {
   "knockouts.empty.title": "Tabellone non ancora disponibile",
   "knockouts.empty.subtitle":
     "Le partite a eliminazione diretta saranno pubblicate man mano che il torneo avanza.",
+  "knockouts.round.r32": "Trentaduesimi",
+  "knockouts.round.r16": "Ottavi",
+  "knockouts.round.qf": "Quarti",
+  "knockouts.round.sf": "Semifinali",
+  "knockouts.round.third": "3º posto",
+  "knockouts.round.final": "Finale",
+  "knockouts.tbd": "Da definire",
+  "knockouts.scrollHint": "Scorri per vedere il tabellone",
+  "knockouts.schedule": "Calendario",
+  "knockouts.previewHint":
+    "Tabellone previsto dei Mondiali 2026 — le partite reali compariranno qui man mano che il torneo avanza.",
   "account.title": "Account",
   "account.needSupabase": "Configura Supabase per attivare l'autenticazione.",
   "account.signInPrompt":

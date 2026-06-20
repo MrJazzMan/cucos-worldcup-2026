@@ -31,6 +31,8 @@ export const nl: Dict = {
   "status.finished": "Einde",
   "status.upcoming": "Binnenkort",
   "card.channelTBC": "Zender nog te bevestigen",
+  "card.favouriteAdd": "Teams toevoegen aan favorieten",
+  "card.favouriteRemove": "Teams verwijderen uit favorieten",
   "card.flag": "Vlag",
   "groups.title": "Groepen",
   "groups.subtitle": "WK 2026 standen",
@@ -46,6 +48,17 @@ export const nl: Dict = {
   "knockouts.empty.title": "Schema nog niet beschikbaar",
   "knockouts.empty.subtitle":
     "Knock-outwedstrijden worden gepubliceerd naarmate het toernooi vordert.",
+  "knockouts.round.r32": "Laatste 32",
+  "knockouts.round.r16": "Achtste finales",
+  "knockouts.round.qf": "Kwartfinales",
+  "knockouts.round.sf": "Halve finales",
+  "knockouts.round.third": "3e plaats",
+  "knockouts.round.final": "Finale",
+  "knockouts.tbd": "Nog te bepalen",
+  "knockouts.scrollHint": "Veeg om het schema te zien",
+  "knockouts.schedule": "Schema",
+  "knockouts.previewHint":
+    "Verwachte WK 2026-schema — echte wedstrijden verschijnen hier naarmate het toernooi vordert.",
   "account.title": "Account",
   "account.needSupabase": "Configureer Supabase om authenticatie in te schakelen.",
   "account.signInPrompt":

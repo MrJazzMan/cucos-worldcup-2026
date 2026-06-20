@@ -30,6 +30,8 @@ export const de: Dict = {
   "status.finished": "Ende",
   "status.upcoming": "Bevorstehend",
   "card.channelTBC": "Sender noch offen",
+  "card.favouriteAdd": "Teams zu Favoriten hinzufügen",
+  "card.favouriteRemove": "Teams aus Favoriten entfernen",
   "card.flag": "Flagge",
   "groups.title": "Gruppen",
   "groups.subtitle": "WM 2026 Tabellen",
@@ -45,6 +47,17 @@ export const de: Dict = {
   "knockouts.empty.title": "Turnierbaum noch nicht verfügbar",
   "knockouts.empty.subtitle":
     "K.-o.-Spiele werden im Verlauf des Turniers veröffentlicht.",
+  "knockouts.round.r32": "Achtzehntelfinale",
+  "knockouts.round.r16": "Achtelfinale",
+  "knockouts.round.qf": "Viertelfinale",
+  "knockouts.round.sf": "Halbfinale",
+  "knockouts.round.third": "Spiel um Platz 3",
+  "knockouts.round.final": "Finale",
+  "knockouts.tbd": "Offen",
+  "knockouts.scrollHint": "Wischen für den Turnierbaum",
+  "knockouts.schedule": "Spielplan",
+  "knockouts.previewHint":
+    "Prognostizierter WM-2026-Turnierbaum — echte Spiele erscheinen hier im Turnierverlauf.",
   "account.title": "Konto",
   "account.needSupabase": "Supabase konfigurieren, um die Anmeldung zu aktivieren.",
   "account.signInPrompt":

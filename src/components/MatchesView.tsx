@@ -45,10 +45,10 @@ function dayLabel(
 
 export function MatchesView({
   matches,
-  canViewChannels = false,
+  loggedIn = false,
 }: {
   matches: DayMatch[];
-  canViewChannels?: boolean;
+  loggedIn?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -143,7 +143,8 @@ export function MatchesView({
 
   if (!mounted) {
     return (
-      <div className="mx-auto w-full max-w-7xl space-y-3">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
+        <div className="h-14 animate-pulse rounded-2xl bg-surface" />
         <div className="h-52 animate-pulse rounded-2xl bg-surface" />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {[1, 2].map((i) => (
@@ -154,16 +155,14 @@ export function MatchesView({
     );
   }
 
-  const selectedLabel = dayLabel(selectedDay, todayKey, tz, locale, t);
   const isToday = selectedDay === todayKey;
 
   return (
-    <div className="space-y-4">
-      <div className="mx-auto w-full max-w-2xl space-y-4">
-      {/* Seletor de dias — scroll horizontal */}
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
+      {/* Seletor de dias — scroll horizontal no telemóvel; grelha igual no desktop */}
       <div
         ref={scrollRef}
-        className="flex gap-1.5 overflow-x-auto rounded-2xl border border-border-base bg-surface p-1.5 scrollbar-none"
+        className="flex w-full gap-1.5 overflow-x-auto rounded-2xl border border-border-base bg-surface p-1.5 scrollbar-none md:overflow-visible"
         style={{ scrollbarWidth: "none" }}
       >
         {allDays.map((day) => {
@@ -174,7 +173,7 @@ export function MatchesView({
               key={day}
               data-active={isActive}
               onClick={() => setSelectedDay(day)}
-              className={`shrink-0 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
+              className={`shrink-0 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all md:min-w-0 md:flex-1 md:shrink md:px-2 md:text-center ${
                 isActive
                   ? "bg-gradient-to-br from-accent to-amber-400 text-white shadow-md shadow-accent/30"
                   : "text-muted hover:text-foreground"
@@ -187,7 +186,7 @@ export function MatchesView({
       </div>
 
       {/* Cabeçalho do dia */}
-      <div className="flex items-center justify-between gap-2 px-1">
+      <div className="flex w-full items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate text-sm font-medium text-foreground first-letter:capitalize">
             {new Intl.DateTimeFormat(locale, {
@@ -213,7 +212,9 @@ export function MatchesView({
       </div>
 
       {/* Banner café */}
-      <CoffeeBanner />
+      <div className="w-full rounded-2xl border border-border-base bg-surface/60 px-4 py-2.5">
+        <CoffeeBanner />
+      </div>
 
       <AdSenseUnit
         slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME ?? ""}
@@ -234,11 +235,10 @@ export function MatchesView({
           {t("matches.myMatches")}
         </button>
       )}
-      </div>
 
       {/* Lista de jogos */}
       {visibleMatches.length === 0 ? (
-        <div className="mx-auto w-full max-w-7xl rounded-2xl border border-dashed border-border-base bg-surface/50 px-6 py-12 text-center">
+        <div className="rounded-2xl border border-dashed border-border-base bg-surface/50 px-6 py-12 text-center">
           <p className="text-lg font-medium text-foreground">
             {showOnlyFavourites
               ? t("matches.noFavMatches")
@@ -251,11 +251,11 @@ export function MatchesView({
           </p>
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-7xl space-y-4">
+        <div className="flex w-full flex-col gap-4">
           {featuredMatch && (
             <FeaturedMatch
               match={featuredMatch}
-              canViewChannels={canViewChannels}
+              loggedIn={loggedIn}
             />
           )}
           {gridMatches.length > 0 && (
@@ -264,7 +264,7 @@ export function MatchesView({
                 <MatchCard
                   key={match.fixture_id}
                   match={match}
-                  canViewChannels={canViewChannels}
+                  loggedIn={loggedIn}
                 />
               ))}
             </div>

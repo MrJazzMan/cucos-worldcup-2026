@@ -34,6 +34,8 @@ export const en: Dict = {
   "featured.startsInHours": "Starts in {hours}h {minutes}m",
   "featured.startsInMinutes": "Starts in {minutes}m",
   "card.channelTBC": "Channel TBC",
+  "card.favouriteAdd": "Add teams to favourites",
+  "card.favouriteRemove": "Remove teams from favourites",
   "card.channelsSignIn": "Sign in with Google to see TV channels",
   "card.flag": "Flag",
   "groups.title": "Groups",
@@ -50,6 +52,17 @@ export const en: Dict = {
   "knockouts.empty.title": "Bracket not available yet",
   "knockouts.empty.subtitle":
     "Knockout matches will be published as the tournament progresses.",
+  "knockouts.round.r32": "Round of 32",
+  "knockouts.round.r16": "Round of 16",
+  "knockouts.round.qf": "Quarter-finals",
+  "knockouts.round.sf": "Semi-finals",
+  "knockouts.round.third": "3rd place",
+  "knockouts.round.final": "Final",
+  "knockouts.tbd": "TBD",
+  "knockouts.scrollHint": "Swipe to explore the bracket",
+  "knockouts.schedule": "Schedule",
+  "knockouts.previewHint":
+    "Projected FIFA 2026 bracket — real fixtures appear here as the tournament progresses.",
   "account.title": "Account",
   "account.needSupabase": "Configure Supabase to enable authentication.",
   "account.signInPrompt":

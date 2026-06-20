@@ -31,6 +31,8 @@ export const br: Dict = {
   "status.finished": "Final",
   "status.upcoming": "Em breve",
   "card.channelTBC": "Canal a confirmar",
+  "card.favouriteAdd": "Adicionar seleções aos favoritos",
+  "card.favouriteRemove": "Remover seleções dos favoritos",
   "card.flag": "Bandeira",
   "groups.title": "Grupos",
   "groups.subtitle": "Classificações da Copa do Mundo 2026",
@@ -46,6 +48,17 @@ export const br: Dict = {
   "knockouts.empty.title": "Chave ainda não disponível",
   "knockouts.empty.subtitle":
     "Os jogos eliminatórios serão publicados conforme o torneio avança.",
+  "knockouts.round.r32": "32 avos",
+  "knockouts.round.r16": "Oitavas",
+  "knockouts.round.qf": "Quartas",
+  "knockouts.round.sf": "Semis",
+  "knockouts.round.third": "3º lugar",
+  "knockouts.round.final": "Final",
+  "knockouts.tbd": "A definir",
+  "knockouts.scrollHint": "Deslize para ver a chave",
+  "knockouts.schedule": "Calendário",
+  "knockouts.previewHint":
+    "Chave prevista da Copa 2026 — jogos reais aparecem aqui conforme o torneio avança.",
   "account.title": "Conta",
   "account.needSupabase": "Configure o Supabase para ativar a autenticação.",
   "account.signInPrompt":

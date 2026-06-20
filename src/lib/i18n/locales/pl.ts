@@ -31,6 +31,8 @@ export const pl: Dict = {
   "status.finished": "Koniec",
   "status.upcoming": "Wkrótce",
   "card.channelTBC": "Kanał do potwierdzenia",
+  "card.favouriteAdd": "Dodaj drużyny do ulubionych",
+  "card.favouriteRemove": "Usuń drużyny z ulubionych",
   "card.flag": "Flaga",
   "groups.title": "Grupy",
   "groups.subtitle": "Tabela Mistrzostw Świata 2026",
@@ -46,6 +48,17 @@ export const pl: Dict = {
   "knockouts.empty.title": "Drabinka jeszcze niedostępna",
   "knockouts.empty.subtitle":
     "Mecze pucharowe będą publikowane w miarę postępu turnieju.",
+  "knockouts.round.r32": "1/16 finału",
+  "knockouts.round.r16": "1/8 finału",
+  "knockouts.round.qf": "Ćwierćfinały",
+  "knockouts.round.sf": "Półfinały",
+  "knockouts.round.third": "Mecz o 3. miejsce",
+  "knockouts.round.final": "Finał",
+  "knockouts.tbd": "Do ustalenia",
+  "knockouts.scrollHint": "Przesuń, aby zobaczyć drabinkę",
+  "knockouts.schedule": "Terminarz",
+  "knockouts.previewHint":
+    "Prognozowany drabinka MŚ 2026 — prawdziwe mecze pojawią się tutaj w miarę postępu turnieju.",
   "account.title": "Konto",
   "account.needSupabase": "Skonfiguruj Supabase, aby włączyć uwierzytelnianie.",
   "account.signInPrompt":

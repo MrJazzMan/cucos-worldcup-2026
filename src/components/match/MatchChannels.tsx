@@ -1,4 +1,3 @@
-import { ChannelLoginCta } from "@/components/ChannelLoginCta";
 import { getChannelHref } from "@/lib/channels";
 
 const BASE_BADGE =
@@ -36,19 +35,10 @@ export function channelBadgeClass(channel: string) {
 
 interface MatchChannelsProps {
   channels: string[] | undefined;
-  canViewChannels: boolean;
   emptyLabel: string;
 }
 
-export function MatchChannels({
-  channels,
-  canViewChannels,
-  emptyLabel,
-}: MatchChannelsProps) {
-  if (!canViewChannels) {
-    return <ChannelLoginCta />;
-  }
-
+export function MatchChannels({ channels, emptyLabel }: MatchChannelsProps) {
   if (!channels?.length) {
     return <span className="text-xs text-muted">{emptyLabel}</span>;
   }

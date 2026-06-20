@@ -30,6 +30,8 @@ export const es: Dict = {
   "status.finished": "Final",
   "status.upcoming": "Próximamente",
   "card.channelTBC": "Canal por confirmar",
+  "card.favouriteAdd": "Añadir selecciones a favoritos",
+  "card.favouriteRemove": "Quitar selecciones de favoritos",
   "card.flag": "Bandera",
   "groups.title": "Grupos",
   "groups.subtitle": "Clasificación del Mundial 2026",
@@ -45,6 +47,17 @@ export const es: Dict = {
   "knockouts.empty.title": "Cuadro aún no disponible",
   "knockouts.empty.subtitle":
     "Los partidos eliminatorios se publicarán a medida que avance el torneo.",
+  "knockouts.round.r32": "Dieciseisavos",
+  "knockouts.round.r16": "Octavos",
+  "knockouts.round.qf": "Cuartos",
+  "knockouts.round.sf": "Semifinales",
+  "knockouts.round.third": "3.er puesto",
+  "knockouts.round.final": "Final",
+  "knockouts.tbd": "Por definir",
+  "knockouts.scrollHint": "Desliza para ver el cuadro",
+  "knockouts.schedule": "Calendario",
+  "knockouts.previewHint":
+    "Cuadro previsto del Mundial 2026 — los partidos reales aparecerán aquí a medida que avance el torneo.",
   "account.title": "Cuenta",
   "account.needSupabase": "Configura Supabase para activar la autenticación.",
   "account.signInPrompt":

@@ -34,6 +34,8 @@ export const pt: Dict = {
   "featured.startsInHours": "Começa em {hours}h {minutes}m",
   "featured.startsInMinutes": "Começa em {minutes}m",
   "card.channelTBC": "Canal a confirmar",
+  "card.favouriteAdd": "Adicionar equipas aos favoritos",
+  "card.favouriteRemove": "Remover equipas dos favoritos",
   "card.channelsSignIn": "Inicia sessão com Google para ver os canais de TV",
   "card.flag": "Bandeira",
   "groups.title": "Grupos",
@@ -50,6 +52,17 @@ export const pt: Dict = {
   "knockouts.empty.title": "Chave ainda não disponível",
   "knockouts.empty.subtitle":
     "Os jogos eliminatórios serão publicados à medida que o torneio avança.",
+  "knockouts.round.r32": "32 avos",
+  "knockouts.round.r16": "Oitavos",
+  "knockouts.round.qf": "Quartos",
+  "knockouts.round.sf": "Meias",
+  "knockouts.round.third": "3.º lugar",
+  "knockouts.round.final": "Final",
+  "knockouts.tbd": "A definir",
+  "knockouts.scrollHint": "Desliza para ver a chave",
+  "knockouts.schedule": "Calendário",
+  "knockouts.previewHint":
+    "Chave prevista do FIFA 2026 — os jogos reais aparecem aqui à medida que o torneio avança.",
   "account.title": "Conta",
   "account.needSupabase": "Configura Supabase para activar autenticação.",
   "account.signInPrompt":

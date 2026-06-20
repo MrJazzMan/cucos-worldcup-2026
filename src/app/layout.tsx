@@ -86,7 +86,6 @@ export default function RootLayout({
             </main>
             <footer className="mt-10 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] text-center text-xs text-muted sm:pb-8">
               <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
-              <p className="mt-1"><T k="footer.production" />: Miguel Garcia</p>
               <p className="mt-1">
                 <a href="/privacidade" className="text-muted hover:text-accent hover:underline">
                   <T k="footer.privacy" />
