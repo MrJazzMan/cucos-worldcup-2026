@@ -311,6 +311,10 @@ export function MatchesView({
               match={featuredMatch}
               loggedIn={loggedIn}
               staggerIndex={0}
+              selectedDay={selectedDay}
+              showKickoffDate={
+                showOnlyFavourites || featuredMatch.status === "finished"
+              }
             />
           )}
           {gridMatches.length > 0 && (
@@ -321,6 +325,8 @@ export function MatchesView({
                   match={match}
                   loggedIn={loggedIn}
                   staggerIndex={featuredMatch ? i + 1 : i}
+                  selectedDay={selectedDay}
+                  showKickoffDate={showOnlyFavourites}
                 />
               ))}
             </div>

@@ -18,12 +18,16 @@ interface FeaturedMatchProps {
   match: Match & { isFavourite?: boolean };
   loggedIn?: boolean;
   staggerIndex?: number;
+  selectedDay?: string;
+  showKickoffDate?: boolean;
 }
 
 export function FeaturedMatch({
   match,
   loggedIn = false,
   staggerIndex,
+  selectedDay,
+  showKickoffDate,
 }: FeaturedMatchProps) {
   const { t } = useSettings();
   const isLive = match.status === "live";
@@ -71,6 +75,8 @@ export function FeaturedMatch({
         match={match}
         variant="featured"
         liveMinute={liveMinute}
+        selectedDay={selectedDay}
+        showKickoffDate={showKickoffDate}
       />
 
       <div className="mt-5">

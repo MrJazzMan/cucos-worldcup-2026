@@ -66,6 +66,27 @@ export function displayDate(dayKey: string, tz: string, locale: string): string 
   }).format(date);
 }
 
+/** Data curta legível (ex.: "Dom, 14 jun" / "Sun, 14 Jun"). */
+export function formatShortMatchDate(
+  utcIso: string,
+  tz: string,
+  locale: string
+): string {
+  const parts = new Intl.DateTimeFormat(locale, {
+    timeZone: tz,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).formatToParts(new Date(utcIso));
+  const weekday =
+    parts.find((p) => p.type === "weekday")?.value.replace(/\.$/, "") ?? "";
+  const day = parts.find((p) => p.type === "day")?.value ?? "";
+  const month =
+    parts.find((p) => p.type === "month")?.value.replace(/\.$/, "") ?? "";
+  const wd = weekday ? weekday.charAt(0).toUpperCase() + weekday.slice(1) : "";
+  return `${wd}, ${day} ${month}`;
+}
+
 /** Lista curta de fusos comuns para o selector. */
 export const COMMON_TIMEZONES = [
   "Europe/Lisbon",

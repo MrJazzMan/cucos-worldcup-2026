@@ -14,12 +14,16 @@ interface MatchCardProps {
   match: Match & { isFavourite?: boolean };
   loggedIn?: boolean;
   staggerIndex?: number;
+  selectedDay?: string;
+  showKickoffDate?: boolean;
 }
 
 export function MatchCard({
   match,
   loggedIn = false,
   staggerIndex,
+  selectedDay,
+  showKickoffDate,
 }: MatchCardProps) {
   const { t } = useSettings();
   const [isFavourite, setIsFavourite] = useState(!!match.isFavourite);
@@ -76,6 +80,8 @@ export function MatchCard({
         match={match}
         variant="card"
         liveMinute={liveMinute}
+        selectedDay={selectedDay}
+        showKickoffDate={showKickoffDate}
       />
 
       <div className="mt-4">

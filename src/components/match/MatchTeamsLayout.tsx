@@ -1,6 +1,7 @@
 "use client";
 
 import { KickoffTime, TeamName } from "@/components/Display";
+import { MatchFinishedKickoff } from "@/components/match/MatchFinishedKickoff";
 import { TeamFlag } from "@/components/TeamFlag";
 import type { Match } from "@/types";
 
@@ -8,6 +9,8 @@ type MatchTeamsLayoutProps = {
   match: Match;
   variant: "card" | "featured";
   liveMinute?: number | null;
+  selectedDay?: string;
+  showKickoffDate?: boolean;
 };
 
 const SIZES = {
@@ -33,6 +36,8 @@ export function MatchTeamsLayout({
   match,
   variant,
   liveMinute,
+  selectedDay,
+  showKickoffDate,
 }: MatchTeamsLayoutProps) {
   const sizes = SIZES[variant];
   const isLive = match.status === "live";
@@ -75,6 +80,14 @@ export function MatchTeamsLayout({
           <span className="text-[10px] font-bold uppercase tracking-wide text-red-500">
             {liveMinute}&apos;
           </span>
+        )}
+        {isFinished && (
+          <MatchFinishedKickoff
+            kickoffUtc={match.kickoff_utc}
+            selectedDay={selectedDay}
+            showKickoffDate={showKickoffDate}
+            variant={variant}
+          />
         )}
       </div>
 
