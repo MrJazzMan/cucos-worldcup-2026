@@ -83,7 +83,7 @@ export function MatchTeamsLayout({
         )}
         {isFinished && (
           <MatchFinishedKickoff
-            match={match}
+            kickoffUtc={match.kickoff_utc}
             selectedDay={selectedDay}
             showKickoffDate={showKickoffDate}
             variant={variant}
