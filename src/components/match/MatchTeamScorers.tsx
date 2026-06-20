@@ -17,11 +17,11 @@ function goalSuffix(detail: string): string {
 export function MatchTeamScorers({ goals, variant }: MatchTeamScorersProps) {
   if (!goals.length) return null;
 
-  const textSize = variant === "featured" ? "text-[11px]" : "text-[10px]";
+  const textSize = variant === "featured" ? "text-sm" : "text-xs";
 
   return (
     <ul
-      className={`mt-1.5 w-full space-y-0.5 ${textSize} leading-snug text-muted`}
+      className={`mt-2 w-full space-y-0.5 ${textSize} leading-snug text-muted`}
       aria-label="Marcadores"
     >
       {goals.map((goal, index) => (

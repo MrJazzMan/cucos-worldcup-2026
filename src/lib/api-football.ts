@@ -6,6 +6,14 @@ import { WC_LEAGUE_ID, isWorldCupRound } from "@/lib/world-cup";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
+export interface ApiFixtureEvent {
+  time: { elapsed: number; extra: number | null };
+  team: { id: number; name: string };
+  player: { id: number | null; name: string | null };
+  type: string;
+  detail: string;
+}
+
 interface ApiFixture {
   fixture: {
     id: number;
@@ -32,6 +40,7 @@ interface ApiFixture {
     home: number | null;
     away: number | null;
   };
+  events?: ApiFixtureEvent[];
 }
 
 interface ApiResponse<T> {
@@ -203,24 +212,29 @@ export async function fetchFixturesByDate(date: string) {
   );
 }
 
+const FIXTURE_IDS_BATCH = 20;
+const API_BATCH_DELAY_MS = 1100;
+
 export async function fetchFixturesByIds(ids: number[]) {
   if (!ids.length) return [];
-  const chunk = ids.slice(0, 20).join("-");
-  return apiFetch<ApiFixture[]>(`/fixtures?ids=${chunk}`, { revalidate: 0 });
+  const all: ApiFixture[] = [];
+  for (let i = 0; i < ids.length; i += FIXTURE_IDS_BATCH) {
+    const chunk = ids.slice(i, i + FIXTURE_IDS_BATCH).join("-");
+    const batch = await apiFetch<ApiFixture[]>(`/fixtures?ids=${chunk}`, {
+      revalidate: 0,
+    });
+    all.push(...batch);
+    if (i + FIXTURE_IDS_BATCH < ids.length) {
+      await new Promise((r) => setTimeout(r, API_BATCH_DELAY_MS));
+    }
+  }
+  return all;
 }
 
 export async function fetchTeams() {
   return apiFetch<
     { team: { id: number; name: string; logo: string } }[]
   >("/teams?league=1&season=2026", { revalidate: 3600 });
-}
-
-export interface ApiFixtureEvent {
-  time: { elapsed: number; extra: number | null };
-  team: { id: number; name: string };
-  player: { id: number | null; name: string | null };
-  type: string;
-  detail: string;
 }
 
 export async function fetchFixtureEvents(fixtureId: number) {

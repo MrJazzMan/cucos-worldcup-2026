@@ -1,6 +1,6 @@
 # Operações do dia-a-dia
 
-Última actualização: 2026-06-19.
+Última actualização: 2026-06-20.
 
 ## Sync de jogos (API-Football)
 
@@ -11,7 +11,7 @@ curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync
 Resposta esperada:
 
 ```json
-{"ok":true,"synced":72,"source":"api-football"}
+{"ok":true,"synced":72,"goalsSynced":48,"source":"api-football","liveSyncScheduled":{"fixtures":3,"slotsQueued":84,"slotsSkipped":0,"slotsFailed":0}}
 ```
 
 - `synced` varia conforme jogos publicados na API (máx. ~104)
@@ -20,34 +20,65 @@ Resposta esperada:
 ### Sync live (durante jogos)
 
 ```bash
-curl -H "Authorization: Bearer TEU_CRON_SECRET" "https://wc26.pt/api/sync?mode=live"
+curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync/live
 ```
 
 No modo `live`, o sync usa:
 - fixtures em directo (`live=all`)
 - fixtures de **hoje**
 - fixtures de **ontem**
+- jogos ainda marcados `live` na BD
 
 Isto evita jogos presos em "Ao vivo" quando saem do feed live e passam a `finished`.
 
-#### Automático (GitHub Actions)
+#### Automático (Upstash QStash)
 
-Workflow `.github/workflows/live-sync.yml` — corre **de 5 em 5 minutos** (mínimo do
-GitHub; o Vercel Hobby não permite cron mais frequente).
+O sync live **não corre 24/7**. Um scheduler diário enfileira pedidos QStash **por jogo**:
 
-**Configurar uma vez no GitHub** (repo → Settings → Secrets and variables → Actions):
+| Momento | Acção |
+|---------|--------|
+| Kickoff −15 min | começa polling (a cada 5 min) |
+| Durante o jogo | sync live |
+| Kickoff +125 min | sync final (resultado + marcadores) |
 
-| Tipo | Nome | Valor |
-|------|------|-------|
-| Secret | `CRON_SECRET` | O mesmo que está no Vercel (`uma-password-qualquer-123`) |
-| Variable (opcional) | `SITE_URL` | `https://wc26.pt` |
+**Crons Vercel:**
 
-Testar manualmente: Actions → **Live sync** → **Run workflow**.
+| Hora UTC | Endpoint | O quê |
+|----------|----------|-------|
+| 05:00 | `/api/sync/schedule` | Agenda slots QStash (próx. 48 h) |
+| 06:00 | `/api/sync` | Sync completo + agenda slots |
+| 07:00 | `/api/sync-broadcasts?today=1` | Canais TV |
+
+**Configurar uma vez (Upstash + Vercel):**
+
+1. [console.upstash.com](https://console.upstash.com) → **QStash** → Create
+2. Copiar para **Vercel → Environment Variables**:
+
+| Nome | Onde encontrar |
+|------|----------------|
+| `QSTASH_TOKEN` | QStash → Details → `QSTASH_TOKEN` |
+| `QSTASH_CURRENT_SIGNING_KEY` | QStash → Signing Keys → Current |
+| `QSTASH_NEXT_SIGNING_KEY` | QStash → Signing Keys → Next |
+| `SITE_URL` | `https://wc26.pt` |
+| `CRON_SECRET` | (já existe) |
+
+3. **Supabase** — correr migration `010_live_sync_slots.sql`
+4. **Cloudflare** (wc26.pt) — regra WAF para permitir POST a `/api/sync/live` (QStash usa IPs de datacenter; senão 403)
+5. Deploy e testar:
+
+```bash
+curl -H "Authorization: Bearer TEU_CRON_SECRET" https://wc26.pt/api/sync/schedule
+# → {"ok":true,"fixtures":N,"slotsQueued":N,...}
+```
+
+Ver mensagens agendadas: Upstash Console → QStash → Logs.
+
+**GitHub Actions** (`.github/workflows/live-sync.yml`) — desactivado; só **Run workflow** manual em emergência.
 
 #### Auto-refresh na homepage
 
-Com o separador **Hoje** aberto, a página refresca sozinha (~45s se há jogos ao
-vivo, ~90s caso contrário). Os cartões mostram marcador, minuto e etiqueta
+Com o separador **Hoje** aberto, a página refresca sozinha (**30s** se há jogos ao
+vivo, **90s** caso contrário). Os cartões mostram marcador, minuto e etiqueta
 "Ao vivo / Live".
 
 ---
@@ -137,7 +168,9 @@ Nunca commitar ficheiros com chaves.
 | API season 2022-2024 only | Upgrade Pro em api-football.com |
 | Jogos estranhos (clubes, U20, cidades) | Correr `/api/sync` (full) — live sync antigo podia inserir outras ligas; agora filtrado ao Mundial |
 | Login não funciona | Ver [google-auth.md](google-auth.md) |
-| Jogo ficou preso em `live` (ex.: 75') | Correr `/api/sync?mode=live` manualmente; confirmar que o `updated_at` do `fixture_id` mudou |
+| Jogo ficou preso em `live` (ex.: 75') | Correr `/api/sync/live` manualmente; confirmar que o `updated_at` do `fixture_id` mudou |
+| QStash 403 / sync live não corre | Cloudflare: allow `/api/sync/live`; confirmar `SITE_URL=https://wc26.pt` no Vercel |
+| `slotsFailed` > 0 no schedule | Ver logs Vercel; confirmar `QSTASH_TOKEN` e migration `010_live_sync_slots` |
 | Safari falha no callback OAuth | Limpar Website Data (`wc26.pt`, `supabase.co`, `localhost`) e repetir login em `wc26.pt` |
 
 ---

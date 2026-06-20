@@ -108,8 +108,20 @@ export async function syncMatches(mode: "full" | "live" = "full") {
   } catch (err) {
     console.error("Sync error:", err);
     await seedMockMatches(admin);
-    return { synced: MOCK_MATCHES.length, source: "mock-fallback", error: String(err) };
+    return {
+      synced: MOCK_MATCHES.length,
+      source: "mock-fallback",
+      error: serializeSyncError(err),
+    };
   }
+}
+
+function serializeSyncError(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message: unknown }).message);
+  }
+  return JSON.stringify(err);
 }
 
 async function seedMockMatches(

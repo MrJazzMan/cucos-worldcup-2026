@@ -1,4 +1,4 @@
-import { fetchFixtureEvents, type ApiFixtureEvent } from "@/lib/api-football";
+import { fetchFixturesByIds, type ApiFixtureEvent } from "@/lib/api-football";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { MatchGoalEvent } from "@/types";
 
@@ -30,21 +30,6 @@ export function goalsForTeam(
   return (events ?? []).filter((e) => e.team_id === teamId);
 }
 
-const EVENTS_CHUNK = 8;
-
-async function fetchAndStoreGoals(
-  admin: ReturnType<typeof createSupabaseAdmin>,
-  fixtureId: number
-): Promise<void> {
-  const events = await fetchFixtureEvents(fixtureId);
-  const goal_events = mapApiEventsToGoals(events);
-  const { error } = await admin
-    .from("matches")
-    .update({ goal_events })
-    .eq("fixture_id", fixtureId);
-  if (error) throw error;
-}
-
 /** Sincroniza marcadores para jogos ao vivo ou terminados. */
 export async function syncGoalEventsForFixtures(
   fixtureIds: number[],
@@ -73,17 +58,23 @@ export async function syncGoalEventsForFixtures(
   if (!ids.length) return 0;
 
   let synced = 0;
-  for (let i = 0; i < ids.length; i += EVENTS_CHUNK) {
-    const chunk = ids.slice(i, i + EVENTS_CHUNK);
-    const results = await Promise.allSettled(
-      chunk.map((id) => fetchAndStoreGoals(admin, id))
-    );
-    synced += results.filter((r) => r.status === "fulfilled").length;
-    results.forEach((r, idx) => {
-      if (r.status === "rejected") {
-        console.warn(`goal events sync failed for ${chunk[idx]}:`, r.reason);
-      }
-    });
+  const fixtures = await fetchFixturesByIds(ids);
+
+  for (const fixture of fixtures) {
+    try {
+      const goal_events = mapApiEventsToGoals(fixture.events ?? []);
+      const { error } = await admin
+        .from("matches")
+        .update({ goal_events })
+        .eq("fixture_id", fixture.fixture.id);
+      if (error) throw error;
+      synced++;
+    } catch (err) {
+      console.warn(
+        `goal events sync failed for ${fixture.fixture.id}:`,
+        err
+      );
+    }
   }
 
   return synced;
