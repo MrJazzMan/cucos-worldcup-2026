@@ -1,50 +1,55 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { createSupabaseServer } from "@/lib/supabase/server";
+import { noStoreJson, requireRouteUser } from "@/lib/supabase/route-auth";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
+function adminOr500() {
+  try {
+    return { admin: createSupabaseAdmin() };
+  } catch (err) {
+    console.error("[api/profile] admin não configurado", err);
+    return {
+      error: NextResponse.json({ error: "Servidor não configurado" }, { status: 500 }),
+    };
+  }
+}
+
 export async function GET() {
-  const supabase = await createSupabaseServer();
-  if (!supabase) {
-    return NextResponse.json({ error: "Supabase não configurado" }, { status: 500 });
-  }
+  const auth = await requireRouteUser();
+  if ("error" in auth) return auth.error;
+  const { user } = auth;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const adminResult = adminOr500();
+  if ("error" in adminResult && adminResult.error) return adminResult.error;
 
-  if (!user) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
-
-  const { data, error } = await supabase
+  const { data, error } = await adminResult.admin!
     .from("profiles")
     .select("display_name, location")
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (error) {
+    console.error("[api/profile GET]", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({
-    display_name: data?.display_name ?? "",
+  const fallbackName =
+    user.user_metadata?.full_name ??
+    user.user_metadata?.name ??
+    user.email?.split("@")[0] ??
+    "";
+
+  return noStoreJson({
+    display_name: data?.display_name?.trim() || fallbackName,
     location: data?.location ?? "",
   });
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createSupabaseServer();
-  if (!supabase) {
-    return NextResponse.json({ error: "Supabase não configurado" }, { status: 500 });
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
+  const auth = await requireRouteUser();
+  if ("error" in auth) return auth.error;
+  const { user } = auth;
 
   let body: { display_name?: string; location?: string };
   try {
@@ -58,7 +63,9 @@ export async function PATCH(request: Request) {
   const location =
     typeof body.location === "string" ? body.location.trim() || null : null;
 
-  const admin = createSupabaseAdmin();
+  const adminResult = adminOr500();
+  if ("error" in adminResult && adminResult.error) return adminResult.error;
+  const admin = adminResult.admin!;
 
   const { data: existing } = await admin
     .from("profiles")
@@ -85,5 +92,5 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, display_name: display_name ?? "", location: location ?? "" });
+  return noStoreJson({ ok: true, display_name: display_name ?? "", location: location ?? "" });
 }

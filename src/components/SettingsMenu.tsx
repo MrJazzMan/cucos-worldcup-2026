@@ -101,26 +101,29 @@ export function SettingsMenu() {
   }, []);
 
   useEffect(() => {
+    if (!user || !open || view !== "profile") return;
+
+    fetch("/api/profile", { credentials: "same-origin" })
+      .then(async (res) => {
+        if (!res.ok) {
+          console.warn("[profile load]", await res.text());
+          return null;
+        }
+        return res.json() as Promise<{ display_name?: string; location?: string }>;
+      })
+      .then((data) => {
+        if (!data) return;
+        setDisplayName(data.display_name ?? "");
+        setLocation(data.location ?? "");
+      })
+      .catch((err) => console.warn("[profile load]", err));
+  }, [user, open, view]);
+
+  useEffect(() => {
     if (!user) {
       setDisplayName("");
       setLocation("");
-      return;
     }
-
-    const supabase = createSupabaseBrowser();
-    supabase
-      .from("profiles")
-      .select("display_name, location")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (error) {
-          console.warn("[profile load]", error.message);
-          return;
-        }
-        setDisplayName(data?.display_name ?? "");
-        setLocation(data?.location ?? "");
-      });
   }, [user]);
 
   useEffect(() => {
@@ -173,6 +176,7 @@ export function SettingsMenu() {
     try {
       const res = await fetch("/api/profile", {
         method: "PATCH",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           display_name: displayName.trim(),
@@ -184,6 +188,9 @@ export function SettingsMenu() {
         setProfileError(t("profile.error"));
         return;
       }
+      const saved = (await res.json()) as { display_name?: string; location?: string };
+      setDisplayName(saved.display_name ?? displayName.trim());
+      setLocation(saved.location ?? location.trim());
       setProfileSaved(true);
       setTimeout(() => setProfileSaved(false), 2500);
     } catch (err) {

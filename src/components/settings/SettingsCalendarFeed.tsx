@@ -18,8 +18,12 @@ export function SettingsCalendarFeed({ userId }: { userId: string }) {
   const [regenerating, setRegenerating] = useState(false);
 
   const loadCalendar = useCallback(async () => {
-    const res = await fetch("/api/profile/calendar");
-    if (!res.ok) throw new Error(await res.text());
+    const res = await fetch("/api/profile/calendar", { credentials: "same-origin" });
+    if (!res.ok) {
+      const body = await res.text();
+      console.error("[calendar load]", res.status, body);
+      throw new Error(body);
+    }
     return (await res.json()) as CalendarUrls;
   }, []);
 
@@ -51,7 +55,10 @@ export function SettingsCalendarFeed({ userId }: { userId: string }) {
     if (!window.confirm(t("calendar.regenerateConfirm"))) return;
     setRegenerating(true);
     try {
-      const res = await fetch("/api/profile/calendar", { method: "POST" });
+      const res = await fetch("/api/profile/calendar", {
+        method: "POST",
+        credentials: "same-origin",
+      });
       if (!res.ok) throw new Error(await res.text());
       setUrls((await res.json()) as CalendarUrls);
     } catch {
