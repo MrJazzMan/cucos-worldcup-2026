@@ -77,6 +77,9 @@ export const pt: Dict = {
   "profile.save": "Guardar",
   "profile.saving": "A guardar…",
   "profile.saved": "Guardado!",
+  "profile.error": "Não foi possível guardar. Tenta outra vez.",
+  "profile.timezoneAutoHint":
+    "Automático usa o fuso do teu dispositivo. Os horários dos jogos seguem esta definição.",
   "account.favourites": "Equipas favoritas",
   "account.favouritesHint": "Destacadas na homepage e usadas para notificações.",
   "calendar.title": "Calendário no telemóvel",
@@ -156,7 +159,7 @@ export const pt: Dict = {
   "whatsNew.item.finishedTime":
     "Hora de início visível nos jogos já terminados.",
   "whatsNew.item.calendar":
-    "Calendário no telemóvel — menu Perfil → Calendário (com sessão iniciada).",
+    "Calendário no telemóvel — Perfil → Calendário (2.º item do menu).",
   "whatsNew.item.readability":
     "Marcadores, cidade e estádio com texto maior — mais fácil de ler.",
 };

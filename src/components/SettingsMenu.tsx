@@ -12,16 +12,18 @@ import { useSettings } from "@/components/SettingsProvider";
 import { useSettingsMenu } from "@/components/SettingsMenuContext";
 import { isSiteAdmin } from "@/lib/admin";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import type { SettingsPanelView } from "@/lib/settings-menu-views";
+import { browserTimeZone } from "@/lib/datetime";
 import { COMMON_TIMEZONES } from "@/lib/datetime";
 import { CLASSIC_THEME_OPTIONS, STYLE_THEME_OPTIONS } from "@/lib/themes";
 
-type PanelView = "home" | "profile" | "notifications" | "favourites" | "calendar" | "appearance";
+type PanelView = SettingsPanelView;
 
-const MENU_ITEMS: { view: PanelView; icon: string; labelKey: string }[] = [
+const MENU_ITEMS: { view: Exclude<PanelView, "home">; icon: string; labelKey: string }[] = [
   { view: "profile", icon: "👤", labelKey: "settings.section.profile" },
+  { view: "calendar", icon: "📅", labelKey: "settings.section.calendar" },
   { view: "notifications", icon: "🔔", labelKey: "settings.section.notifications" },
   { view: "favourites", icon: "⭐", labelKey: "settings.section.favourites" },
-  { view: "calendar", icon: "📅", labelKey: "settings.section.calendar" },
   { view: "appearance", icon: "🎨", labelKey: "settings.section.appearance" },
 ];
 
@@ -35,7 +37,7 @@ const VIEW_TITLE: Record<Exclude<PanelView, "home">, string> = {
 
 export function SettingsMenu() {
   const { t, theme, setTheme, tzPref, setTzPref } = useSettings();
-  const { open, setOpen } = useSettingsMenu();
+  const { open, setOpen, openTo, pendingView, clearPendingView } = useSettingsMenu();
   const router = useRouter();
   const pathname = usePathname();
   const [view, setView] = useState<PanelView>("home");
@@ -45,11 +47,20 @@ export function SettingsMenu() {
   const [location, setLocation] = useState("");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const detectedTz = browserTimeZone();
 
   useEffect(() => {
-    if (!open) setView("home");
-  }, [open]);
+    if (!open) {
+      setView("home");
+      return;
+    }
+    if (pendingView) {
+      setView(pendingView);
+      clearPendingView();
+    }
+  }, [open, pendingView, clearPendingView]);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -90,19 +101,27 @@ export function SettingsMenu() {
   }, []);
 
   useEffect(() => {
-    if (!open || !user) return;
+    if (!user) {
+      setDisplayName("");
+      setLocation("");
+      return;
+    }
 
     const supabase = createSupabaseBrowser();
     supabase
       .from("profiles")
       .select("display_name, location")
       .eq("user_id", user.id)
-      .single()
-      .then(({ data }) => {
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn("[profile load]", error.message);
+          return;
+        }
         setDisplayName(data?.display_name ?? "");
         setLocation(data?.location ?? "");
       });
-  }, [open, user]);
+  }, [user]);
 
   useEffect(() => {
     if (!user) {
@@ -150,12 +169,24 @@ export function SettingsMenu() {
     if (!user) return;
     setProfileSaving(true);
     setProfileSaved(false);
+    setProfileError(null);
     const supabase = createSupabaseBrowser();
-    await supabase
-      .from("profiles")
-      .update({ display_name: displayName || null, location: location || null })
-      .eq("user_id", user.id);
+    const { error } = await supabase.from("profiles").upsert(
+      {
+        user_id: user.id,
+        display_name: displayName.trim() || null,
+        location: location.trim() || null,
+        email: user.email ?? null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
     setProfileSaving(false);
+    if (error) {
+      console.error("[profile save]", error.message);
+      setProfileError(t("profile.error"));
+      return;
+    }
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 2500);
   }
@@ -251,14 +282,22 @@ export function SettingsMenu() {
               onChange={(e) => setTzPref(e.target.value)}
               className="w-full rounded-xl border border-border-base bg-surface-2 px-3 py-2.5 text-sm text-foreground"
             >
-              <option value="auto">{t("settings.timezone.auto")}</option>
+              <option value="auto">
+                {t("settings.timezone.auto")} ({detectedTz.replace(/_/g, " ")})
+              </option>
               {COMMON_TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>
                   {tz.replace(/_/g, " ")}
                 </option>
               ))}
             </select>
+            {tzPref === "auto" && (
+              <p className="mt-1.5 text-xs text-muted">{t("profile.timezoneAutoHint")}</p>
+            )}
           </div>
+          {profileError && (
+            <p className="text-sm text-red-500">{profileError}</p>
+          )}
           <button
             onClick={saveProfile}
             disabled={profileSaving}
@@ -349,7 +388,7 @@ export function SettingsMenu() {
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? setOpen(false) : openTo("home"))}
         aria-label={t("settings.title")}
         aria-expanded={open}
         className="grid h-9 w-9 place-items-center rounded-lg border border-border-base bg-surface-2 text-foreground transition-colors hover:brightness-110"

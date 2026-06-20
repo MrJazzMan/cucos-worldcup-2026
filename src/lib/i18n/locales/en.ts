@@ -77,6 +77,9 @@ export const en: Dict = {
   "profile.save": "Save",
   "profile.saving": "Saving…",
   "profile.saved": "Saved!",
+  "profile.error": "Could not save. Please try again.",
+  "profile.timezoneAutoHint":
+    "Automatic uses your device time zone. Match times follow this setting.",
   "account.favourites": "Favourite teams",
   "account.favouritesHint": "Highlighted on the homepage and used for notifications.",
   "calendar.title": "Calendar on your phone",

@@ -29,19 +29,15 @@ export function SettingsCalendarFeed({ userId }: { userId: string }) {
     if (data?.calendar_token) return data.calendar_token as string;
 
     const fresh = newCalendarToken();
-    if (data) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ calendar_token: fresh })
-        .eq("user_id", userId);
-      if (error) throw error;
-    } else {
-      const { error } = await supabase.from("profiles").insert({
+    const { error } = await supabase.from("profiles").upsert(
+      {
         user_id: userId,
         calendar_token: fresh,
-      });
-      if (error) throw error;
-    }
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+    if (error) throw error;
     return fresh;
   }, [userId]);
 

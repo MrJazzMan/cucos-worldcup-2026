@@ -154,7 +154,7 @@ export function BottomNav() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const t = useT();
-  const { open: menuOpen, setOpen: setMenuOpen } = useSettingsMenu();
+  const { open: menuOpen, openTo } = useSettingsMenu();
 
   const favouritesActive =
     pathname === "/" && searchParams.get("favourites") === "1";
@@ -174,7 +174,7 @@ export function BottomNav() {
   }
 
   function openProfile() {
-    setMenuOpen(true);
+    openTo("profile");
   }
 
   return (
