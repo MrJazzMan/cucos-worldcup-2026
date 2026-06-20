@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { MatchesView } from "@/components/MatchesView";
 import {
   getAllMatches,
@@ -69,7 +70,11 @@ export default async function HomePage() {
     : [];
   const matches = await loadAllMatches(favouriteIds, loggedIn);
 
-  return <MatchesView matches={matches} canViewChannels={loggedIn} />;
+  return (
+    <Suspense fallback={null}>
+      <MatchesView matches={matches} canViewChannels={loggedIn} />
+    </Suspense>
+  );
 }
 
 export const revalidate = 60;

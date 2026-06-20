@@ -11,7 +11,7 @@ export function CookieConsent() {
   if (consent !== "pending") return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[90] border-t border-border-base bg-surface/95 p-4 shadow-2xl backdrop-blur-md">
+    <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-[90] border-t border-border-base bg-surface/95 p-4 shadow-2xl backdrop-blur-md sm:bottom-0">
       <div className="mx-auto flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
           {t("consent.message")}

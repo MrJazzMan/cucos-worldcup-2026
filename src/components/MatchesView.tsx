@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
@@ -51,6 +51,7 @@ export function MatchesView({
   canViewChannels?: boolean;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, tz, locale, mounted } = useSettings();
   const scrollRef = useRef<HTMLDivElement>(null);
   const todayKey = useMemo(() => dayKeyWithOffset(tz, 0), [tz]);
@@ -78,6 +79,19 @@ export function MatchesView({
       setSelectedDay(todayKey);
     }
   }, [allDays, todayKey]);
+
+  // Bottom nav: Jogos → hoje; Favoritos → filtro activo
+  useEffect(() => {
+    if (searchParams.get("today") === "1") {
+      setSelectedDay(todayKey);
+      setShowOnlyFavourites(false);
+      router.replace("/", { scroll: false });
+      return;
+    }
+    if (searchParams.get("favourites") === "1") {
+      setShowOnlyFavourites(true);
+    }
+  }, [searchParams, todayKey, router]);
 
   // Scroll active tab into view
   useEffect(() => {

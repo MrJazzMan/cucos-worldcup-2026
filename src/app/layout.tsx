@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
-import { AppHeader } from "@/components/AppHeader";
+import { AppChrome } from "@/components/AppChrome";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
@@ -80,11 +80,11 @@ export default function RootLayout({
         <SettingsProvider>
           <ConsentProvider>
             <ProfileSync />
-            <AppHeader />
-            <main className="w-full flex-1 px-4 py-6 lg:px-6">
+            <AppChrome>
+            <main className="w-full flex-1 px-4 py-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 lg:px-6">
               {children}
             </main>
-            <footer className="mt-10 pb-8 text-center text-xs text-muted">
+            <footer className="mt-10 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] text-center text-xs text-muted sm:pb-8">
               <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
               <p className="mt-1"><T k="footer.production" />: Miguel Garcia</p>
               <p className="mt-1">
@@ -94,6 +94,7 @@ export default function RootLayout({
               </p>
               <p className="mt-0.5">© 2026 Cuco Enterprise</p>
             </footer>
+            </AppChrome>
             <CookieConsent />
             <ServiceWorkerRegister />
             <Analytics />
