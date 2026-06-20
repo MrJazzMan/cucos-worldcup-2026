@@ -80,10 +80,11 @@ export async function middleware(request: NextRequest) {
   const origin = getRequestOrigin(request);
   const ua = request.headers.get("user-agent");
 
-  // Rotas /api/ e /feed/ são isentas: auth própria ou URL secreta; clientes não-browser.
+  // Rotas /api/, /feed/ e /calendar/ são isentas: auth própria ou URL secreta; clientes não-browser.
   if (
     !pathname.startsWith("/api/") &&
     !pathname.startsWith("/feed/") &&
+    !pathname.startsWith("/calendar/") &&
     isBlockedBot(ua)
   ) {
     return new NextResponse("Access denied", { status: 403 });

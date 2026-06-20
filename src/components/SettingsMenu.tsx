@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { AuthButtons } from "@/components/AuthButtons";
 import { SettingsFavourites } from "@/components/settings/SettingsFavourites";
+import { SettingsCalendarFeed } from "@/components/settings/SettingsCalendarFeed";
 import { SettingsNotifications } from "@/components/settings/SettingsNotifications";
 import { useSettings } from "@/components/SettingsProvider";
 import { useSettingsMenu } from "@/components/SettingsMenuContext";
@@ -277,7 +278,12 @@ export function SettingsMenu() {
     }
 
     if (view === "favourites") {
-      return <SettingsFavourites userId={user.id} />;
+      return (
+        <div className="space-y-5">
+          <SettingsFavourites userId={user.id} />
+          <SettingsCalendarFeed userId={user.id} />
+        </div>
+      );
     }
 
     if (view === "appearance") {
