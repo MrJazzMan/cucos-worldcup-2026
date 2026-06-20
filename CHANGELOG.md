@@ -2,14 +2,38 @@
 
 Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changelog](https://keepachangelog.com/).
 
-Versão actual em produção: **0.4.0** (`wc26.pt`).
+Versão actual em produção: **0.5.0** (`wc26.pt`).
 
 ---
 
 ## [Unreleased]
 
+---
+
+## [0.5.0] — 2026-06-20 — Perfil, calendário e novidades
+
 ### Adicionado
-- Painel **Novidades** na homepage — aparece até o utilizador fechar; depois não volta (até bump de `WHATS_NEW_VERSION`).
+- Rotas API **`/api/profile`** (GET/PATCH) e **`/api/profile/calendar`** (GET/POST) com service role.
+- **`src/lib/supabase/route-auth.ts`** — autenticação de sessão nas rotas API.
+- Painel **Novidades** mostra versão e data (`v0.5.0 · 2026-06-22`).
+- Migration **`012_profiles_rls_admin.sql`** — função `is_site_admin()` (RLS sem recursão).
+- Migration **`011_profiles_insert_own.sql`** — INSERT próprio perfil (RLS).
+
+### Alterado
+- Menu Perfil: ordem Perfil → Calendário → …; mobile **Perfil** abre directamente o painel.
+- Perfil recarrega ao abrir o painel (sync entre dispositivos).
+
+### Corrigido
+- Gravar perfil («Could not save») — upsert client-side substituído por API servidor.
+- Calendário iCal («Could not load calendar link») — geração de `calendar_token` no servidor.
+- Leitura de nome/local vazia no desktop — GET `/api/profile` com fallback ao nome Google.
+
+---
+
+## [0.4.1] — 2026-06-21 — Sync live, marcadores e novidades
+
+### Adicionado
+- Painel **Novidades** na homepage (`WhatsNewBanner`).
 - Sync live agendado por jogo via **Upstash QStash** (`/api/sync/live`, `/api/sync/schedule`).
 - **Marcadores** (`goal_events`) nos cartões ao vivo/terminados.
 - Feed **iCal** para equipas favoritas (login, `/calendar/[token]`).

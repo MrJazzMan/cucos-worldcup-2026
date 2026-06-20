@@ -83,6 +83,35 @@ vivo, **90s** caso contrário). Os cartões mostram marcador, minuto e etiqueta
 
 ---
 
+## Perfil e calendário iCal
+
+Requer login Google. Dados em `profiles` (`display_name`, `location`, `calendar_token`).
+
+**Migrations obrigatórias:** `008_calendar_token.sql`, `012_profiles_rls_admin.sql` (recomendado).
+
+| Acção utilizador | API | Notas |
+|------------------|-----|-------|
+| Ver/gravar perfil | `GET/PATCH /api/profile` | Service role no servidor |
+| Link calendário | `GET /api/profile/calendar` | Cria token se NULL |
+| Regenerar token | `POST /api/profile/calendar` | Invalida subscrições antigas |
+
+URL pública do feed: `https://wc26.pt/calendar/{token}.ics` (equipas favoritas).
+
+Verificar na BD:
+
+```sql
+SELECT display_name, location, calendar_token IS NOT NULL AS ok
+FROM profiles WHERE user_id = 'UUID-DO-UTILIZADOR';
+```
+
+| Sintoma | Acção |
+|---------|--------|
+| «Could not save» | `SUPABASE_SERVICE_ROLE_KEY` no Vercel |
+| «Could not load calendar link» | Migration `008`; redeploy; ver Network → `/api/profile/calendar` |
+| Nome vazio no formulário | Hard refresh; GET `/api/profile` deve devolver nome Google como fallback |
+
+---
+
 ## Sync de canais TV (OndeBola)
 
 ```bash

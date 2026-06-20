@@ -2,13 +2,13 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-**Versão actual:** `0.4.0` — sync live QStash, marcadores, calendário iCal, painel novidades (ver [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md)).
+**Versão actual:** `0.5.0` — perfil/calendário via API, sync live QStash, marcadores, novidades (ver [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md)).
 
 ## Índice
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [**sessao-handoff-jun-2026.md**](sessao-handoff-jun-2026.md) | **Handoff Jun 2026** — QStash, marcadores, migrations, ops |
+| [**sessao-handoff-jun-2026.md**](sessao-handoff-jun-2026.md) | **Handoff Jun 2026** — perfil, calendário, QStash, migrations |
 | [historico-e-setup.md](historico-e-setup.md) | Stack, Supabase, Vercel, domínio, dados reais |
 | [deploy.md](deploy.md) | Vercel, variáveis, crons, pós-deploy |
 | [setup-analytics-ads.md](setup-analytics-ads.md) | GA4 + AdSense (verificação, env vars) |
@@ -19,11 +19,13 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [operacoes.md](operacoes.md) | Comandos do dia-a-dia |
 | [coding-guidelines.md](coding-guidelines.md) | Convenções de código |
 
-## Estado actual (0.4.0)
+## Estado actual (0.5.0)
 
 | Área | Estado |
 |------|--------|
 | **Produção** | https://wc26.pt |
+| **Perfil** | Nome/local via `PATCH /api/profile` (login) |
+| **Calendário iCal** | Menu → Calendário; token em `profiles.calendar_token` |
 | **Jogos** | Públicos (SEO) — equipas, horários, resultados, **canais TV** |
 | **Fase final** | https://wc26.pt/fasefinal — bracket desktop + preview FIFA |
 | **Layout homepage** | `max-w-7xl` alinhado; destaque + grelha 2 colunas |
