@@ -1,54 +1,36 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import { useCallback, useEffect, useState } from "react";
 import { useSettings } from "@/components/SettingsProvider";
 
-function newCalendarToken(): string {
-  const bytes = new Uint8Array(32);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+interface CalendarUrls {
+  token: string;
+  httpsUrl: string;
+  webcalUrl: string;
+  googleUrl: string;
 }
 
 export function SettingsCalendarFeed({ userId }: { userId: string }) {
   const { t } = useSettings();
-  const [token, setToken] = useState<string | null>(null);
+  const [urls, setUrls] = useState<CalendarUrls | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  const ensureToken = useCallback(async () => {
-    const supabase = createSupabaseBrowser();
-    const { data, error: selectError } = await supabase
-      .from("profiles")
-      .select("calendar_token")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (selectError) throw selectError;
-    if (data?.calendar_token) return data.calendar_token as string;
-
-    const fresh = newCalendarToken();
-    const { error } = await supabase.from("profiles").upsert(
-      {
-        user_id: userId,
-        calendar_token: fresh,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
-    if (error) throw error;
-    return fresh;
-  }, [userId]);
+  const loadCalendar = useCallback(async () => {
+    const res = await fetch("/api/profile/calendar");
+    if (!res.ok) throw new Error(await res.text());
+    return (await res.json()) as CalendarUrls;
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    ensureToken()
-      .then((value) => {
-        if (!cancelled) setToken(value);
+    loadCalendar()
+      .then((data) => {
+        if (!cancelled) setUrls(data);
       })
       .catch(() => {
-        if (!cancelled) setToken(null);
+        if (!cancelled) setUrls(null);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -56,16 +38,7 @@ export function SettingsCalendarFeed({ userId }: { userId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [ensureToken]);
-
-  const urls = useMemo(() => {
-    if (!token || typeof window === "undefined") return null;
-    const origin = window.location.origin;
-    const httpsUrl = `${origin}/calendar/${token}.ics`;
-    const webcalUrl = httpsUrl.replace(/^https?:/, "webcal:");
-    const googleUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(httpsUrl)}`;
-    return { httpsUrl, webcalUrl, googleUrl };
-  }, [token]);
+  }, [userId, loadCalendar]);
 
   async function copyLink() {
     if (!urls) return;
@@ -78,14 +51,11 @@ export function SettingsCalendarFeed({ userId }: { userId: string }) {
     if (!window.confirm(t("calendar.regenerateConfirm"))) return;
     setRegenerating(true);
     try {
-      const supabase = createSupabaseBrowser();
-      const fresh = newCalendarToken();
-      const { error } = await supabase
-        .from("profiles")
-        .update({ calendar_token: fresh })
-        .eq("user_id", userId);
-      if (error) throw error;
-      setToken(fresh);
+      const res = await fetch("/api/profile/calendar", { method: "POST" });
+      if (!res.ok) throw new Error(await res.text());
+      setUrls((await res.json()) as CalendarUrls);
+    } catch {
+      window.alert(t("calendar.error"));
     } finally {
       setRegenerating(false);
     }
@@ -95,7 +65,7 @@ export function SettingsCalendarFeed({ userId }: { userId: string }) {
     return <p className="text-sm text-muted">{t("matches.loading")}</p>;
   }
 
-  if (!token || !urls) {
+  if (!urls) {
     return (
       <p className="text-sm text-red-500">{t("calendar.error")}</p>
     );

@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useSettings } from "@/components/SettingsProvider";
 import {
+  WHATS_NEW_DATE,
   WHATS_NEW_ITEM_KEYS,
+  WHATS_NEW_RELEASE,
   hasSeenWhatsNew,
   markWhatsNewSeen,
 } from "@/lib/whats-new";
@@ -36,6 +38,11 @@ export function WhatsNewBanner() {
           >
             {t("whatsNew.title")}
           </h2>
+          <p className="mt-0.5 text-xs text-muted">
+            {t("whatsNew.release")
+              .replace("{version}", WHATS_NEW_RELEASE)
+              .replace("{date}", WHATS_NEW_DATE)}
+          </p>
           <ul className="mt-2.5 space-y-2 text-sm leading-snug text-foreground/90">
             {WHATS_NEW_ITEM_KEYS.map((key) => (
               <li key={key} className="flex gap-2">

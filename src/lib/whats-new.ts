@@ -1,6 +1,10 @@
 /** Bump para mostrar o painel outra vez — desaparece para sempre após «Entendi». */
 export const WHATS_NEW_VERSION = "2026-06-22";
 
+/** Versão / data mostrada no painel Novidades */
+export const WHATS_NEW_RELEASE = "0.5.0";
+export const WHATS_NEW_DATE = "2026-06-22";
+
 export const WHATS_NEW_STORAGE_KEY = "wc26-whats-new-seen";
 
 export const WHATS_NEW_ITEM_KEYS = [

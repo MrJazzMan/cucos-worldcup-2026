@@ -150,6 +150,7 @@ export const pt: Dict = {
   "consent.reject": "Recusar",
   "ads.label": "Publicidade",
   "whatsNew.title": "Novidades",
+  "whatsNew.release": "v{version} · {date}",
   "whatsNew.dismiss": "Entendi",
   "whatsNew.close": "Fechar novidades",
   "whatsNew.item.scorers":

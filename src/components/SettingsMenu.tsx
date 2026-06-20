@@ -170,25 +170,28 @@ export function SettingsMenu() {
     setProfileSaving(true);
     setProfileSaved(false);
     setProfileError(null);
-    const supabase = createSupabaseBrowser();
-    const { error } = await supabase.from("profiles").upsert(
-      {
-        user_id: user.id,
-        display_name: displayName.trim() || null,
-        location: location.trim() || null,
-        email: user.email ?? null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
-    setProfileSaving(false);
-    if (error) {
-      console.error("[profile save]", error.message);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          display_name: displayName.trim(),
+          location: location.trim(),
+        }),
+      });
+      if (!res.ok) {
+        console.error("[profile save]", await res.text());
+        setProfileError(t("profile.error"));
+        return;
+      }
+      setProfileSaved(true);
+      setTimeout(() => setProfileSaved(false), 2500);
+    } catch (err) {
+      console.error("[profile save]", err);
       setProfileError(t("profile.error"));
-      return;
+    } finally {
+      setProfileSaving(false);
     }
-    setProfileSaved(true);
-    setTimeout(() => setProfileSaved(false), 2500);
   }
 
   async function signOut() {
