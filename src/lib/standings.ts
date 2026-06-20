@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { fetchStandings } from "@/lib/api-football";
+import { isKnockoutRound } from "@/lib/knockout-bracket";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { isWorldCupMatch } from "@/lib/world-cup";
@@ -38,12 +39,62 @@ type TeamAccum = {
   goals_against: number;
 };
 
+export type StandingsSyncResult = {
+  groups: number;
+  groupMatches: number;
+  teamsMapped: number;
+};
+
 export function resolveGroupName(
   m: Pick<Match, "group_name" | "round">
 ): string | null {
   if (m.group_name) return m.group_name;
   const match = (m.round ?? "").match(/Group\s+([A-L])/i);
   return match ? `Grupo ${match[1].toUpperCase()}` : null;
+}
+
+/** Mapa equipa → grupo (API usa round "Group Stage - 1" sem letra). */
+export async function buildTeamGroupMap(): Promise<Map<number, string>> {
+  const map = new Map<number, string>();
+  try {
+    const data = await fetchStandings({ revalidate: 0 });
+    for (const block of data[0]?.league?.standings ?? []) {
+      const apiGroup = block[0]?.group ?? "";
+      const match = apiGroup.match(/Group\s+([A-L])/i);
+      if (!match) continue;
+      const groupName = `Grupo ${match[1].toUpperCase()}`;
+      for (const row of block) {
+        map.set(row.team.id, groupName);
+      }
+    }
+  } catch (err) {
+    console.warn("buildTeamGroupMap failed:", err);
+  }
+  return map;
+}
+
+export function resolveMatchGroup(
+  m: Pick<
+    Match,
+    "group_name" | "round" | "home_team_id" | "away_team_id"
+  >,
+  teamGroupMap?: Map<number, string>
+): string | null {
+  return (
+    resolveGroupName(m) ??
+    teamGroupMap?.get(m.home_team_id) ??
+    teamGroupMap?.get(m.away_team_id) ??
+    null
+  );
+}
+
+function isGroupStageMatch(
+  m: Pick<Match, "round" | "group_name" | "home_team_id" | "away_team_id">,
+  teamGroupMap: Map<number, string>
+): boolean {
+  if (!isWorldCupMatch(m)) return false;
+  if (isKnockoutRound(m.round)) return false;
+  return resolveMatchGroup(m, teamGroupMap) !== null;
 }
 
 function applyResult(stats: TeamAccum, goalsFor: number, goalsAgainst: number) {
@@ -57,7 +108,8 @@ function applyResult(stats: TeamAccum, goalsFor: number, goalsAgainst: number) {
 
 /** Classificações calculadas a partir dos resultados na BD (mais fiável que /standings da API). */
 export function computeStandingsFromMatches(
-  matches: GroupStandingMatch[]
+  matches: GroupStandingMatch[],
+  teamGroupMap?: Map<number, string>
 ): GroupStanding[] {
   const groupTeams = new Map<string, Map<number, TeamAccum>>();
 
@@ -86,7 +138,7 @@ export function computeStandingsFromMatches(
   };
 
   for (const m of matches) {
-    const groupName = resolveGroupName(m);
+    const groupName = resolveMatchGroup(m, teamGroupMap);
     if (!groupName) continue;
 
     ensureTeam(groupName, m.home_team_id, m.home_team_name, m.home_team_logo);
@@ -183,20 +235,33 @@ export function mapApiStandingsToGroups(data: ApiStandingsResponse): GroupStandi
   return groups;
 }
 
-async function fetchGroupStageMatches(): Promise<GroupStandingMatch[]> {
-  const supabase = await createSupabaseServer();
-  if (!supabase) return [];
+type MatchesClient = {
+  from: (table: "matches") => {
+    select: (columns: string) => {
+      order: (
+        column: string,
+        options: { ascending: boolean }
+      ) => PromiseLike<{ data: GroupStandingMatch[] | null; error: Error | null }>;
+    };
+  };
+};
 
-  const { data, error } = await supabase
+async function loadAllMatches(client: MatchesClient): Promise<GroupStandingMatch[]> {
+  const { data, error } = await client
     .from("matches")
     .select(GROUP_STANDING_MATCH_FIELDS)
     .order("kickoff_utc", { ascending: true });
 
-  if (error || !data?.length) return [];
+  if (error) throw error;
+  return (data ?? []) as GroupStandingMatch[];
+}
 
-  return (data as GroupStandingMatch[]).filter(
-    (m) => isWorldCupMatch(m) && resolveGroupName(m)
-  );
+async function loadGroupStageMatches(
+  client: MatchesClient,
+  teamGroupMap: Map<number, string>
+): Promise<GroupStandingMatch[]> {
+  const all = await loadAllMatches(client);
+  return all.filter((m) => isGroupStageMatch(m, teamGroupMap));
 }
 
 export async function getGroupStandingsFromDb(): Promise<GroupStanding[] | null> {
@@ -216,33 +281,24 @@ export async function getGroupStandingsFromDb(): Promise<GroupStanding[] | null>
   }));
 }
 
-async function loadGroupStageMatchesForSync(): Promise<GroupStandingMatch[]> {
-  const admin = createSupabaseAdmin();
-  const { data, error } = await admin
-    .from("matches")
-    .select(GROUP_STANDING_MATCH_FIELDS)
-    .order("kickoff_utc", { ascending: true });
-
-  if (error) throw error;
-
-  return ((data ?? []) as GroupStandingMatch[]).filter(
-    (m) => isWorldCupMatch(m) && resolveGroupName(m)
-  );
-}
-
 /** Recalcula classificações a partir dos jogos na BD e grava; invalida cache de /grupos. */
-export async function syncGroupStandings(): Promise<number> {
-  const matches = await loadGroupStageMatchesForSync();
-  const groups = computeStandingsFromMatches(matches);
+export async function syncGroupStandings(): Promise<StandingsSyncResult> {
+  const teamGroupMap = await buildTeamGroupMap();
+  const admin = createSupabaseAdmin();
+  const matches = await loadGroupStageMatches(admin, teamGroupMap);
+  const groups = computeStandingsFromMatches(matches, teamGroupMap);
 
   if (!groups.length) {
     console.warn(
-      `syncGroupStandings: 0 grupos (${matches.length} jogos de grupo na BD)`
+      `syncGroupStandings: 0 grupos (${matches.length} jogos, ${teamGroupMap.size} equipas mapeadas)`
     );
-    return 0;
+    return {
+      groups: 0,
+      groupMatches: matches.length,
+      teamsMapped: teamGroupMap.size,
+    };
   }
 
-  const admin = createSupabaseAdmin();
   const now = new Date().toISOString();
   const { error } = await admin.from("group_standings").upsert(
     groups.map((g) => ({
@@ -261,10 +317,18 @@ export async function syncGroupStandings(): Promise<number> {
     console.warn("revalidatePath /grupos failed:", err);
   }
 
-  return groups.length;
+  return {
+    groups: groups.length,
+    groupMatches: matches.length,
+    teamsMapped: teamGroupMap.size,
+  };
 }
 
 export async function getComputedGroupStandings(): Promise<GroupStanding[]> {
-  const matches = await fetchGroupStageMatches();
-  return computeStandingsFromMatches(matches);
+  const teamGroupMap = await buildTeamGroupMap();
+  const supabase = await createSupabaseServer();
+  if (!supabase) return [];
+
+  const matches = await loadGroupStageMatches(supabase, teamGroupMap);
+  return computeStandingsFromMatches(matches, teamGroupMap);
 }
