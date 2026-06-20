@@ -12,6 +12,7 @@ import {
 } from "@/lib/api-football";
 import {
   getGroupStandingsFromDb,
+  getComputedGroupStandings,
   mapApiStandingsToGroups,
 } from "@/lib/standings";
 
@@ -102,6 +103,9 @@ export async function getUserFavouriteTeamIds(): Promise<number[]> {
 
 export async function getGroupStandings(): Promise<GroupStanding[]> {
   try {
+    const computed = await getComputedGroupStandings();
+    if (computed.length) return computed;
+
     const fromDb = await getGroupStandingsFromDb();
     if (fromDb?.length) return fromDb;
 
