@@ -58,7 +58,7 @@ export const pl: Dict = {
   "knockouts.scrollHint": "Przesuń, aby zobaczyć drabinkę",
   "knockouts.schedule": "Terminarz",
   "knockouts.previewHint":
-    "Prognozowany drabinka MŚ 2026 — prawdziwe mecze pojawią się tutaj w miarę postępu turnieju.",
+    "Prawdziwe mecze pojawią się tutaj w miarę postępu turnieju.",
   "account.title": "Konto",
   "account.needSupabase": "Skonfiguruj Supabase, aby włączyć uwierzytelnianie.",
   "account.signInPrompt":

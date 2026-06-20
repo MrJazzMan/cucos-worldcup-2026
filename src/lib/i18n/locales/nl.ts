@@ -58,7 +58,7 @@ export const nl: Dict = {
   "knockouts.scrollHint": "Veeg om het schema te zien",
   "knockouts.schedule": "Schema",
   "knockouts.previewHint":
-    "Verwachte WK 2026-schema — echte wedstrijden verschijnen hier naarmate het toernooi vordert.",
+    "Echte wedstrijden verschijnen hier naarmate het toernooi vordert.",
   "account.title": "Account",
   "account.needSupabase": "Configureer Supabase om authenticatie in te schakelen.",
   "account.signInPrompt":

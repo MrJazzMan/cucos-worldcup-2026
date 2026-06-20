@@ -47,7 +47,7 @@ export const en: Dict = {
   "groups.col.lost": "L",
   "groups.col.gd": "GD",
   "groups.col.points": "Pts",
-  "knockouts.title": "Knockouts",
+  "knockouts.title": "Final Phase - Knockouts",
   "knockouts.subtitle": "Full tournament bracket",
   "knockouts.empty.title": "Bracket not available yet",
   "knockouts.empty.subtitle":
@@ -62,7 +62,7 @@ export const en: Dict = {
   "knockouts.scrollHint": "Swipe to explore the bracket",
   "knockouts.schedule": "Schedule",
   "knockouts.previewHint":
-    "Projected FIFA 2026 bracket — real fixtures appear here as the tournament progresses.",
+    "Real fixtures appear here as the tournament progresses.",
   "account.title": "Account",
   "account.needSupabase": "Configure Supabase to enable authentication.",
   "account.signInPrompt":

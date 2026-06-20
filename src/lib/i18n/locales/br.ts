@@ -43,7 +43,7 @@ export const br: Dict = {
   "groups.col.lost": "D",
   "groups.col.gd": "SG",
   "groups.col.points": "Pts",
-  "knockouts.title": "Mata-mata",
+  "knockouts.title": "Fase Final - Eliminatórias",
   "knockouts.subtitle": "Chave completa do torneio",
   "knockouts.empty.title": "Chave ainda não disponível",
   "knockouts.empty.subtitle":
@@ -58,7 +58,7 @@ export const br: Dict = {
   "knockouts.scrollHint": "Deslize para ver a chave",
   "knockouts.schedule": "Calendário",
   "knockouts.previewHint":
-    "Chave prevista da Copa 2026 — jogos reais aparecem aqui conforme o torneio avança.",
+    "Os jogos reais aparecem aqui conforme o torneio avança.",
   "account.title": "Conta",
   "account.needSupabase": "Configure o Supabase para ativar a autenticação.",
   "account.signInPrompt":

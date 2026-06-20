@@ -57,7 +57,7 @@ export const fr: Dict = {
   "knockouts.scrollHint": "Glissez pour voir le tableau",
   "knockouts.schedule": "Calendrier",
   "knockouts.previewHint":
-    "Tableau prévisionnel de la Coupe du monde 2026 — les matchs réels s'afficheront ici au fil du tournoi.",
+    "Les matchs réels s'afficheront ici au fil du tournoi.",
   "account.title": "Compte",
   "account.needSupabase": "Configurez Supabase pour activer l'authentification.",
   "account.signInPrompt":

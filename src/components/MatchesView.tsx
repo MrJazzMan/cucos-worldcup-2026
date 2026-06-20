@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
@@ -204,7 +205,7 @@ export function MatchesView({
           </p>
           {isToday && hasLiveToday && (
             <span className="inline-flex items-center gap-1 text-[10px] text-red-500">
-              <span className="live-dot inline-block h-1 w-1 rounded-full bg-current" />
+              <LivePulseDot size="sm" className="text-red-500" />
               {t("matches.liveRefresh")}
             </span>
           )}

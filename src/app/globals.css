@@ -147,13 +147,51 @@ body {
     linear-gradient(180deg, var(--background-2), var(--background) 55%);
 }
 
-@keyframes pulse-live {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+@keyframes live-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }
 
-.live-dot {
-  animation: pulse-live 1.2s ease-in-out infinite;
+.live-pulse {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.live-pulse--sm {
+  width: 6px;
+  height: 6px;
+}
+
+.live-pulse--md {
+  width: 8px;
+  height: 8px;
+}
+
+.live-pulse__dot {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.live-pulse__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  animation: live-pulse-ring 1.4s ease-out infinite;
 }
 
 @keyframes rise {
@@ -206,6 +244,11 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .favourite-star-pop {
     animation: none;
+  }
+
+  .live-pulse__ring {
+    animation: none;
+    opacity: 0;
   }
 
   .match-card {

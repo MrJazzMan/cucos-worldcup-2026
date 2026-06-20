@@ -42,11 +42,8 @@ export default async function FaseFinalPage() {
         <h1 className="text-2xl font-bold text-foreground">
           <T k="knockouts.title" />
         </h1>
-        <p className="mt-1 text-muted">
-          <T k="knockouts.subtitle" />
-        </p>
         {!hasMatches && (
-          <p className="mt-2 text-sm text-muted">
+          <p className="mt-1 text-muted">
             <T k="knockouts.previewHint" />
           </p>
         )}

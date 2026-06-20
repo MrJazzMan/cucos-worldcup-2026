@@ -57,7 +57,7 @@ export const ar: Dict = {
   "knockouts.scrollHint": "مرّر لاستكشاف الجدول",
   "knockouts.schedule": "الجدول",
   "knockouts.previewHint":
-    "جدول متوقع لكأس العالم 2026 — ستظهر المباريات الحقيقية هنا مع تقدّم البطولة.",
+    "ستظهر المباريات الحقيقية هنا مع تقدّم البطولة.",
   "account.title": "الحساب",
   "account.needSupabase": "قم بإعداد Supabase لتفعيل تسجيل الدخول.",
   "account.signInPrompt":

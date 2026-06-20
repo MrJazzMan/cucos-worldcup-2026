@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { LivePulseDot } from "@/components/LivePulseDot";
 import { MatchFavouriteToggle } from "@/components/match/MatchFavouriteToggle";
 import { MatchChannels } from "@/components/match/MatchChannels";
 import { MatchTeamsLayout } from "@/components/match/MatchTeamsLayout";
@@ -52,9 +53,7 @@ export function MatchCard({
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${badgeClass}`}
         >
-          {isLive && (
-            <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-white" />
-          )}
+          {isLive && <LivePulseDot />}
           {badgeText}
         </span>
         <MatchFavouriteToggle

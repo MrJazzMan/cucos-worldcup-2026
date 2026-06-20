@@ -57,7 +57,7 @@ export const de: Dict = {
   "knockouts.scrollHint": "Wischen für den Turnierbaum",
   "knockouts.schedule": "Spielplan",
   "knockouts.previewHint":
-    "Prognostizierter WM-2026-Turnierbaum — echte Spiele erscheinen hier im Turnierverlauf.",
+    "Echte Spiele erscheinen hier im Turnierverlauf.",
   "account.title": "Konto",
   "account.needSupabase": "Supabase konfigurieren, um die Anmeldung zu aktivieren.",
   "account.signInPrompt":
