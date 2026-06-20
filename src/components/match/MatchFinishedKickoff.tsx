@@ -1,10 +1,12 @@
 "use client";
 
 import { dateKeyInTz, formatShortMatchDate, timeInTz } from "@/lib/datetime";
+import { resolveFinishedUtc } from "@/lib/match-finish-time";
 import { useSettings } from "@/components/SettingsProvider";
+import type { Match } from "@/types";
 
 type MatchFinishedKickoffProps = {
-  kickoffUtc: string;
+  match: Pick<Match, "kickoff_utc" | "finished_utc" | "minute" | "status">;
   selectedDay?: string;
   showKickoffDate?: boolean;
   variant?: "card" | "featured";
@@ -27,20 +29,23 @@ function ClockIcon({ className }: { className?: string }) {
 }
 
 export function MatchFinishedKickoff({
-  kickoffUtc,
+  match,
   selectedDay,
   showKickoffDate = false,
   variant = "card",
 }: MatchFinishedKickoffProps) {
   const { tz, locale } = useSettings();
-  const matchDay = dateKeyInTz(kickoffUtc, tz);
+  const finishedUtc = resolveFinishedUtc(match);
+  if (!finishedUtc) return null;
+
+  const matchDay = dateKeyInTz(match.kickoff_utc, tz);
   const includeDate =
     showKickoffDate ||
     selectedDay === undefined ||
     matchDay !== selectedDay;
-  const time = timeInTz(kickoffUtc, tz);
+  const time = timeInTz(finishedUtc, tz);
   const dateLabel = includeDate
-    ? formatShortMatchDate(kickoffUtc, tz, locale)
+    ? formatShortMatchDate(finishedUtc, tz, locale)
     : null;
   const textSize = variant === "featured" ? "text-xs" : "text-[10px]";
 

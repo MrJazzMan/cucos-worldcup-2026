@@ -5,6 +5,7 @@ export type DayOffset = -1 | 0 | 1;
 export interface Match {
   fixture_id: number;
   kickoff_utc: string;
+  finished_utc?: string | null;
   match_date: string;
   home_team_id: number;
   home_team_name: string;

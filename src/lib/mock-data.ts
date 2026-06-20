@@ -1,6 +1,7 @@
 import { addDays, startOfDay } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { TIMEZONE } from "@/lib/timezone";
+import { fallbackFinishedUtc } from "@/lib/match-finish-time";
 import type { Match } from "@/types";
 
 function todayStr(): string {
@@ -21,6 +22,10 @@ function kickoff(date: string, hour: number, minute = 0): string {
   return `${date}T${String(hour - 1).padStart(2, "0")}:${m}:00.000Z`;
 }
 
+function mockFinishedUtc(kickoffIso: string, playMinutes = 90): string {
+  return fallbackFinishedUtc(kickoffIso, playMinutes);
+}
+
 const today = todayStr();
 const yesterday = dateOffsetStr(-1);
 const tomorrow = dateOffsetStr(1);
@@ -29,6 +34,7 @@ export const MOCK_MATCHES: Omit<Match, "channels">[] = [
   {
     fixture_id: 1001,
     kickoff_utc: kickoff(yesterday, 20, 0),
+    finished_utc: mockFinishedUtc(kickoff(yesterday, 20, 0), 90),
     match_date: yesterday,
     home_team_id: 27,
     home_team_name: "Portugal",
@@ -39,7 +45,7 @@ export const MOCK_MATCHES: Omit<Match, "channels">[] = [
     home_score: 2,
     away_score: 1,
     status: "finished",
-    minute: null,
+    minute: 90,
     round: "Group Stage - 1",
     group_name: "Grupo K",
     venue: "MetLife Stadium",

@@ -1,4 +1,5 @@
 import type { MatchStatus } from "@/types";
+import { estimateFinishedUtcFromApi } from "@/lib/match-finish-time";
 import { formatMatchDate } from "@/lib/timezone";
 import { formatVenueField } from "@/lib/venues";
 import { WC_LEAGUE_ID, isWorldCupRound } from "@/lib/world-cup";
@@ -9,6 +10,10 @@ interface ApiFixture {
   fixture: {
     id: number;
     date: string;
+    periods?: {
+      first: number | null;
+      second: number | null;
+    } | null;
     status: {
       short: string;
       elapsed: number | null;
@@ -105,10 +110,19 @@ export function mapFixtureToMatch(fixture: ApiFixture) {
   const kickoffUtc = fixture.fixture.date;
   const matchDate = formatMatchDate(kickoffUtc);
   const status = mapApiStatus(fixture.fixture.status.short);
+  const elapsed = fixture.fixture.status.elapsed;
 
   return {
     fixture_id: fixture.fixture.id,
     kickoff_utc: kickoffUtc,
+    finished_utc:
+      status === "finished"
+        ? estimateFinishedUtcFromApi({
+            date: kickoffUtc,
+            status: fixture.fixture.status,
+            periods: fixture.fixture.periods,
+          })
+        : null,
     match_date: matchDate,
     home_team_id: fixture.teams.home.id,
     home_team_name: fixture.teams.home.name,
@@ -120,7 +134,7 @@ export function mapFixtureToMatch(fixture: ApiFixture) {
     away_score: fixture.goals.away,
     status,
     minute:
-      status === "live" ? fixture.fixture.status.elapsed : null,
+      status === "live" || status === "finished" ? elapsed : null,
     round: fixture.league.round,
     group_name: extractGroupName(fixture.league.round),
     venue: formatVenueField(fixture.fixture.venue),
