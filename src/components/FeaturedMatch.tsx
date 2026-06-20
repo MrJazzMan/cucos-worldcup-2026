@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { LivePulseDot } from "@/components/LivePulseDot";
 import { MatchFavouriteToggle } from "@/components/match/MatchFavouriteToggle";
 import { MatchChannels } from "@/components/match/MatchChannels";
@@ -16,11 +17,13 @@ import type { Match } from "@/types";
 interface FeaturedMatchProps {
   match: Match & { isFavourite?: boolean };
   loggedIn?: boolean;
+  staggerIndex?: number;
 }
 
 export function FeaturedMatch({
   match,
   loggedIn = false,
+  staggerIndex,
 }: FeaturedMatchProps) {
   const { t } = useSettings();
   const isLive = match.status === "live";
@@ -44,7 +47,16 @@ export function FeaturedMatch({
       : "bg-accent text-white";
 
   return (
-    <article className="animate-rise rounded-2xl border-2 border-accent bg-surface px-5 py-6 shadow-lg shadow-accent/10 sm:px-8 sm:py-8">
+    <article
+      className={`${
+        staggerIndex !== undefined ? "animate-rise-sequence" : "animate-rise"
+      } rounded-2xl border-2 border-accent bg-surface px-5 py-6 shadow-lg shadow-accent/10 sm:px-8 sm:py-8`}
+      style={
+        staggerIndex !== undefined
+          ? ({ "--stagger-index": staggerIndex } as CSSProperties)
+          : undefined
+      }
+    >
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide ${statusClass}`}

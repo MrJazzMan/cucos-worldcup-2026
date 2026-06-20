@@ -305,20 +305,22 @@ export function MatchesView({
           </p>
         </div>
       ) : (
-        <div className="flex w-full flex-col gap-4">
+        <div key={selectedDay} className="flex w-full flex-col gap-4">
           {featuredMatch && (
             <FeaturedMatch
               match={featuredMatch}
               loggedIn={loggedIn}
+              staggerIndex={0}
             />
           )}
           {gridMatches.length > 0 && (
             <div className="grid grid-cols-1 items-stretch gap-3 md:grid-cols-2">
-              {gridMatches.map((match) => (
+              {gridMatches.map((match, i) => (
                 <MatchCard
                   key={match.fixture_id}
                   match={match}
                   loggedIn={loggedIn}
+                  staggerIndex={featuredMatch ? i + 1 : i}
                 />
               ))}
             </div>

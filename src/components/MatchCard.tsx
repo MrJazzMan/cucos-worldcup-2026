@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { LivePulseDot } from "@/components/LivePulseDot";
 import { MatchFavouriteToggle } from "@/components/match/MatchFavouriteToggle";
 import { MatchChannels } from "@/components/match/MatchChannels";
@@ -13,11 +13,13 @@ import type { Match } from "@/types";
 interface MatchCardProps {
   match: Match & { isFavourite?: boolean };
   loggedIn?: boolean;
+  staggerIndex?: number;
 }
 
 export function MatchCard({
   match,
   loggedIn = false,
+  staggerIndex,
 }: MatchCardProps) {
   const { t } = useSettings();
   const [isFavourite, setIsFavourite] = useState(!!match.isFavourite);
@@ -41,13 +43,20 @@ export function MatchCard({
 
   return (
     <article
-      className={`match-card flex h-full flex-col animate-rise rounded-2xl border bg-surface ${
+      className={`match-card flex h-full flex-col ${
+        staggerIndex !== undefined ? "animate-rise-sequence" : "animate-rise"
+      } rounded-2xl border bg-surface ${
         isLive
           ? "match-card--live border-red-500/50 px-4 py-5 shadow-lg shadow-red-500/15 ring-1 ring-red-500/20"
           : isFavourite
             ? "match-card--favourite border-amber-500/60 px-4 py-5 shadow-sm ring-1 ring-amber-500/30"
             : "border-border-base px-4 py-5 shadow-sm"
       }`}
+      style={
+        staggerIndex !== undefined
+          ? ({ "--stagger-index": staggerIndex } as CSSProperties)
+          : undefined
+      }
     >
       <div className="mb-3 flex items-center justify-between">
         <span

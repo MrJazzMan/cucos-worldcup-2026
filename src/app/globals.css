@@ -195,12 +195,17 @@ body {
 }
 
 @keyframes rise {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-rise {
   animation: rise 0.4s ease-out both;
+}
+
+.animate-rise-sequence {
+  animation: rise 420ms ease-out both;
+  animation-delay: calc(var(--stagger-index, 0) * 80ms);
 }
 
 /* ---- Day tabs: indicador deslizante ---- */
@@ -265,6 +270,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .day-tabs__indicator {
     transition: none;
+  }
+
+  .animate-rise-sequence {
+    animation: none;
   }
 
   .favourite-star-pop {
