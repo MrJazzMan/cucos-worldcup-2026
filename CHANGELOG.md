@@ -9,7 +9,7 @@ Versão actual em produção: **0.4.0** (`wc26.pt`).
 ## [Unreleased]
 
 ### Adicionado
-- Painel **Novidades** na homepage (1× por versão, `localStorage`).
+- Painel **Novidades** na homepage — aparece até o utilizador fechar; depois não volta (até bump de `WHATS_NEW_VERSION`).
 - Sync live agendado por jogo via **Upstash QStash** (`/api/sync/live`, `/api/sync/schedule`).
 - **Marcadores** (`goal_events`) nos cartões ao vivo/terminados.
 - Feed **iCal** para equipas favoritas (login, `/calendar/[token]`).

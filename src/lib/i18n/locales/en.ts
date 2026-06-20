@@ -123,6 +123,7 @@ export const en: Dict = {
   "settings.section.profile": "Profile",
   "settings.section.notifications": "Notifications",
   "settings.section.favourites": "Favourite teams",
+  "settings.section.calendar": "Calendar",
   "settings.section.appearance": "Appearance",
   "settings.language": "Language",
   "settings.theme": "Theme",
@@ -151,11 +152,11 @@ export const en: Dict = {
   "whatsNew.item.scorers":
     "Goal scorers on live and finished matches — see who scored and when.",
   "whatsNew.item.liveScores":
-    "Scores update almost in real time during matches — the page refreshes automatically.",
+    "Scores update almost in real time during matches.",
   "whatsNew.item.finishedTime":
     "Kick-off time shown on finished matches.",
   "whatsNew.item.calendar":
-    "Phone calendar — when signed in, subscribe to your favourite teams' matches (Profile menu).",
+    "Phone calendar — Profile menu → Calendar (when signed in).",
   "whatsNew.item.readability":
     "Larger text for scorers, city and stadium — easier to read.",
 };

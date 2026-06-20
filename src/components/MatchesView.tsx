@@ -266,7 +266,7 @@ export function MatchesView({
         </div>
       </div>
 
-      {/* Novidades (1× por versão, localStorage) */}
+      {/* Novidades — mostra até fechar; depois não volta (ver WHATS_NEW_VERSION) */}
       <WhatsNewBanner />
 
       {/* Banner café */}

@@ -19,21 +19,29 @@ export function SettingsCalendarFeed({ userId }: { userId: string }) {
 
   const ensureToken = useCallback(async () => {
     const supabase = createSupabaseBrowser();
-    const { data } = await supabase
+    const { data, error: selectError } = await supabase
       .from("profiles")
       .select("calendar_token")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
+    if (selectError) throw selectError;
     if (data?.calendar_token) return data.calendar_token as string;
 
     const fresh = newCalendarToken();
-    const { error } = await supabase
-      .from("profiles")
-      .update({ calendar_token: fresh })
-      .eq("user_id", userId);
-
-    if (error) throw error;
+    if (data) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ calendar_token: fresh })
+        .eq("user_id", userId);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from("profiles").insert({
+        user_id: userId,
+        calendar_token: fresh,
+      });
+      if (error) throw error;
+    }
     return fresh;
   }, [userId]);
 

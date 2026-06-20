@@ -123,6 +123,7 @@ export const pt: Dict = {
   "settings.section.profile": "Perfil",
   "settings.section.notifications": "Notificações",
   "settings.section.favourites": "Equipas favoritas",
+  "settings.section.calendar": "Calendário",
   "settings.section.appearance": "Aparência",
   "settings.language": "Idioma",
   "settings.theme": "Tema",
@@ -151,11 +152,11 @@ export const pt: Dict = {
   "whatsNew.item.scorers":
     "Marcadores nos jogos ao vivo e terminados — vês quem marcou e em que minuto.",
   "whatsNew.item.liveScores":
-    "Resultados quase em tempo real durante os jogos — a página actualiza-se sozinha.",
+    "Resultados quase em tempo real durante os jogos.",
   "whatsNew.item.finishedTime":
     "Hora de início visível nos jogos já terminados.",
   "whatsNew.item.calendar":
-    "Calendário no telemóvel — com sessão iniciada, subscreve os jogos das tuas equipas favoritas (menu Perfil).",
+    "Calendário no telemóvel — menu Perfil → Calendário (com sessão iniciada).",
   "whatsNew.item.readability":
     "Marcadores, cidade e estádio com texto maior — mais fácil de ler.",
 };

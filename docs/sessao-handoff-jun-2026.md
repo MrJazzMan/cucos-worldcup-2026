@@ -12,8 +12,8 @@ Documento para retomar trabalho noutra sessão. **Última actualização:** 2026
 | **Sync live** | Upstash QStash — polling por jogo (kickoff−15 … +125 min, cada 5 min) |
 | **Marcadores** | Golos ao vivo/terminados sob cada equipa (`goal_events` na BD) |
 | **Homepage refresh** | 30s se há jogos live hoje; 90s caso contrário |
-| **Calendário iCal** | Login → Perfil → link subscrição (`/calendar/[token]`) |
-| **Novidades (UI)** | Painel 1× por versão (`WhatsNewBanner`, `WHATS_NEW_VERSION`) |
+| **Novidades (UI)** | Painel até fechar; não volta (`WhatsNewBanner`, bump `WHATS_NEW_VERSION`) |
+| **Calendário iCal** | Perfil → **Calendário** (login) |
 | **Tipografia** | Marcadores + local/estádio em `text-sm` nos cards |
 
 ---

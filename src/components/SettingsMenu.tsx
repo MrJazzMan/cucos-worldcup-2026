@@ -15,12 +15,13 @@ import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { COMMON_TIMEZONES } from "@/lib/datetime";
 import { CLASSIC_THEME_OPTIONS, STYLE_THEME_OPTIONS } from "@/lib/themes";
 
-type PanelView = "home" | "profile" | "notifications" | "favourites" | "appearance";
+type PanelView = "home" | "profile" | "notifications" | "favourites" | "calendar" | "appearance";
 
 const MENU_ITEMS: { view: PanelView; icon: string; labelKey: string }[] = [
   { view: "profile", icon: "👤", labelKey: "settings.section.profile" },
   { view: "notifications", icon: "🔔", labelKey: "settings.section.notifications" },
   { view: "favourites", icon: "⭐", labelKey: "settings.section.favourites" },
+  { view: "calendar", icon: "📅", labelKey: "settings.section.calendar" },
   { view: "appearance", icon: "🎨", labelKey: "settings.section.appearance" },
 ];
 
@@ -28,6 +29,7 @@ const VIEW_TITLE: Record<Exclude<PanelView, "home">, string> = {
   profile: "settings.section.profile",
   notifications: "settings.section.notifications",
   favourites: "settings.section.favourites",
+  calendar: "settings.section.calendar",
   appearance: "settings.section.appearance",
 };
 
@@ -278,12 +280,11 @@ export function SettingsMenu() {
     }
 
     if (view === "favourites") {
-      return (
-        <div className="space-y-5">
-          <SettingsFavourites userId={user.id} />
-          <SettingsCalendarFeed userId={user.id} />
-        </div>
-      );
+      return <SettingsFavourites userId={user.id} />;
+    }
+
+    if (view === "calendar") {
+      return <SettingsCalendarFeed userId={user.id} />;
     }
 
     if (view === "appearance") {
