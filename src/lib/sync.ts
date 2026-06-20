@@ -6,6 +6,7 @@ import {
   mapFixtureToMatch,
 } from "@/lib/api-football";
 import { syncGoalEventsForFixtures } from "@/lib/match-events";
+import { syncGroupStandings } from "@/lib/standings";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { MOCK_MATCHES } from "@/lib/mock-data";
 
@@ -94,6 +95,19 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       resyncLive: mode === "live",
     });
 
+    const shouldSyncStandings =
+      mode === "full" ||
+      rows.some((r) => r.status === "finished" && r.group_name);
+
+    let standingsSynced = 0;
+    if (shouldSyncStandings) {
+      try {
+        standingsSynced = await syncGroupStandings();
+      } catch (err) {
+        console.warn("Standings sync failed:", err);
+      }
+    }
+
     if (mode === "full") {
       await purgeMockMatches(admin);
     }
@@ -103,6 +117,7 @@ export async function syncMatches(mode: "full" | "live" = "full") {
     return {
       synced: rows.length,
       goalsSynced,
+      standingsSynced,
       source: "api-football",
     };
   } catch (err) {

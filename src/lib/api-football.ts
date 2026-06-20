@@ -167,7 +167,7 @@ export async function fetchLiveFixtures() {
   );
 }
 
-export async function fetchStandings() {
+export async function fetchStandings(options?: { revalidate?: number }) {
   return apiFetch<
     {
       league: {
@@ -188,7 +188,9 @@ export async function fetchStandings() {
         }[][];
       };
     }[]
-  >("/standings?league=1&season=2026", { revalidate: 300 });
+  >("/standings?league=1&season=2026", {
+    revalidate: options?.revalidate ?? 300,
+  });
 }
 
 export async function fetchRounds() {

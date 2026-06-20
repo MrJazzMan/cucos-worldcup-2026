@@ -10,6 +10,10 @@ import {
   fetchFixturesByRound,
   fetchTeams,
 } from "@/lib/api-football";
+import {
+  getGroupStandingsFromDb,
+  mapApiStandingsToGroups,
+} from "@/lib/standings";
 
 export async function getMatchesForDay(
   offset: DayOffset,
@@ -98,41 +102,11 @@ export async function getUserFavouriteTeamIds(): Promise<number[]> {
 
 export async function getGroupStandings(): Promise<GroupStanding[]> {
   try {
+    const fromDb = await getGroupStandingsFromDb();
+    if (fromDb?.length) return fromDb;
+
     const data = await fetchStandings();
-    if (!data.length) return getMockStandings();
-
-    const groups = data[0].league.standings
-      .map((group) => {
-        const apiGroup = group[0]?.group ?? "";
-        const match = apiGroup.match(/Group\s+([A-L])/i);
-
-        // Ignora tabela agregada "Group Stage" e quaisquer blocos fora A-L.
-        if (!match) return null;
-
-        const letter = match[1].toUpperCase();
-        return {
-          group_name: `Grupo ${letter}`,
-          rows: group.map((row) => ({
-            rank: row.rank,
-            team_id: row.team.id,
-            team_name: row.team.name,
-            team_logo: row.team.logo,
-            played: row.all.played,
-            won: row.all.win,
-            draw: row.all.draw,
-            lost: row.all.lose,
-            goals_for: row.all.goals.for,
-            goals_against: row.all.goals.against,
-            goal_diff: row.goalsDiff,
-            points: row.points,
-            form: row.form,
-          })),
-        };
-      })
-      .filter(Boolean) as GroupStanding[];
-
-    groups.sort((a, b) => a.group_name.localeCompare(b.group_name, "pt"));
-
+    const groups = mapApiStandingsToGroups(data);
     return groups.length ? groups : getMockStandings();
   } catch {
     return getMockStandings();
