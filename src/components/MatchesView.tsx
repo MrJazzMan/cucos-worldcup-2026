@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
@@ -55,6 +62,7 @@ export function MatchesView({
   const searchParams = useSearchParams();
   const { t, tz, locale, mounted } = useSettings();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dayButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const todayKey = useMemo(() => dayKeyWithOffset(tz, 0), [tz]);
 
   // All unique days that have matches, sorted
@@ -65,6 +73,18 @@ export function MatchesView({
 
   const [selectedDay, setSelectedDay] = useState<string>(() => todayKey);
   const [showOnlyFavourites, setShowOnlyFavourites] = useState(false);
+
+  const [indicator, setIndicator] = useState<{ left: number; width: number } | null>(
+    null
+  );
+  const [indicatorAnimated, setIndicatorAnimated] = useState(false);
+
+  const measureIndicator = useCallback(() => {
+    const btn = dayButtonRefs.current.get(selectedDay);
+    const track = scrollRef.current;
+    if (!btn || !track) return;
+    setIndicator({ left: btn.offsetLeft, width: btn.offsetWidth });
+  }, [selectedDay]);
 
   const hasFavourites = useMemo(
     () => matches.some((m) => m.isFavourite),
@@ -93,6 +113,27 @@ export function MatchesView({
       setShowOnlyFavourites(true);
     }
   }, [searchParams, todayKey, router]);
+
+  useLayoutEffect(() => {
+    if (!mounted) return;
+    measureIndicator();
+  }, [mounted, measureIndicator, allDays, locale]);
+
+  useLayoutEffect(() => {
+    if (!mounted || indicator === null) return;
+    const id = requestAnimationFrame(() => setIndicatorAnimated(true));
+    return () => cancelAnimationFrame(id);
+  }, [mounted, indicator]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const track = scrollRef.current;
+    if (!track) return;
+    const ro = new ResizeObserver(measureIndicator);
+    ro.observe(track);
+    for (const btn of dayButtonRefs.current.values()) ro.observe(btn);
+    return () => ro.disconnect();
+  }, [mounted, measureIndicator, allDays]);
 
   // Scroll active tab into view
   useEffect(() => {
@@ -163,20 +204,32 @@ export function MatchesView({
       {/* Seletor de dias — scroll horizontal no telemóvel; grelha igual no desktop */}
       <div
         ref={scrollRef}
-        className="flex w-full gap-1.5 overflow-x-auto rounded-2xl border border-border-base bg-surface p-1.5 scrollbar-none md:overflow-visible"
+        className="day-tabs__track flex w-full gap-1.5 overflow-x-auto rounded-2xl border border-border-base bg-surface p-1.5 scrollbar-none md:overflow-visible"
         style={{ scrollbarWidth: "none" }}
       >
+        {indicator && (
+          <span
+            aria-hidden
+            className={`day-tabs__indicator${indicatorAnimated ? "" : " day-tabs__indicator--instant"}`}
+            style={{ left: indicator.left, width: indicator.width }}
+          />
+        )}
         {allDays.map((day) => {
           const isActive = day === selectedDay;
           const label = dayLabel(day, todayKey, tz, locale, t);
           return (
             <button
               key={day}
+              ref={(el) => {
+                if (el) dayButtonRefs.current.set(day, el);
+                else dayButtonRefs.current.delete(day);
+              }}
               data-active={isActive}
+              data-day={day}
               onClick={() => setSelectedDay(day)}
-              className={`shrink-0 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all md:min-w-0 md:flex-1 md:shrink md:px-2 md:text-center ${
+              className={`relative z-[1] shrink-0 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors md:min-w-0 md:flex-1 md:shrink md:px-2 md:text-center ${
                 isActive
-                  ? "bg-gradient-to-br from-accent to-amber-400 text-white shadow-md shadow-accent/30"
+                  ? "text-accent"
                   : "text-muted hover:text-foreground"
               }`}
             >

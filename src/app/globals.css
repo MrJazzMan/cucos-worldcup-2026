@@ -203,6 +203,27 @@ body {
   animation: rise 0.4s ease-out both;
 }
 
+/* ---- Day tabs: indicador deslizante ---- */
+.day-tabs__track {
+  position: relative;
+}
+
+.day-tabs__indicator {
+  position: absolute;
+  bottom: 0.375rem;
+  height: 3px;
+  border-radius: 9999px;
+  background: var(--accent);
+  pointer-events: none;
+  transition:
+    left 300ms ease,
+    width 300ms ease;
+}
+
+.day-tabs__indicator--instant {
+  transition: none;
+}
+
 @keyframes favourite-pop {
   0% { transform: scale(1); }
   40% { transform: scale(1.3); }
@@ -242,6 +263,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .day-tabs__indicator {
+    transition: none;
+  }
+
   .favourite-star-pop {
     animation: none;
   }
