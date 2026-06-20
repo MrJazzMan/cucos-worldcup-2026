@@ -82,6 +82,11 @@ export async function syncGroupStandings(): Promise<number> {
 
   if (error) throw error;
 
-  revalidatePath("/grupos");
+  try {
+    revalidatePath("/grupos");
+  } catch (err) {
+    console.warn("revalidatePath /grupos failed:", err);
+  }
+
   return groups.length;
 }

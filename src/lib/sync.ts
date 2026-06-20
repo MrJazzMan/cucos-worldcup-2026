@@ -95,17 +95,13 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       resyncLive: mode === "live",
     });
 
-    const shouldSyncStandings =
-      mode === "full" ||
-      rows.some((r) => r.status === "finished" && r.group_name);
-
     let standingsSynced = 0;
-    if (shouldSyncStandings) {
-      try {
-        standingsSynced = await syncGroupStandings();
-      } catch (err) {
-        console.warn("Standings sync failed:", err);
-      }
+    let standingsError: string | undefined;
+    try {
+      standingsSynced = await syncGroupStandings();
+    } catch (err) {
+      standingsError = serializeSyncError(err);
+      console.warn("Standings sync failed:", err);
     }
 
     if (mode === "full") {
@@ -118,6 +114,7 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       synced: rows.length,
       goalsSynced,
       standingsSynced,
+      ...(standingsError ? { standingsError } : {}),
       source: "api-football",
     };
   } catch (err) {
