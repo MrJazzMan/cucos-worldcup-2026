@@ -2,13 +2,54 @@
 
 Alterações notáveis do projeto Cucos WC26. Formato baseado em [Keep a Changelog](https://keepachangelog.com/).
 
-Versão actual em produção: **0.3.0** (`wc26.pt`).
+Versão actual em produção: **0.4.0** (`wc26.pt`).
 
 ---
 
 ## [Unreleased]
 
 _(nada por agora)_
+
+---
+
+## [0.4.0] — 2026-06-19 — Fase final, acesso público e UX
+
+**Marco:** site read-only público com canais; chave eliminatória em `/fasefinal`; micro-animações; bottom nav mobile.
+
+### Adicionado
+- **`/fasefinal`** — chave eliminatória FIFA 2026 (preview + jogos reais quando existirem na DB).
+- **Bracket desktop simétrico** (`KnockoutBracketDesktop`) — árvore com conectores; mobile mantém colunas com scroll.
+- **`/eliminatorias`** — redirect permanente → `/fasefinal`.
+- **`MatchFavouriteToggle`** — estrela clicável nos cards (favoritar ambas as equipas; login via menu Perfil).
+- **`LivePulseDot`** — indicador ao vivo com anel pulsante (cards + destaque + refresh).
+- **`knockout-bracket.ts` / `knockout-bracket-tree.ts`** — placeholders FIFA e construção da árvore.
+- **Bottom nav mobile** (`BottomNav`, `AppChrome`) — Jogos, Grupos, Fase final, Favoritos, Perfil.
+- Animações CSS: pop estrela (~280ms), hover card desktop (~200ms), pulso live (~1.4s); `prefers-reduced-motion` unificado.
+
+### Alterado
+- **Canais TV públicos** — visitantes anónimos veem badges; removido `ChannelLoginCta` e gate de login nos canais.
+- **`getAllMatches` / `getMatchesForDay`** — broadcasts sempre incluídos (RLS já era público).
+- **`LoginGate`** — deixou de bloquear o site; só banner de erro OAuth se montado.
+- **Homepage layout** — contentor único `max-w-7xl` (barra dias, café, favoritos, grelha alinhados).
+- **Grupos** — `table-fixed` + `colgroup` para alinhar colunas entre grupos.
+- **Fase final copy (PT):** título «Fase Final - Eliminatórias»; hint curto sem «Chave prevista FIFA…».
+- **Footer** — removido «Produção: Miguel Garcia».
+- **Nav** — link eliminatórias → `/fasefinal`; sitemap actualizado.
+- Removido **`KNOCKOUTS_ENABLED`** / `src/lib/features.ts` — página sempre acessível.
+
+### Corrigido
+- `/eliminatorias` redirect para `/` em prod (flag `NEXT_PUBLIC_SHOW_KNOCKOUTS` obsoleta).
+
+### Removido
+- `ChannelLoginCta.tsx`, `src/lib/features.ts`.
+
+### Documentação
+- `docs/sessao-handoff-jun-2026.md` — handoff para próxima sessão.
+- `ARCHITECTURE.md`, `docs/README.md`, `historico-e-setup.md` actualizados.
+
+### Pendente (próxima sessão)
+- Indicador do dia activo a **deslizar** na barra de pills (~300ms).
+- Cards a **entrar em sequência** ao trocar de dia (~80ms stagger, ~420ms fade-up).
 
 ---
 

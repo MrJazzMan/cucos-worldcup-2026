@@ -275,10 +275,11 @@ Ver [operacoes.md](operacoes.md) para mais detalhe.
 
 | Rota | Função |
 |------|--------|
-| `/` | Homepage — Ontem / Hoje / Amanhã |
-| `/grupos` | Classificações |
-| `/eliminatorias` | Chave eliminatória |
-| `/conta` | Google + Apple, favoritos, notificações |
+| `/` | Homepage — seletor de dias, destaque, grelha |
+| `/grupos` | Classificações (colunas alinhadas) |
+| `/fasefinal` | Chave eliminatória — bracket desktop + preview |
+| `/eliminatorias` | Redirect → `/fasefinal` |
+| `/conta` | Redirect → `/` (conta no menu Perfil) |
 | `/admin` | Curadoria manual de canais TV |
 
 ---

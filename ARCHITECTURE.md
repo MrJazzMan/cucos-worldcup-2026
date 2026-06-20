@@ -1,10 +1,10 @@
 # Arquitectura — Cucos World Cup 2026
 
-Última actualização: 2026-06-14.
+Última actualização: 2026-06-19.
 
 ## Visão geral
 
-Aplicação mobile-first em Next.js 15 (App Router) com dados de jogos sincronizados da API-Football e canais de TV portugueses curados manualmente em Supabase. Deploy automático na Vercel.
+Aplicação mobile-first em Next.js 15 (App Router) com dados de jogos sincronizados da API-Football e canais de TV curados em Supabase (OndeBola + admin). Deploy automático na Vercel.
 
 ```mermaid
 flowchart LR
@@ -21,10 +21,10 @@ flowchart LR
 
 | Camada | Tecnologia | Responsabilidade |
 |--------|------------|------------------|
-| UI | Next.js App Router | Homepage, grupos, eliminatórias, conta, perfil |
+| UI | Next.js App Router | Homepage, grupos, fase final, perfil (menu) |
 | API | Route Handlers | Sync, push, auth callback, admin broadcasts |
 | Dados | Supabase PostgreSQL | Jogos, broadcasts, utilizadores, roles |
-| Auth | Supabase Auth | Google OAuth |
+| Auth | Supabase Auth | Google OAuth (opcional — favoritos, push) |
 | Sync | Vercel Cron | Actualização de fixtures e scores |
 | Notificações | web-push + Service Worker | Alertas 24h/1h/15m/kickoff/final |
 | Analytics | Vercel Analytics + Speed Insights | Pageviews, Web Vitals |
@@ -32,108 +32,89 @@ flowchart LR
 ## Modelo de dados
 
 - `matches` — jogos com status, scores, minuto, venue, round
-- `broadcasts` — canais TV por `fixture_id`
+- `broadcasts` — canais TV por `fixture_id` (leitura pública)
 - `profiles` — perfil do utilizador (display_name, location, role, avatar_url)
 - `favourite_teams` — equipas favoritas por utilizador
 - `notification_prefs` — preferências de alerta
 - `push_subscriptions` — endpoints Web Push
 - `notification_log` — deduplicação de envios
 
-### Roles (migration 003 — aplicar no Supabase SQL Editor)
-
-```sql
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'
-  CHECK (role IN ('admin', 'user'));
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS location TEXT;
-UPDATE profiles SET role = 'admin' WHERE user_id = '4764a298-fab5-401d-bbbb-3da03c86ce08';
-DROP POLICY IF EXISTS "profiles_select_own" ON profiles;
-CREATE POLICY "profiles_admin_select_all" ON profiles FOR SELECT USING (
-  auth.uid() = user_id
-  OR EXISTS (SELECT 1 FROM profiles p WHERE p.user_id = auth.uid() AND p.role = 'admin')
-);
-```
-
 ## Páginas
 
 | Rota | Acesso | Descrição |
 |------|--------|-----------|
-| `/` | Público | Jogos por dia — seletor scrollável, filtro favoritos |
-| `/grupos` | Público | Classificações dos grupos |
-| `/eliminatorias` | Público | Chave das eliminatórias |
-| `/conta` | Auth | Conta, perfil (nome, localização), favoritos, notificações |
+| `/` | Público | Jogos por dia — seletor, destaque, grelha 2 colunas, canais TV |
+| `/grupos` | Público | Classificações dos grupos (tabelas alinhadas) |
+| `/fasefinal` | Público | Chave eliminatória — bracket simétrico desktop, colunas mobile |
+| `/eliminatorias` | Redirect | → `/fasefinal` (legado) |
+| `/conta` | Redirect | → `/` (conta no menu Perfil) |
 | `/admin` | Admin only | Curadoria de canais TV por jogo |
+| `/privacidade` | Público | Política de privacidade |
+| `/feed/{token}` | Secreto | RSS (env `RSS_FEED_TOKEN`) |
+
+## Modelo de acesso
+
+```
+Visitante anónimo  → jogos, grupos, fase final, canais TV (read-only)
+Utilizador logado  → + favoritos (estrela nos cards), notificações, perfil
+Admin              → /admin
+```
+
+Canais e jogos são SSR públicos (SEO). Favoritos exigem Supabase Auth.
 
 ## Componentes principais
 
 | Componente | Função |
 |------------|--------|
-| `MatchCard` | Cartão de jogo — bandeiras circulares, score/hora discretos, venue, canais na base |
-| `FeaturedMatch` | Jogo em destaque full-width (Portugal → live → próximo → último final) |
-| `MatchesView` | Seletor de dias + destaque + grelha 2 colunas + filtro «Os meus jogos» |
-| `AppHeader` | Cabeçalho full-width com logo SVG, nav, avatar e badge Admin |
-| `AuthStatus` | Avatar/nome do utilizador logado; badge Admin se role=admin |
-| `AccountPanel` | Painel de conta: perfil, favoritos, notificações push |
-| `CoffeeBanner` | Banner «Paga-me um café» / «Buy me a coffee» (PT/EN) |
-| `TeamFlag` / `CircleFlag` | Bandeira circular (`circle-flags` → `public/flags/`) com fallback iniciais |
+| `MatchesView` | Barra de dias, destaque, grelha, filtro favoritos, refresh live |
+| `MatchCard` | Cartão grelha — hover desktop, estrela, pulso live |
+| `FeaturedMatch` | Jogo em destaque full-width (não hover) |
+| `MatchFavouriteToggle` | Estrela favoritos + pop animação |
+| `LivePulseDot` | Ponto + anel ao vivo |
+| `KnockoutBracket` | Wrapper mobile (colunas) + desktop (árvore) |
+| `KnockoutBracketDesktop` | Chave simétrica lg+ com conectores |
+| `BracketSlotCard` | Slot de jogo na chave (match / preview / TBD) |
+| `BottomNav` | Navegação mobile (< sm) |
+| `AppChrome` | Header + children + BottomNav + SettingsMenuProvider |
+| `AppHeader` | Nav desktop: Jogos, Grupos, Fase final (`/fasefinal`) |
+| `SettingsMenu` | Perfil, favoritos, notificações, admin, login |
+
+## Fase final — dados e layout
+
+- **`buildKnockoutColumns()`** — agrupa jogos KO da DB/API por ronda.
+- **`KNOCKOUT_SKELETON`** — 16+8+4+2+1+1 placeholders FIFA 2026 quando não há dados.
+- **`buildSideTree()`** — árvore recursiva: 8 jogos 32 avos → … → meia-final (cada metade).
+- Desktop: `lg` breakpoint; mobile: scroll horizontal por ronda.
+
+Ficheiros: `src/lib/knockout-bracket.ts`, `src/lib/knockout-bracket-tree.ts`, `src/components/knockout/*`.
 
 ## Internacionalização (i18n)
 
-Sistema próprio em `src/lib/i18n.ts`. Suporte PT-PT e EN-GB. Língua guardada em `localStorage`. Componente `<T k="chave" />` para traduções em Server e Client Components.
+12 locales em `src/lib/i18n/locales/`. Chaves relevantes fase final: `knockouts.title`, `knockouts.previewHint`, `knockouts.round.*`.
 
-## Timezone
+## Animações (`globals.css`)
 
-Todas as horas apresentadas ao utilizador usam o fuso do browser (auto-detectado), com fallback para `Europe/Lisbon`.
+CSS puro; bloco único `@media (prefers-reduced-motion: reduce)` desactiva movimento mantendo estados (estrela cheia, badge live, etc.).
 
-## Segurança e Anti-scraping
+| Animação | Classe | Duração |
+|----------|--------|---------|
+| Pop favorito | `.favourite-star-pop` | 280ms |
+| Hover card | `.match-card` | 200ms (só hover fine pointer) |
+| Pulso live | `.live-pulse__ring` | 1.4s loop |
 
-- RLS activo em todas as tabelas de utilizador
-- `matches` e `broadcasts` são públicos (read-only)
-- Cron e admin protegidos com `CRON_SECRET`
-- Middleware bloqueia ~20 User-Agents de IA/scrapers conhecidos (GPTBot, Claude, Diffbot, etc.)
-- `robots.txt` desautoriza crawlers de IA e rotas internas (`/api/`, `/admin/`)
-- Security headers em todos os responses: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`
-- Página principal com `revalidate: 60` — Supabase só é chamado 1× por minuto independentemente do tráfego
+**Pendente:** indicador dia deslizante; entrada stagger dos cards ao mudar dia.
 
-## PWA
+## Segurança
 
-- `manifest.json` com ícone e cores do tema
-- Service Worker (`sw.js`) para cache offline e Web Push
-- Instalável em Android e iOS via "Adicionar ao ecrã inicial"
-
-## Analytics e Monetização
-
-- **Vercel Analytics** — pageviews, visitantes, países, dispositivos (sem cookies, GDPR ok)
-- **Vercel Speed Insights** — Core Web Vitals por página
-- **Buy Me a Coffee** — `buymeacoffee.com/miguelgarcia` (botão PT/EN na homepage)
-
-## Favicon e logo
-
-- **Logo** — componente `Logo.tsx` (SVG, Space Grotesk, sublinhado `var(--accent)`).
-- **Favicon** — `src/app/icon.svg` e `public/icon.svg`: «26» em coral `#E0451F` sobre fundo arredondado.
-
-## Paleta de cores
-
-| Token | Light | Dark |
-|-------|-------|------|
-| background | `#faf6f0` (creme) | `#0e0b08` (castanho escuro) |
-| surface | `#ffffff` | `#1b1612` |
-| accent | `#E0451F` (coral) | `#E0451F` (coral) |
-| foreground | `#1a1410` | `#faf7f4` |
+- RLS em tabelas de utilizador; `matches` + `broadcasts` SELECT público
+- Middleware: OAuth callback, anti-bot UA, security headers
+- Cron/admin: `CRON_SECRET`
 
 ## Deploy
 
-Vercel com auto-deploy a partir de `main`. Ver `vercel.json` para crons.
+Vercel auto-deploy `main`. Crons em `vercel.json`.
 
-```json
-{
-  "crons": [
-    { "path": "/api/sync", "schedule": "0 6 * * *" },
-    { "path": "/api/sync-broadcasts?today=1", "schedule": "0 7 * * *" }
-  ]
-}
-```
-
-## Variáveis de ambiente necessárias
+## Variáveis de ambiente
 
 ```
 NEXT_PUBLIC_SUPABASE_URL
@@ -141,8 +122,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
 API_FOOTBALL_KEY
 CRON_SECRET
-RSS_FEED_TOKEN          # feed RSS privado /feed/{token}
+RSS_FEED_TOKEN
 NEXT_PUBLIC_VAPID_PUBLIC_KEY
 VAPID_PRIVATE_KEY
 VAPID_SUBJECT
+NEXT_PUBLIC_SITE_URL
 ```
+
+**Obsoleto:** `NEXT_PUBLIC_SHOW_KNOCKOUTS` — remover da Vercel se ainda existir.
+
+Ver também: [docs/sessao-handoff-jun-2026.md](docs/sessao-handoff-jun-2026.md).

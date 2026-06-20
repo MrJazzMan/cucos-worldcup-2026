@@ -2,12 +2,13 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-**Versão actual:** `0.3.0` (2026-06-19) — branding, layout desktop, jogo em destaque, RSS.
+**Versão actual:** `0.4.0` (2026-06-19) — fase final, canais públicos, animações, bottom nav.
 
 ## Índice
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [**sessao-handoff-jun-2026.md**](sessao-handoff-jun-2026.md) | **Handoff sessão** — estado, pendências, ficheiros |
 | [historico-e-setup.md](historico-e-setup.md) | Stack, Supabase, Vercel, domínio, dados reais |
 | [deploy.md](deploy.md) | Vercel, variáveis, crons, pós-deploy |
 | [setup-analytics-ads.md](setup-analytics-ads.md) | GA4 + AdSense (verificação, env vars) |
@@ -18,28 +19,28 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [operacoes.md](operacoes.md) | Comandos do dia-a-dia |
 | [coding-guidelines.md](coding-guidelines.md) | Convenções de código |
 
-## Estado actual (0.3.0)
+## Estado actual (0.4.0)
 
 | Área | Estado |
 |------|--------|
 | **Produção** | https://wc26.pt |
-| **Jogos** | Públicos (SEO) — equipas, horários, resultados |
-| **Layout homepage** | Destaque full-width + grelha 2 colunas (desktop) |
+| **Jogos** | Públicos (SEO) — equipas, horários, resultados, **canais TV** |
+| **Fase final** | https://wc26.pt/fasefinal — bracket desktop + preview FIFA |
+| **Layout homepage** | `max-w-7xl` alinhado; destaque + grelha 2 colunas |
+| **Favoritos** | Estrela nos cards (requer login) |
+| **Mobile nav** | Bottom bar 5 itens (< 640px) |
 | **Bandeiras** | `circle-flags` → `public/flags/` (build) |
-| **Canais TV** | Só com login Google; OndeBola + curadoria PT/UK/USA/Qatar |
 | **Feed RSS** | `/feed/{RSS_FEED_TOKEN}` (secreto, env Vercel) |
 | **GA4** | `G-BEVP34KWFW` + Consent Mode |
-| **AdSense** | Verificado, Auto ads ON (`ca-pub-0320022425990569`) |
+| **AdSense** | Verificado, Auto ads ON |
 | **Idiomas** | 12 (EN default) |
-| **Temas** | Sistema / Claro / Escuro + Cyberpunk / FIFA 2026 / Japan |
 | **Branding** | Logo SVG, coral `#E0451F`, favicon «26» |
-| **Supabase** | Integração directa com Vercel |
 
 ## Modelo de acesso
 
 ```
-Visitante anónimo  → jogos + grupos + SEO
-Utilizador logado  → + canais TV + favoritos + notificações + perfil
+Visitante anónimo  → jogos + grupos + fase final + canais TV + SEO
+Utilizador logado  → + favoritos + notificações + perfil (menu)
 Admin (hardcoded)  → /admin (canais)
 ```
 
@@ -68,6 +69,7 @@ GA4 + AdSense ──► após consentimento de cookies (anúncios visíveis)
 
 | Versão | Data | Resumo |
 |--------|------|--------|
+| **0.4.0** | 2026-06-19 | Fase final, canais públicos, favoritos, animações, bottom nav |
 | **0.3.0** | 2026-06-19 | Branding, destaque, layout 2 colunas, RSS, canais multi-região |
 | **0.2.0** | 2026-06-16 | Público + SEO, AdSense, 12 línguas, temas |
 | **0.1.0** | 2026-06-13 | MVP login + painel definições + deploy |
