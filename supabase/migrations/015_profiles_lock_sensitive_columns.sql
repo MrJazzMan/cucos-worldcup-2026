@@ -1,5 +1,16 @@
--- Bloqueia UPDATE de role/calendar_token pelo cliente (anon/authenticated).
--- REVOKE por coluna isolado não basta quando há GRANT UPDATE na tabela inteira.
+-- C1 (crítico): impede que clientes anon/authenticated alterem colunas privilegiadas
+-- em profiles (especialmente role → escalonamento a admin).
+--
+-- Abordagem (defesa em profundidade):
+--   1. REVOKE UPDATE na tabela + GRANT UPDATE só em colunas legítimas (barreira principal;
+--      o REVOKE por coluna isolado NÃO basta quando existe GRANT UPDATE na tabela inteira).
+--   2. Trigger BEFORE UPDATE repõe role e calendar_token se alguém contornar os GRANTs.
+--   3. REVOKE EXECUTE em funções SECURITY DEFINER expostas via PostgREST.
+--
+-- Aplicação: manual no Supabase SQL Editor (ver docs de segurança).
+-- Idempotente: pode correr mais do que uma vez.
+
+-- ── 1. Privilégios ao nível da coluna ────────────────────────────────────────
 
 REVOKE UPDATE ON public.profiles FROM anon, authenticated;
 
@@ -11,10 +22,23 @@ GRANT UPDATE (
   updated_at
 ) ON public.profiles TO authenticated;
 
--- Quando migration 004 existir, acrescentar: email, signup_country, preferred_lang
+-- Colunas da migration 004 (ignorar erro se ainda não existirem)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'email'
+  ) THEN
+    GRANT UPDATE (email, signup_country, preferred_lang) ON public.profiles TO authenticated;
+  END IF;
+END $$;
+
+-- ── 2. Funções internas: não chamáveis pelo cliente ─────────────────────────
 
 REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.is_site_admin() FROM PUBLIC, anon, authenticated;
+
+-- ── 3. Trigger de segurança (backup) ────────────────────────────────────────
 
 CREATE OR REPLACE FUNCTION public.protect_profile_sensitive_columns()
 RETURNS trigger
