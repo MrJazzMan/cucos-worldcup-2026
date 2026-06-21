@@ -288,9 +288,9 @@ Ver [operacoes.md](operacoes.md) para mais detalhe.
 
 Lista em [`src/lib/channels.ts`](../src/lib/channels.ts):
 
-RTP1, RTP2, RTP3, SIC, TVI, Sport TV, DAZN, **LV** (YouTube).
+RTP1, RTP2, RTP3, SIC, TVI, Sport TV, DAZN, **LiveModeTv** (YouTube).
 
-LV → https://www.youtube.com/channel/UCpcTrCXblq78GZrTUTLWeBw
+LiveModeTv → https://www.youtube.com/channel/UCpcTrCXblq78GZrTUTLWeBw
 
 ---
 

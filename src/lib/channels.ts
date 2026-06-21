@@ -13,7 +13,7 @@ export const PT_CHANNELS = [
   "Sport.Tv5",
   "Sport.Tv+",
   "DAZN",
-  "LV",
+  "LiveModeTv",
 ] as const;
 
 export const UK_CHANNELS = [
@@ -58,7 +58,7 @@ export const ALL_PRESET_CHANNELS: ReadonlySet<string> = new Set(
 
 /** Links externos para canais que não são TV linear tradicional */
 export const CHANNEL_LINKS: Record<string, string> = {
-  LV: "https://www.youtube.com/channel/UCpcTrCXblq78GZrTUTLWeBw",
+  LiveModeTv: "https://www.youtube.com/channel/UCpcTrCXblq78GZrTUTLWeBw",
   "BBC iPlayer": "https://www.bbc.co.uk/iplayer",
   "ITV X": "https://www.itv.com/watch",
   Peacock: "https://www.peacocktv.com/",
@@ -75,7 +75,7 @@ export function channelsOutsidePresets(channels: string[]): string[] {
 
 /**
  * Junta canais OndeBola com presets que o admin activou manualmente.
- * Preserva adições manuais (LV, UK, …); actualiza sempre os nomes do scrape.
+ * Preserva adições manuais (LiveModeTv, UK, …); actualiza sempre os nomes do scrape.
  */
 export function mergeBroadcastChannels(
   ondebolaChannels: string[],

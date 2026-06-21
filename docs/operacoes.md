@@ -184,7 +184,7 @@ URL: https://wc26.pt/admin
 
 | Região | Exemplos |
 |--------|----------|
-| Portugal | RTP1–3, SIC, TVI, Sport.Tv1–5, DAZN, LV |
+| Portugal | RTP1–3, SIC, TVI, Sport.Tv1–5, DAZN, LiveModeTv |
 | UK | BBC One/Two/iPlayer, ITV, ITV X |
 | USA | Fox, FS1, Telemundo, Peacock, … |
 | Qatar | beIN Sports, Al Kass, Qatar TV |

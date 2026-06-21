@@ -26,7 +26,7 @@ export function channelBadgeClass(channel: string) {
     return `${BASE_BADGE} bg-black text-[#f5f500] border border-[#f5f500]/20`;
   }
 
-  if (upper === "LV") {
+  if (upper === "LIVEMODETV") {
     return `${BASE_BADGE} bg-[#ff0000] text-white`;
   }
 
