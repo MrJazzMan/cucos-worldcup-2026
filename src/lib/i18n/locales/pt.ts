@@ -92,6 +92,24 @@ export const pt: Dict = {
   "profile.error": "Não foi possível guardar. Tenta outra vez.",
   "profile.timezoneAutoHint":
     "Automático usa o fuso do teu dispositivo. Os horários dos jogos seguem esta definição.",
+  "deleteAccount.title": "Apagar conta",
+  "deleteAccount.summary":
+    "Elimina permanentemente a tua conta e todos os dados associados.",
+  "deleteAccount.openDialog": "Apagar a minha conta",
+  "deleteAccount.dialogTitle": "Apagar conta permanentemente?",
+  "deleteAccount.dialogBody":
+    "Esta acção é irreversível. Vais perder acesso imediato e serão apagados:",
+  "deleteAccount.list.profile": "Perfil e preferências",
+  "deleteAccount.list.favourites": "Equipas favoritas",
+  "deleteAccount.list.calendar": "Calendário e subscrição iCal",
+  "deleteAccount.list.notifications": "Notificações e subscrições push",
+  "deleteAccount.confirmLabel":
+    "Compreendo que esta acção é permanente e não pode ser desfeita",
+  "deleteAccount.button": "Apagar conta",
+  "deleteAccount.cancel": "Cancelar",
+  "deleteAccount.deleting": "A apagar…",
+  "deleteAccount.error": "Não foi possível apagar a conta. Tenta outra vez.",
+  "deleteAccount.successBanner": "A tua conta foi apagada com sucesso.",
   "account.favourites": "Equipas favoritas",
   "account.favouritesHint": "Destacadas na homepage e usadas para notificações.",
   "calendar.title": "Calendário no telemóvel",

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { AuthButtons } from "@/components/AuthButtons";
+import { SettingsDeleteAccount } from "@/components/settings/SettingsDeleteAccount";
 import { SettingsFavourites } from "@/components/settings/SettingsFavourites";
 import { SettingsCalendarFeed } from "@/components/settings/SettingsCalendarFeed";
 import { SettingsNotifications } from "@/components/settings/SettingsNotifications";
@@ -320,6 +321,8 @@ export function SettingsMenu() {
                 ? t("profile.saving")
                 : t("profile.save")}
           </button>
+
+          <SettingsDeleteAccount />
         </div>
       );
     }

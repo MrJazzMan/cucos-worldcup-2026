@@ -93,13 +93,17 @@ Legenda de regiões: **UE** = Espaço Económico Europeu; **EUA** = Estados Unid
 
 | Categoria | Política actual no código / docs |
 |-----------|-----------------------------------|
-| Conta e perfil | Mantidos enquanto `auth.users` existir; `ON DELETE CASCADE` limpa `profiles`, favoritos, prefs, push, notification_log |
+| Conta e perfil | Mantidos enquanto `auth.users` existir; **eliminação self-service** em Definições → Perfil → «Apagar conta» (`DELETE /api/account`); `ON DELETE CASCADE` limpa `profiles`, favoritos, prefs, push, `notification_log` |
 | Token iCal | Expira ao fim de 365 dias desde `calendar_token_created_at`; utilizador pode regenerar |
 | `notification_log` | Sem job de limpeza automática identificado |
 | Cookies opcionais | Até retirar consentimento ou apagar storage |
 | Analytics / Vercel | Políticas dos fornecedores (14–26 meses referido na política de privacidade) |
 
-**Gap identificado:** não há fluxo self-service de «apagar conta» na UI; eliminação depende de pedido manual ao responsável (`miguelopesgarcia@gmail.com`).
+**Eliminação de conta:** implementada na UI (Definições → Perfil). Confirmação deliberada + `DELETE /api/account` com sessão validada no servidor; `auth.admin.deleteUser` com CASCADE nas tabelas `public.*`.
+
+~~**Gap identificado:** não há fluxo self-service de «apagar conta» na UI; eliminação depende de pedido manual ao responsável (`miguelopesgarcia@gmail.com`).~~
+
+**Resolvido (2026-06-21):** fluxo self-service «Apagar conta» no menu de definições.
 
 ---
 
@@ -122,4 +126,4 @@ Legenda de regiões: **UE** = Espaço Económico Europeu; **EUA** = Estados Unid
 2. Documentar DPA/SCCs por processador.
 3. Definir política de retenção para `notification_log` e logs.
 4. Avaliar substituto UE para geolocalização ou consentimento explícito.
-5. Implementar eliminação de conta (RGPD art. 17).
+5. ~~Implementar eliminação de conta (RGPD art. 17).~~ **Feito** — ver `DELETE /api/account` e `SettingsDeleteAccount`.

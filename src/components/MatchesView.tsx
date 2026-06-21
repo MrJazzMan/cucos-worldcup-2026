@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AccountDeletedBanner } from "@/components/AccountDeletedBanner";
 import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
@@ -206,6 +207,8 @@ export function MatchesView({
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
+      <AccountDeletedBanner />
+
       {/* Seletor de dias — scroll horizontal no telemóvel; grelha igual no desktop */}
       <div
         ref={scrollRef}

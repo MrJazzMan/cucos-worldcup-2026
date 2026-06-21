@@ -57,6 +57,16 @@ Registo cumulativo em português de Portugal. Organizado por **frente** e **data
 
 ## RGPD e privacidade
 
+### 2026-06-21 — Eliminação de conta (direito ao esquecimento)
+
+**O quê:** `DELETE /api/account` — valida sessão no servidor (`getUser`), apaga só o utilizador autenticado (nunca ID do cliente). UI em zona de perigo no perfil com checkbox de confirmação.
+
+**Como:** `auth.admin.deleteUser` com service role. Tabelas `profiles`, `favourite_teams`, `notification_prefs`, `push_subscriptions`, `notification_log` têm `ON DELETE CASCADE` em `auth.users` — um único delete cobre tudo.
+
+**Lição:** Operações destrutivas exigem confirmação deliberada na UI e autorização só via sessão servidor. Bloquear conta admin do site (`isSiteAdmin`) para evitar lockout acidental.
+
+---
+
 ### 2026-06-21 — Inventário antes de políticas
 
 **Lição:** Antes de actualizar a política de privacidade ou DPA, fazer inventário de dados (tabelas, cookies, terceiros, regiões). Ver `docs/rgpd-inventario-dados.md`. O código e a política publicada devem estar alinhados.

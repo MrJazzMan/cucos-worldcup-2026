@@ -92,6 +92,24 @@ export const en: Dict = {
   "profile.error": "Could not save. Please try again.",
   "profile.timezoneAutoHint":
     "Automatic uses your device time zone. Match times follow this setting.",
+  "deleteAccount.title": "Delete account",
+  "deleteAccount.summary":
+    "Permanently deletes your account and all associated data.",
+  "deleteAccount.openDialog": "Delete my account",
+  "deleteAccount.dialogTitle": "Delete account permanently?",
+  "deleteAccount.dialogBody":
+    "This action is irreversible. You will lose access immediately and the following will be deleted:",
+  "deleteAccount.list.profile": "Profile and preferences",
+  "deleteAccount.list.favourites": "Favourite teams",
+  "deleteAccount.list.calendar": "Calendar and iCal subscription",
+  "deleteAccount.list.notifications": "Notifications and push subscriptions",
+  "deleteAccount.confirmLabel":
+    "I understand this action is permanent and cannot be undone",
+  "deleteAccount.button": "Delete account",
+  "deleteAccount.cancel": "Cancel",
+  "deleteAccount.deleting": "Deleting…",
+  "deleteAccount.error": "Could not delete your account. Please try again.",
+  "deleteAccount.successBanner": "Your account was deleted successfully.",
   "account.favourites": "Favourite teams",
   "account.favouritesHint": "Highlighted on the homepage and used for notifications.",
   "calendar.title": "Calendar on your phone",
