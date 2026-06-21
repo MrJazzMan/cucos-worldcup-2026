@@ -4,6 +4,9 @@ import { ptTeam } from "@/lib/team-names";
 import { isWorldCupMatch } from "@/lib/world-cup";
 import type { Match } from "@/types";
 
+/** Tokens iCal expiram ao fim deste período; regenerar no menu Perfil → Calendário. */
+export const CALENDAR_TOKEN_MAX_AGE_MS = 365 * 24 * 60 * 60 * 1000;
+
 /** Duração estimada do evento no calendário (inclui intervalo + pausas WC 2026). */
 const MATCH_DURATION_MS = 115 * 60_000;
 
@@ -129,7 +132,7 @@ export async function resolveUserIdByCalendarToken(
   const admin = createSupabaseAdmin();
   const { data } = await admin
     .from("profiles")
-    .select("user_id, calendar_token")
+    .select("user_id, calendar_token, calendar_token_created_at")
     .eq("calendar_token", token)
     .maybeSingle();
 
@@ -138,6 +141,11 @@ export async function resolveUserIdByCalendarToken(
   const a = Buffer.from(token, "utf8");
   const b = Buffer.from(data.calendar_token, "utf8");
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+
+  if (data.calendar_token_created_at) {
+    const age = Date.now() - new Date(data.calendar_token_created_at).getTime();
+    if (age > CALENDAR_TOKEN_MAX_AGE_MS) return null;
+  }
 
   return data.user_id;
 }

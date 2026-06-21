@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const MAX_DISPLAY_NAME = 80;
+const MAX_LOCATION = 120;
+
 function adminOr500() {
   try {
     return { admin: createSupabaseAdmin() };
@@ -62,6 +65,19 @@ export async function PATCH(request: Request) {
     typeof body.display_name === "string" ? body.display_name.trim() || null : null;
   const location =
     typeof body.location === "string" ? body.location.trim() || null : null;
+
+  if (display_name && display_name.length > MAX_DISPLAY_NAME) {
+    return NextResponse.json(
+      { error: `Nome demasiado longo (máx. ${MAX_DISPLAY_NAME} caracteres).` },
+      { status: 400 }
+    );
+  }
+  if (location && location.length > MAX_LOCATION) {
+    return NextResponse.json(
+      { error: `Localização demasiado longa (máx. ${MAX_LOCATION} caracteres).` },
+      { status: 400 }
+    );
+  }
 
   const adminResult = adminOr500();
   if ("error" in adminResult && adminResult.error) return adminResult.error;

@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
+import { verifyCronAuth } from "@/lib/cron-auth";
 import { syncBroadcastsFromOndeBola } from "@/lib/sync-broadcasts";
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret) {
+  if (!process.env.CRON_SECRET) {
     return NextResponse.json(
       { error: "CRON_SECRET não configurado" },
       { status: 500 }
     );
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!verifyCronAuth(request)) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 

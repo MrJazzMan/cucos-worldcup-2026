@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
+import { CALENDAR_TOKEN_MAX_AGE_MS } from "@/lib/calendar-feed";
 import { getSiteUrl } from "@/lib/site-url";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { noStoreJson, requireRouteUser } from "@/lib/supabase/route-auth";
@@ -49,15 +50,19 @@ async function saveCalendarToken(userId: string, email: string | undefined, toke
     .eq("user_id", userId)
     .maybeSingle();
 
+  const now = new Date().toISOString();
+  const row = {
+    calendar_token: token,
+    calendar_token_created_at: now,
+    updated_at: now,
+  };
+
   const { error } = existing
-    ? await admin
-        .from("profiles")
-        .update({ calendar_token: token, updated_at: new Date().toISOString() })
-        .eq("user_id", userId)
+    ? await admin.from("profiles").update(row).eq("user_id", userId)
     : await admin.from("profiles").insert({
         user_id: userId,
         email: email ?? null,
-        calendar_token: token,
+        ...row,
       });
 
   if (error) {
@@ -79,7 +84,7 @@ export async function GET() {
 
   const { data, error: selectError } = await admin
     .from("profiles")
-    .select("calendar_token")
+    .select("calendar_token, calendar_token_created_at")
     .eq("user_id", user!.id)
     .maybeSingle();
 
@@ -88,8 +93,15 @@ export async function GET() {
     return NextResponse.json({ error: selectError.message }, { status: 500 });
   }
 
-  if (data?.calendar_token) {
-    return noStoreJson(calendarUrls(data.calendar_token as string));
+  const token = data?.calendar_token as string | undefined;
+  const createdAt = data?.calendar_token_created_at as string | null | undefined;
+  const tokenFresh =
+    token &&
+    createdAt &&
+    Date.now() - new Date(createdAt).getTime() <= CALENDAR_TOKEN_MAX_AGE_MS;
+
+  if (token && tokenFresh) {
+    return noStoreJson(calendarUrls(token));
   }
 
   const fresh = newCalendarToken();
