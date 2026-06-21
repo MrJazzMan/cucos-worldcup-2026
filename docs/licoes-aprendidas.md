@@ -57,6 +57,16 @@ Registo cumulativo em português de Portugal. Organizado por **frente** e **data
 
 ## RGPD e privacidade
 
+### 2026-06-21 — Google Analytics antes do consentimento (Consent Mode v2)
+
+**Achado:** O banner já controlava o AdSense (unidades só com `adsAllowed`), mas o GA4 carregava `gtag/js` e chamava `gtag('config', …, { send_page_view: true })` **sempre** — mesmo com `analytics_storage: denied`, o script fazia pedidos a `google-analytics.com` antes do utilizador decidir.
+
+**Correcção:** Consent Mode v2 inline no `<head>` **antes** de qualquer script Google (`ad_*` e `analytics_storage: denied`). O GA4 só é injectado em `loadGoogleAnalytics()` depois de aceitar no banner; `gtag('consent', 'update')` sem reload. AdSense mantém tag no HTML (verificação crawler) mas com `ad_storage: denied` até aceitar; unidades continuam gated por `adsAllowed`.
+
+**Lição:** Consent Mode «denied» por defeito não basta se o `gtag('config')` corre na mesma — para e-Privacy/RGPD, **não carregar** o script de Analytics até consentimento. Testar na rede (DevTools) em janela anónima.
+
+---
+
 ### 2026-06-21 — Eliminação de conta (direito ao esquecimento)
 
 **O quê:** `DELETE /api/account` — valida sessão no servidor (`getUser`), apaga só o utilizador autenticado (nunca ID do cliente). UI em zona de perigo no perfil com checkbox de confirmação.

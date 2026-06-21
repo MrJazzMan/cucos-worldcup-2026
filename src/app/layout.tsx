@@ -3,12 +3,13 @@ import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { AppChrome } from "@/components/AppChrome";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import { CookieConsent } from "@/components/CookieConsent";
-import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { GoogleAnalyticsLoader } from "@/components/GoogleAnalytics";
 import { ProfileSync } from "@/components/ProfileSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { T } from "@/components/Display";
 import { THEME_INIT_SCRIPT } from "@/lib/themes";
+import { CONSENT_MODE_DEFAULT_SCRIPT } from "@/lib/consent";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -64,9 +65,10 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <GoogleAnalytics />
+        <script dangerouslySetInnerHTML={{ __html: CONSENT_MODE_DEFAULT_SCRIPT }} />
         {ADSENSE_CLIENT_ID ? (
-          // Tag literal no HTML inicial — obrigatório para verificação AdSense (crawler não vê preload do next/script)
+          // Tag literal no HTML inicial — obrigatório para verificação AdSense (crawler não vê preload do next/script).
+          // Consent Mode (ad_storage: denied) impede cookies até o utilizador aceitar no banner.
           <script
             async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
@@ -95,6 +97,7 @@ export default function RootLayout({
             </footer>
             </AppChrome>
             <CookieConsent />
+            <GoogleAnalyticsLoader />
             <ServiceWorkerRegister />
             <Analytics />
             <SpeedInsights />
