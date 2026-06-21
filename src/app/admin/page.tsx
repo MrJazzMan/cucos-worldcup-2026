@@ -12,32 +12,15 @@ interface AdminMatch {
   channels: string[];
 }
 
-const SECRET_STORAGE_KEY = "cucos-admin-secret";
-
 export default function AdminPage() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
-  const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setSecret(localStorage.getItem(SECRET_STORAGE_KEY) ?? "");
-  }, []);
-
-  useEffect(() => {
-    if (!secret) {
-      setLoading(false);
-      setMatches([]);
-      return;
-    }
-
     setLoading(true);
-    fetch("/api/admin/broadcasts", {
-      headers: {
-        Authorization: `Bearer ${secret}`,
-      },
-    })
+    fetch("/api/admin/broadcasts")
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -50,7 +33,7 @@ export default function AdminPage() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [secret]);
+  }, []);
 
   async function saveBroadcast(fixtureId: number, channels: string[]) {
     setSaving(fixtureId);
@@ -58,17 +41,14 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/broadcasts", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(secret ? { Authorization: `Bearer ${secret}` } : {}),
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fixture_id: fixtureId, channels }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(
-          res.status === 401
-            ? "Password incorrecta — grava de novo depois de corrigir."
+          res.status === 401 || res.status === 403
+            ? "Sessão expirada — inicia sessão outra vez."
             : data.error ?? "Erro ao gravar."
         );
       }
@@ -111,22 +91,6 @@ export default function AdminPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border-base bg-surface p-4">
-        <label className="text-sm font-medium text-foreground">
-          Password de admin (CRON_SECRET)
-        </label>
-        <input
-          type="password"
-          value={secret}
-          onChange={(e) => {
-            setSecret(e.target.value);
-            localStorage.setItem(SECRET_STORAGE_KEY, e.target.value);
-          }}
-          placeholder="Necessária para gravar"
-          className="mt-2 w-full rounded-lg border border-border-base bg-surface-2 px-3 py-2 text-sm text-foreground placeholder:text-muted"
-        />
-      </div>
-
       {error && (
         <p className="rounded-lg bg-red-600/20 px-3 py-2 text-sm text-red-400">
           {error}
@@ -134,11 +98,7 @@ export default function AdminPage() {
       )}
 
       {matches.length === 0 ? (
-        <p className="text-muted">
-          {secret
-            ? "Sem jogos na base de dados. Executa /api/sync primeiro."
-            : "Introduz a password de admin para carregar os jogos."}
-        </p>
+        <p className="text-muted">Sem jogos na base de dados. Executa /api/sync primeiro.</p>
       ) : (
         <div className="space-y-4">
           {matches.map((match) => {

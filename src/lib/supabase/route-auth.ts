@@ -28,14 +28,6 @@ export async function requireRouteUser(): Promise<RouteAuthResult> {
     return { user, supabase };
   }
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session?.user) {
-    return { user: session.user, supabase };
-  }
-
   return {
     error: NextResponse.json({ error: "Não autorizado" }, { status: 401 }),
   };

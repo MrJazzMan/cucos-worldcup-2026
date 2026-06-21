@@ -1,29 +1,10 @@
 import { NextResponse } from "next/server";
+import { requireAdminOrCron } from "@/lib/admin-auth";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
-function ensureCronAccess(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: "CRON_SECRET não configurado" },
-      { status: 500 }
-    );
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
-
-  return null;
-}
-
 export async function POST(request: Request) {
-  const authError = ensureCronAccess(request);
-  if (authError) {
-    return authError;
-  }
+  const authError = await requireAdminOrCron(request);
+  if (authError) return authError;
 
   const body = await request.json();
   const { fixture_id, channels, notes } = body;
@@ -48,10 +29,8 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const authError = ensureCronAccess(request);
-  if (authError) {
-    return authError;
-  }
+  const authError = await requireAdminOrCron(request);
+  if (authError) return authError;
 
   const admin = createSupabaseAdmin();
   const { data: matches } = await admin
