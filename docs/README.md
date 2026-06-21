@@ -2,13 +2,14 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-**Versão actual:** `0.5.0` — perfil/calendário via API, sync live QStash, marcadores, novidades (ver [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md)).
+**Versão actual:** `0.5.0` — ver [sessao-handoff-2026-06-21-fase3.md](sessao-handoff-2026-06-21-fase3.md) (handoff mais recente).
 
 ## Índice
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [**sessao-handoff-jun-2026.md**](sessao-handoff-jun-2026.md) | **Handoff Jun 2026** — perfil, calendário, QStash, migrations |
+| [**sessao-handoff-2026-06-21-fase3.md**](sessao-handoff-2026-06-21-fase3.md) | **Handoff Fase 3 (Jun 2026)** — segurança, RGPD, homepage, cookies |
+| [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md) | Handoff anterior — QStash, classificações, perfil/calendário |
 | [historico-e-setup.md](historico-e-setup.md) | Stack, Supabase, Vercel, domínio, dados reais |
 | [deploy.md](deploy.md) | Vercel, variáveis, crons, pós-deploy |
 | [setup-analytics-ads.md](setup-analytics-ads.md) | GA4 + AdSense (verificação, env vars) |
@@ -36,7 +37,7 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | **Mobile nav** | Bottom bar 5 itens (< 640px) |
 | **Bandeiras** | `circle-flags` → `public/flags/` (build) |
 | **Feed RSS** | `/feed/{RSS_FEED_TOKEN}` (secreto, env Vercel) |
-| **GA4** | `G-BEVP34KWFW` + Consent Mode |
+| **GA4** | `G-BEVP34KWFW` — só após consentimento (Consent Mode v2) |
 | **AdSense** | Verificado, Auto ads ON |
 | **Idiomas** | 12 (EN default) |
 | **Branding** | Logo SVG, coral `#E0451F`, favicon «26» |
@@ -67,7 +68,7 @@ Ver [ARCHITECTURE.md](../ARCHITECTURE.md).
 API-Football ──► /api/sync ──► Supabase matches
 OndeBola     ──► /api/sync-broadcasts ──► Supabase broadcasts
 Supabase     ◄── Next.js (wc26.pt) ◄── Utilizador
-GA4 + AdSense ──► após consentimento de cookies (anúncios visíveis)
+GA4 + AdSense ──► após consentimento de cookies (GA não carrega antes de aceitar)
 ```
 
 ## Releases
