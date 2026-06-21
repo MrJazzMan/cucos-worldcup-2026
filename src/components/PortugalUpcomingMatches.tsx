@@ -44,14 +44,19 @@ function PortugalUpcomingCard({ match }: { match: Match }) {
   const time = timeInTz(match.kickoff_utc, tz);
 
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-border-base bg-surface px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5">
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+    <article className="flex flex-col gap-2.5 rounded-2xl border border-border-base bg-surface px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:gap-4">
+      <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:items-start">
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:justify-start">
           <span className="inline-flex items-center gap-1 text-xs font-medium tabular-nums text-muted">
             <span>{dateLabel}</span>
             <span aria-hidden>·</span>
             <span>{time}</span>
           </span>
+          {phaseLabel && (
+            <span className="text-[10px] uppercase tracking-wide text-muted">
+              {phaseLabel}
+            </span>
+          )}
           {isLive && (
             <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
               <LivePulseDot size="sm" />
@@ -60,9 +65,9 @@ function PortugalUpcomingCard({ match }: { match: Match }) {
           )}
         </div>
 
-        <div className="flex items-center justify-center gap-3 sm:justify-start">
-          <div className="flex min-w-0 flex-1 flex-col items-center gap-1 text-center sm:items-end sm:text-right">
-            <TeamFlag name="Portugal" teamId={PORTUGAL_TEAM_ID} size={48} />
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex w-20 flex-col items-center gap-1 text-center">
+            <TeamFlag name="Portugal" teamId={PORTUGAL_TEAM_ID} size={40} />
             <p className="text-sm font-bold leading-tight text-foreground">
               <TeamName name="Portugal" />
             </p>
@@ -72,32 +77,24 @@ function PortugalUpcomingCard({ match }: { match: Match }) {
             vs
           </span>
 
-          <div className="flex min-w-0 flex-1 flex-col items-center gap-1 text-center sm:items-start sm:text-left">
+          <div className="flex w-20 flex-col items-center gap-1 text-center">
             <TeamFlag
               name={opponent.teamName}
               teamId={opponent.teamId}
-              size={48}
+              size={40}
             />
             <p className="text-sm font-bold leading-tight text-foreground">
               <TeamName name={opponent.teamName} />
             </p>
           </div>
         </div>
-
-        {phaseLabel && (
-          <p className="text-center text-[10px] uppercase tracking-wide text-muted sm:text-left">
-            {phaseLabel}
-          </p>
-        )}
       </div>
 
-      <div className="flex shrink-0 flex-col items-center gap-1 border-t border-border-base pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
-        <div className="flex flex-wrap items-center justify-center gap-1.5">
-          <MatchChannels
-            channels={match.channels}
-            emptyLabel={t("portugalUpcoming.channelTBC")}
-          />
-        </div>
+      <div className="flex shrink-0 flex-wrap items-center justify-center gap-1.5 border-t border-border-base pt-2.5 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
+        <MatchChannels
+          channels={match.channels}
+          emptyLabel={t("portugalUpcoming.channelTBC")}
+        />
       </div>
     </article>
   );
