@@ -92,9 +92,6 @@ function PortugalUpcomingCard({ match }: { match: Match }) {
       </div>
 
       <div className="flex shrink-0 flex-col items-center gap-1 border-t border-border-base pt-3 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted">
-          TV
-        </p>
         <div className="flex flex-wrap items-center justify-center gap-1.5">
           <MatchChannels
             channels={match.channels}
