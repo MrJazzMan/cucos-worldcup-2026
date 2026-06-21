@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
+import { PortugalUpcomingMatches } from "@/components/PortugalUpcomingMatches";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
 import { WhatsNewBanner } from "@/components/WhatsNewBanner";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
@@ -337,6 +338,11 @@ export function MatchesView({
           )}
         </div>
       )}
+
+      <PortugalUpcomingMatches
+        matches={matches}
+        excludeFixtureId={featuredMatch?.fixture_id}
+      />
     </div>
   );
 }

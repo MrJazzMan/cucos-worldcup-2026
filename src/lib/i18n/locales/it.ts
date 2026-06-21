@@ -23,6 +23,8 @@ export const it: Dict = {
   "matches.countOne": "partita",
   "matches.myMatches": "Le mie partite",
   "matches.noFavMatches": "Nessuna partita delle tue squadre oggi",
+  "portugalUpcoming.title": "Prossime partite del Portogallo",
+  "portugalUpcoming.channelTBC": "Da confermare",
   "matches.noFavMatchesHint":
     "Scegli un altro giorno o aggiungi squadre preferite dal menu.",
   "status.inHours": "Tra {n} ore",

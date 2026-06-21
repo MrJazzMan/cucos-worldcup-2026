@@ -24,6 +24,8 @@ export const fr: Dict = {
   "matches.myMatches": "Mes matchs",
   "matches.noFavMatches": "Aucun match de vos équipes aujourd'hui",
   "matches.noFavMatchesHint": "Choisissez un autre jour ou ajoutez des équipes favorites dans le menu.",
+  "portugalUpcoming.title": "Prochains matchs du Portugal",
+  "portugalUpcoming.channelTBC": "À confirmer",
   "status.inHours": "Dans {n} heures",
   "status.inMinutes": "Dans {n} min",
   "status.live": "En direct",

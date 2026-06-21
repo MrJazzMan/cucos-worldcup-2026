@@ -23,6 +23,8 @@ export const br: Dict = {
   "matches.countOne": "jogo",
   "matches.myMatches": "Meus jogos",
   "matches.noFavMatches": "Sem jogos das suas seleções hoje",
+  "portugalUpcoming.title": "Próximos jogos de Portugal",
+  "portugalUpcoming.channelTBC": "A confirmar",
   "matches.noFavMatchesHint":
     "Escolha outro dia ou adicione seleções favoritas no menu.",
   "status.inHours": "Em {n} horas",
