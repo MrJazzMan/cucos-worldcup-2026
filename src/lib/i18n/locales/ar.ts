@@ -24,6 +24,8 @@ export const ar: Dict = {
   "matches.myMatches": "مبارياتي",
   "matches.noFavMatches": "لا توجد مباريات لفرقك المفضلة اليوم",
   "matches.noFavMatchesHint": "اختر يومًا آخر أو أضف فرقًا مفضلة من القائمة.",
+  "dayStandings.title": "ترتيب اليوم",
+  "dayStandings.viewAll": "عرض جميع المجموعات",
   "portugalUpcoming.title": "مباريات البرتغال القادمة",
   "portugalUpcoming.channelTBC": "قيد التحديد",
   "portugalUpcoming.phase.group": "دور المجموعات",

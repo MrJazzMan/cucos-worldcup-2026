@@ -73,6 +73,16 @@ Registo cumulativo em português de Portugal. Organizado por **frente** e **data
 
 ## Frontend e i18n
 
+### 2026-06-21 — Módulo «Classificações do dia» na homepage
+
+**O quê:** Resumo contextual das classificações dos grupos com jogos no dia seleccionado na grelha, mais o grupo de Portugal enquanto estiver na fase de grupos (mesmo sem jogo nesse dia).
+
+**Como:** `getDayStandingsGroups()` em `day-standings.ts` cruza jogos do dia com `group_standings`; `DayStandings` reage a `selectedDay` no cliente; tabela compacta extraída para `GroupStandingsTable` (variante `compact` vs `full` em `/grupos`).
+
+**Lição:** Reutilizar dados e ordenação de `getGroupStandings()` — não recalcular desempates no módulo. Esconder o bloco inteiro quando não há grupos relevantes (ex. dia só de eliminatórias).
+
+---
+
 ### 2026-06-20 — `pt-PT` `month: "short"` devolve mês numérico
 
 **Problema:** `Intl.DateTimeFormat("pt-PT", { month: "short" })` pode devolver `"06"` em vez de `"jun."`.

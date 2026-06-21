@@ -23,6 +23,8 @@ export const br: Dict = {
   "matches.countOne": "jogo",
   "matches.myMatches": "Meus jogos",
   "matches.noFavMatches": "Sem jogos das suas seleções hoje",
+  "dayStandings.title": "Classificações do dia",
+  "dayStandings.viewAll": "Ver todos os grupos",
   "portugalUpcoming.title": "Próximos jogos de Portugal",
   "portugalUpcoming.channelTBC": "A confirmar",
   "portugalUpcoming.phase.group": "Fase de grupos",

@@ -24,6 +24,8 @@ export const en: Dict = {
   "matches.myMatches": "My matches",
   "matches.noFavMatches": "No matches for your teams today",
   "matches.noFavMatchesHint": "Pick another day or add favourite teams in the menu.",
+  "dayStandings.title": "Today's standings",
+  "dayStandings.viewAll": "View all groups",
   "portugalUpcoming.title": "Portugal's upcoming matches",
   "portugalUpcoming.channelTBC": "TBD",
   "portugalUpcoming.phase.group": "Group stage",

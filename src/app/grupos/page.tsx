@@ -1,19 +1,6 @@
-import Image from "next/image";
-import { T, TeamName } from "@/components/Display";
+import { T } from "@/components/Display";
+import { GroupStandingsTable } from "@/components/GroupStandingsTable";
 import { getGroupStandings } from "@/lib/matches";
-
-const GROUP_TABLE_COLS = (
-  <colgroup>
-    <col className="w-9" />
-    <col />
-    <col className="w-9" />
-    <col className="w-9" />
-    <col className="w-9" />
-    <col className="w-9" />
-    <col className="w-10" />
-    <col className="w-11" />
-  </colgroup>
-);
 
 export default async function GruposPage() {
   const groups = await getGroupStandings();
@@ -37,84 +24,7 @@ export default async function GruposPage() {
           <h2 className="border-b border-border-base px-4 py-3 text-lg font-semibold text-foreground">
             {group.group_name}
           </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-sm">
-              {GROUP_TABLE_COLS}
-              <thead>
-                <tr className="text-xs text-muted">
-                  <th className="px-2 py-2 text-center font-medium">#</th>
-                  <th className="px-3 py-2 text-left font-medium">
-                    <T k="groups.col.team" />
-                  </th>
-                  <th className="px-1 py-2 text-center font-medium">
-                    <T k="groups.col.played" />
-                  </th>
-                  <th className="px-1 py-2 text-center font-medium">
-                    <T k="groups.col.won" />
-                  </th>
-                  <th className="px-1 py-2 text-center font-medium">
-                    <T k="groups.col.draw" />
-                  </th>
-                  <th className="px-1 py-2 text-center font-medium">
-                    <T k="groups.col.lost" />
-                  </th>
-                  <th className="px-1 py-2 text-center font-medium">
-                    <T k="groups.col.gd" />
-                  </th>
-                  <th className="px-2 py-2 text-center font-bold">
-                    <T k="groups.col.points" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {group.rows.map((row) => (
-                  <tr
-                    key={row.team_id}
-                    className="border-t border-border-base/60 text-foreground"
-                  >
-                    <td className="px-2 py-2.5 text-center tabular-nums text-muted">
-                      {row.rank}
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <div className="flex min-w-0 items-center gap-2">
-                        {row.team_logo && (
-                          <Image
-                            src={row.team_logo}
-                            alt=""
-                            width={20}
-                            height={20}
-                            className="shrink-0 rounded-full"
-                            unoptimized
-                          />
-                        )}
-                        <span className="truncate font-medium">
-                          <TeamName name={row.team_name} />
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-1 py-2.5 text-center tabular-nums">
-                      {row.played}
-                    </td>
-                    <td className="px-1 py-2.5 text-center tabular-nums">
-                      {row.won}
-                    </td>
-                    <td className="px-1 py-2.5 text-center tabular-nums">
-                      {row.draw}
-                    </td>
-                    <td className="px-1 py-2.5 text-center tabular-nums">
-                      {row.lost}
-                    </td>
-                    <td className="px-1 py-2.5 text-center tabular-nums">
-                      {row.goal_diff > 0 ? `+${row.goal_diff}` : row.goal_diff}
-                    </td>
-                    <td className="px-2 py-2.5 text-center font-bold tabular-nums">
-                      {row.points}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <GroupStandingsTable group={group} variant="full" />
         </section>
       ))}
     </div>

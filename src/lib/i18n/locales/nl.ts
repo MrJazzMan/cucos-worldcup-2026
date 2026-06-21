@@ -23,6 +23,8 @@ export const nl: Dict = {
   "matches.countOne": "wedstrijd",
   "matches.myMatches": "Mijn wedstrijden",
   "matches.noFavMatches": "Geen wedstrijden van je teams vandaag",
+  "dayStandings.title": "Standen van vandaag",
+  "dayStandings.viewAll": "Alle groepen bekijken",
   "portugalUpcoming.title": "Komende wedstrijden van Portugal",
   "portugalUpcoming.channelTBC": "Nog te bevestigen",
   "portugalUpcoming.phase.group": "Groepsfase",

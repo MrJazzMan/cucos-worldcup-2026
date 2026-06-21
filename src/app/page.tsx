@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { MatchesView } from "@/components/MatchesView";
 import {
   getAllMatches,
+  getGroupStandings,
   getUserFavouriteTeamIds,
 } from "@/lib/matches";
 import { getMockMatchesForDate } from "@/lib/mock-data";
@@ -63,11 +64,14 @@ export default async function HomePage() {
   const favouriteIds = loggedIn
     ? await getUserFavouriteTeamIds().catch(() => [] as number[])
     : [];
-  const matches = await loadAllMatches(favouriteIds);
+  const [matches, standings] = await Promise.all([
+    loadAllMatches(favouriteIds),
+    getGroupStandings().catch(() => [] as Awaited<ReturnType<typeof getGroupStandings>>),
+  ]);
 
   return (
     <Suspense fallback={null}>
-      <MatchesView matches={matches} loggedIn={loggedIn} />
+      <MatchesView matches={matches} standings={standings} loggedIn={loggedIn} />
     </Suspense>
   );
 }

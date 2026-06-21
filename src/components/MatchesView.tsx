@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
+import { DayStandings } from "@/components/DayStandings";
 import { PortugalUpcomingMatches } from "@/components/PortugalUpcomingMatches";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
 import { WhatsNewBanner } from "@/components/WhatsNewBanner";
@@ -19,7 +20,7 @@ import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { useSettings } from "@/components/SettingsProvider";
 import { dateKeyInTz, dayKeyWithOffset } from "@/lib/datetime";
 import { pickFeaturedMatch } from "@/lib/featured-match";
-import type { Match } from "@/types";
+import type { GroupStanding, Match } from "@/types";
 
 type DayMatch = Match & { isFavourite?: boolean };
 
@@ -55,9 +56,11 @@ function dayLabel(
 
 export function MatchesView({
   matches,
+  standings = [],
   loggedIn = false,
 }: {
   matches: DayMatch[];
+  standings?: GroupStanding[];
   loggedIn?: boolean;
 }) {
   const router = useRouter();
@@ -342,6 +345,12 @@ export function MatchesView({
       <PortugalUpcomingMatches
         matches={matches}
         excludeFixtureId={featuredMatch?.fixture_id}
+      />
+
+      <DayStandings
+        matches={matches}
+        standings={standings}
+        selectedDay={selectedDay}
       />
     </div>
   );
