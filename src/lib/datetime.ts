@@ -72,17 +72,27 @@ export function formatShortMatchDate(
   tz: string,
   locale: string
 ): string {
+  const date = new Date(utcIso);
   const parts = new Intl.DateTimeFormat(locale, {
     timeZone: tz,
     weekday: "short",
     day: "numeric",
     month: "short",
-  }).formatToParts(new Date(utcIso));
+  }).formatToParts(date);
   const weekday =
     parts.find((p) => p.type === "weekday")?.value.replace(/\.$/, "") ?? "";
   const day = parts.find((p) => p.type === "day")?.value ?? "";
-  const month =
+  let month =
     parts.find((p) => p.type === "month")?.value.replace(/\.$/, "") ?? "";
+  // Alguns runtimes/CLDR devolvem o mês abreviado como número (ex.: pt-PT → "06").
+  // Garantimos sempre um nome de mês, derivado do nome longo.
+  if (/^\d+$/.test(month)) {
+    const longMonth =
+      new Intl.DateTimeFormat(locale, { timeZone: tz, month: "long" })
+        .formatToParts(date)
+        .find((p) => p.type === "month")?.value ?? month;
+    month = longMonth.slice(0, 3);
+  }
   const wd = weekday ? weekday.charAt(0).toUpperCase() + weekday.slice(1) : "";
   return `${wd}, ${day} ${month}`;
 }
