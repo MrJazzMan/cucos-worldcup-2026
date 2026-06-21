@@ -1,3 +1,4 @@
+import { knockoutRoundKey, type KnockoutRoundKey } from "@/lib/knockout-bracket";
 import { PORTUGAL_TEAM_ID } from "@/lib/world-cup";
 import type { Match } from "@/types";
 
@@ -18,8 +19,32 @@ export function getOpponent(match: Match): {
   return { teamId: match.home_team_id, teamName: match.home_team_name };
 }
 
-export function matchPhaseLabel(match: Pick<Match, "group_name" | "round">): string | null {
-  return match.group_name ?? match.round ?? null;
+export type MatchPhase =
+  | { kind: "group"; matchday: number | null }
+  | { kind: "knockout"; key: KnockoutRoundKey };
+
+/**
+ * Fase estruturada do jogo, para localização posterior.
+ * Devolve null quando não há informação de fase utilizável.
+ */
+export function getMatchPhase(
+  match: Pick<Match, "group_name" | "round">
+): MatchPhase | null {
+  const round = match.round;
+  const lower = round?.toLowerCase() ?? "";
+
+  if (lower.includes("group") || (!round && match.group_name)) {
+    const matchdayMatch = round?.match(/(\d+)\s*$/);
+    return {
+      kind: "group",
+      matchday: matchdayMatch ? Number(matchdayMatch[1]) : null,
+    };
+  }
+
+  const key = knockoutRoundKey(round);
+  if (key) return { kind: "knockout", key };
+
+  return null;
 }
 
 /** Próximos jogos de Portugal (não terminados), ordenados por kickoff, até `limit`. */

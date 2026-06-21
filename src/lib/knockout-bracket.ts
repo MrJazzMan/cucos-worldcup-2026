@@ -124,6 +124,16 @@ export function isKnockoutRound(round: string | null | undefined): boolean {
   return ROUND_DEFS.some((def) => def.matches(r));
 }
 
+/** Chave da ronda eliminatória (r32, r16, …) ou null se não for eliminatória. */
+export function knockoutRoundKey(
+  round: string | null | undefined
+): KnockoutRoundKey | null {
+  if (!round) return null;
+  const r = round.toLowerCase();
+  if (r.includes("group")) return null;
+  return ROUND_DEFS.find((def) => def.matches(r))?.key ?? null;
+}
+
 export function sortKnockoutRoundNames(rounds: string[]): string[] {
   return [...rounds].sort((a, b) => {
     const ai = ROUND_DEFS.findIndex((d) => d.matches(a.toLowerCase()));

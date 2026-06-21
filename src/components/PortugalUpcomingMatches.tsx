@@ -8,9 +8,10 @@ import { TeamFlag } from "@/components/TeamFlag";
 import { useSettings } from "@/components/SettingsProvider";
 import { formatShortMatchDate, timeInTz } from "@/lib/datetime";
 import {
+  getMatchPhase,
   getOpponent,
   getPortugalUpcomingMatches,
-  matchPhaseLabel,
+  type MatchPhase,
 } from "@/lib/portugal-upcoming";
 import { PORTUGAL_TEAM_ID } from "@/lib/world-cup";
 import type { Match } from "@/types";
@@ -20,11 +21,25 @@ interface PortugalUpcomingMatchesProps {
   excludeFixtureId?: number | null;
 }
 
+function localizePhase(phase: MatchPhase, t: (k: string) => string): string {
+  if (phase.kind === "group") {
+    const base = t("portugalUpcoming.phase.group");
+    if (phase.matchday == null) return base;
+    const matchday = t("portugalUpcoming.phase.matchday").replace(
+      "{n}",
+      String(phase.matchday)
+    );
+    return `${base} · ${matchday}`;
+  }
+  return t(`portugalUpcoming.phase.${phase.key}`);
+}
+
 function PortugalUpcomingCard({ match }: { match: Match }) {
   const { t, tz, locale } = useSettings();
   const opponent = getOpponent(match);
   const isLive = match.status === "live";
-  const phase = matchPhaseLabel(match);
+  const phase = getMatchPhase(match);
+  const phaseLabel = phase ? localizePhase(phase, t) : null;
   const dateLabel = formatShortMatchDate(match.kickoff_utc, tz, locale);
   const time = timeInTz(match.kickoff_utc, tz);
 
@@ -69,9 +84,9 @@ function PortugalUpcomingCard({ match }: { match: Match }) {
           </div>
         </div>
 
-        {phase && (
+        {phaseLabel && (
           <p className="text-center text-[10px] uppercase tracking-wide text-muted sm:text-left">
-            {phase}
+            {phaseLabel}
           </p>
         )}
       </div>
