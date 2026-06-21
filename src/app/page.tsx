@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { MatchesView } from "@/components/MatchesView";
 import {
   getAllMatches,
@@ -70,9 +69,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <Suspense fallback={null}>
-      <MatchesView matches={matches} standings={standings} loggedIn={loggedIn} />
-    </Suspense>
+    <MatchesView matches={matches} standings={standings} loggedIn={loggedIn} />
   );
 }
 

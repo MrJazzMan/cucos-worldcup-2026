@@ -20,6 +20,7 @@ import { WhatsNewBanner } from "@/components/WhatsNewBanner";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { useSettings } from "@/components/SettingsProvider";
 import { dateKeyInTz, dayKeyWithOffset } from "@/lib/datetime";
+import { HomePageSkeleton } from "@/components/skeleton/HomePageSkeleton";
 import { pickFeaturedMatch } from "@/lib/featured-match";
 import type { GroupStanding, Match } from "@/types";
 
@@ -190,17 +191,7 @@ export function MatchesView({
   }, [mounted, selectedDay, todayKey, hasLiveToday, router]);
 
   if (!mounted) {
-    return (
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
-        <div className="h-14 animate-pulse rounded-2xl bg-surface" />
-        <div className="h-52 animate-pulse rounded-2xl bg-surface" />
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {[1, 2].map((i) => (
-            <div key={i} className="h-48 animate-pulse rounded-2xl bg-surface" />
-          ))}
-        </div>
-      </div>
-    );
+    return <HomePageSkeleton />;
   }
 
   const isToday = selectedDay === todayKey;

@@ -93,6 +93,16 @@ Registo cumulativo em português de Portugal. Organizado por **frente** e **data
 
 ## Frontend e i18n
 
+### 2026-06-21 — Skeletons de carregamento na homepage
+
+**Problema:** Entre abrir a página e os dados do Supabase chegarem, a homepage mostrava ecrã vazio (`Suspense fallback={null}`) ou blocos genéricos `animate-pulse` sem forma reconhecível (só durante hidratação do `SettingsProvider`).
+
+**Correcção:** Componentes skeleton em `src/components/skeleton/` que imitam a forma real — grelha de dias, jogo em destaque, cards da grelha, «Próximos jogos de Portugal» e «Classificações do dia». Shimmer subtil (~1,5s, ease-in-out) via `.skeleton-shimmer` em `globals.css`; estático com `prefers-reduced-motion`. `src/app/loading.tsx` durante o fetch RSC; `HomePageSkeleton` reutilizado em `MatchesView` enquanto `!mounted`. Sem skeleton em secções instantâneas (banners, AdSense) nem em `router.refresh()` (dados actualizam in-place).
+
+**Lição:** Skeletons devem reservar o layout final (bandeiras circulares, badges de canal, tabelas compactas) e aparecer só no intervalo de espera real — não substituir estados vazios legítimos (`PortugalUpcoming` / `DayStandings` devolvem `null` quando não há dados).
+
+---
+
 ### 2026-06-21 — Módulo «Classificações do dia» na homepage
 
 **O quê:** Resumo contextual das classificações dos grupos com jogos no dia seleccionado na grelha, mais o grupo de Portugal enquanto estiver na fase de grupos (mesmo sem jogo nesse dia).
