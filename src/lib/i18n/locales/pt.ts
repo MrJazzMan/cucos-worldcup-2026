@@ -51,7 +51,7 @@ export const pt: Dict = {
   "status.inMinutes": "Dentro de {n} min",
   "status.live": "Ao vivo",
   "status.finished": "Final",
-  "status.upcoming": "Por começar",
+  "status.upcoming": "Agendado",
   "featured.live": "AO VIVO",
   "featured.final": "FINAL",
   "featured.startsInHours": "Começa em {hours}h {minutes}m",
