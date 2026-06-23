@@ -1,4 +1,5 @@
--- Função RPC para obter métricas de analytics consolidadas em menos de 30 segundos
+-- A RPC é chamada via service_role (API já valida admin em Node).
+-- is_site_admin() usa auth.uid(), que é NULL com service_role → falso positivo.
 CREATE OR REPLACE FUNCTION public.get_admin_analytics(today_start timestamptz)
 RETURNS json
 LANGUAGE plpgsql
@@ -8,7 +9,6 @@ AS $$
 DECLARE
   result json;
 BEGIN
-  -- Segurança: API valida admin em Node; só service_role pode executar (ver GRANT abaixo).
   WITH kpis AS (
     SELECT
       (SELECT COUNT(*) FROM profiles) AS total_users,
@@ -80,6 +80,5 @@ BEGIN
 END;
 $$;
 
--- Restringir execução por defeito
 REVOKE EXECUTE ON FUNCTION public.get_admin_analytics(timestamptz) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_admin_analytics(timestamptz) TO service_role;

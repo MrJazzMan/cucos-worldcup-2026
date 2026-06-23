@@ -67,7 +67,7 @@ Este dashboard **só lê** dados; não altera a recolha existente.
 
 - Layout `/admin/*` redirecciona não-admins para `/`.
 - API usa `requireAdminOrCron` (sessão admin ou `CRON_SECRET`).
-- RPC `get_admin_analytics` verifica `is_site_admin()` e só é executável por `service_role` (cliente admin no servidor).
+- RPC `get_admin_analytics` só é executável por `service_role`; a validação de admin fica na API (não em `auth.uid()` dentro do RPC).
 - Resposta com `Cache-Control: no-store`.
 
 ## Migração
