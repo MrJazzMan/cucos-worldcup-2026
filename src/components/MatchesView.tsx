@@ -15,6 +15,7 @@ import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
 import { DayStandings } from "@/components/DayStandings";
+import { TopScorers } from "@/components/TopScorers";
 import { PortugalUpcomingMatches } from "@/components/PortugalUpcomingMatches";
 import { TeamSearch, useTeamSearchParam } from "@/components/TeamSearch";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
@@ -591,6 +592,8 @@ export function MatchesView({
         dayMatches={dayMatches}
       />
       )}
+
+      {!isTeamSearch && <TopScorers matches={matches} />}
     </div>
   );
 }

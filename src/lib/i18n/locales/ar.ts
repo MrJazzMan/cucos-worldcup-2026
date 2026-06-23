@@ -37,6 +37,8 @@ export const ar: Dict = {
   "matches.tournamentDayHeading": "يوم المباريات {n}",
   "dayStandings.title": "ترتيب اليوم",
   "dayStandings.viewAll": "عرض جميع المجموعات",
+  "topScorers.title": "الهدافون",
+  "topScorers.showMore": "عرض المزيد ({n})",
   "portugalUpcoming.title": "مباريات البرتغال القادمة",
   "portugalUpcoming.channelTBC": "قيد التحديد",
   "portugalUpcoming.phase.group": "دور المجموعات",

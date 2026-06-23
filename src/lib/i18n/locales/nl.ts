@@ -25,6 +25,8 @@ export const nl: Dict = {
   "matches.noFavMatches": "Geen wedstrijden van je teams vandaag",
   "dayStandings.title": "Standen van vandaag",
   "dayStandings.viewAll": "Alle groepen bekijken",
+  "topScorers.title": "Topscorers",
+  "topScorers.showMore": "Meer tonen ({n})",
   "portugalUpcoming.title": "Komende wedstrijden van Portugal",
   "portugalUpcoming.channelTBC": "Nog te bevestigen",
   "portugalUpcoming.phase.group": "Groepsfase",

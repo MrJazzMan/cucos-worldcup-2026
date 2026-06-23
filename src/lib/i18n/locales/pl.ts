@@ -25,6 +25,8 @@ export const pl: Dict = {
   "matches.noFavMatches": "Brak meczów Twoich drużyn dziś",
   "dayStandings.title": "Tabela dnia",
   "dayStandings.viewAll": "Zobacz wszystkie grupy",
+  "topScorers.title": "Strzelcy",
+  "topScorers.showMore": "Pokaż więcej ({n})",
   "portugalUpcoming.title": "Nadchodzące mecze Portugalii",
   "portugalUpcoming.channelTBC": "Do potwierdzenia",
   "portugalUpcoming.phase.group": "Faza grupowa",

@@ -37,6 +37,8 @@ export const en: Dict = {
   "matches.tournamentDayHeading": "Match day {n}",
   "dayStandings.title": "Today's standings",
   "dayStandings.viewAll": "View all groups",
+  "topScorers.title": "Top scorers",
+  "topScorers.showMore": "Show more ({n})",
   "portugalUpcoming.title": "Portugal's upcoming matches",
   "portugalUpcoming.channelTBC": "TBD",
   "portugalUpcoming.phase.group": "Group stage",

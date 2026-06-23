@@ -1,8 +1,9 @@
 "use client";
 
-import { KickoffTime, TeamName } from "@/components/Display";
+import { KickoffTime, MatchCompactDate, TeamName } from "@/components/Display";
 import { TeamFlag } from "@/components/TeamFlag";
 import { useSettings } from "@/components/SettingsProvider";
+import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
 import type { ResolvedSlotSide } from "@/lib/knockout-qualification";
 import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
 import type { KnockoutSlotPreview } from "@/lib/knockout-bracket";
@@ -20,18 +21,27 @@ function PreviewSide({
   side: ResolvedSlotSide;
   compact?: boolean;
 }) {
+  const seedLabel = formatBracketSlotLabel(side.code);
+
   if (side.team_name && side.team_id) {
     return (
       <div className="flex items-center gap-1.5">
         <TeamFlag name={side.team_name} teamId={side.team_id} size={compact ? 14 : 16} />
-        <span
-          className={`truncate text-[10px] font-semibold ${
-            side.confirmed ? "text-foreground" : "text-foreground/80"
-          }`}
-          title={side.code}
-        >
-          <TeamName name={side.team_name} />
-        </span>
+        <div className="min-w-0 flex-1">
+          <span
+            className={`block truncate text-[10px] font-semibold ${
+              side.confirmed ? "text-foreground" : "text-foreground/80"
+            }`}
+            title={side.code}
+          >
+            <TeamName name={side.team_name} />
+          </span>
+          {seedLabel && (
+            <span className="block truncate text-[8px] font-medium text-muted">
+              {seedLabel}
+            </span>
+          )}
+        </div>
       </div>
     );
   }
@@ -42,7 +52,7 @@ function PreviewSide({
         ?
       </span>
       <span className="truncate text-[10px] font-semibold text-foreground/80">
-        {side.code}
+        {seedLabel ?? side.code}
       </span>
     </div>
   );
@@ -77,6 +87,28 @@ function PreviewCard({
         <p className="mt-1 text-center text-[8px] uppercase tracking-wide text-muted">
           {tbd}
         </p>
+      )}
+    </div>
+  );
+}
+
+function BracketTeamRow({
+  name,
+  teamId,
+  score,
+}: {
+  name: string;
+  teamId: number;
+  score?: number;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      <TeamFlag name={name} teamId={teamId} size={16} />
+      <span className="min-w-0 flex-1 truncate text-[10px] font-semibold">
+        <TeamName name={name} />
+      </span>
+      {score !== undefined && (
+        <span className="text-[10px] font-bold tabular-nums">{score}</span>
       )}
     </div>
   );
@@ -122,43 +154,25 @@ export function BracketSlotCard({
       }`}
     >
       <div className="mb-1 flex items-center justify-between gap-1 text-[8px] font-semibold uppercase tracking-wide text-muted">
-        <span className="truncate">
+        <span className="truncate tabular-nums">
+          <MatchCompactDate utc={match.kickoff_utc} />
+          <span aria-hidden className="mx-0.5">·</span>
           <KickoffTime utc={match.kickoff_utc} />
         </span>
         {isLive && <span className="text-red-500">{t("status.live")}</span>}
         {isFinished && !isLive && <span>{t("status.finished")}</span>}
       </div>
       <div className="space-y-0.5">
-        <div className="flex items-center gap-1">
-          <TeamFlag
-            name={match.home_team_name}
-            teamId={match.home_team_id}
-            size={16}
-          />
-          <span className="min-w-0 flex-1 truncate text-[10px] font-semibold">
-            <TeamName name={match.home_team_name} />
-          </span>
-          {showScore && (
-            <span className="text-[10px] font-bold tabular-nums">
-              {match.home_score ?? 0}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <TeamFlag
-            name={match.away_team_name}
-            teamId={match.away_team_id}
-            size={16}
-          />
-          <span className="min-w-0 flex-1 truncate text-[10px] font-semibold">
-            <TeamName name={match.away_team_name} />
-          </span>
-          {showScore && (
-            <span className="text-[10px] font-bold tabular-nums">
-              {match.away_score ?? 0}
-            </span>
-          )}
-        </div>
+        <BracketTeamRow
+          name={match.home_team_name}
+          teamId={match.home_team_id}
+          score={showScore ? (match.home_score ?? 0) : undefined}
+        />
+        <BracketTeamRow
+          name={match.away_team_name}
+          teamId={match.away_team_id}
+          score={showScore ? (match.away_score ?? 0) : undefined}
+        />
       </div>
     </article>
   );
