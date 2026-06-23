@@ -1,4 +1,13 @@
 import type { KnockoutRoundColumn, KnockoutSlotPreview } from "@/lib/knockout-bracket";
+import {
+  QF_TO_SF_PAIRINGS,
+  R16_PAIR_TO_QF_FIFA_INDEX,
+  R16_PAIR_TO_QF_LOCAL_INDEX,
+  R16_TO_QF_PAIRINGS,
+  R32_PAIR_TO_R16_LOCAL_INDEX,
+  R32_TO_R16_PAIRINGS,
+  R32_TREE_LEAF_ORDER,
+} from "@/lib/knockout-fifa-order";
 import type { Match } from "@/types";
 
 export type BracketSlotData = {
@@ -21,38 +30,40 @@ function getColumn(
   return col;
 }
 
-function roundSlots(
+function slotAt(
   column: KnockoutRoundColumn,
-  start: number,
-  count: number,
+  index: number,
   preview: boolean
-): BracketSlotData[] {
-  return Array.from({ length: count }, (_, i) => {
-    const index = start + i;
-    const match = column.matches[index];
-    return {
-      match,
-      preview:
-        preview && !match && column.previews[index]
-          ? column.previews[index]
-          : undefined,
-    };
-  });
+): BracketSlotData {
+  const match = column.matches[index];
+  return {
+    match,
+    preview:
+      preview && !match && column.previews[index]
+        ? column.previews[index]
+        : undefined,
+  };
 }
 
-function pairLevels(
-  leaves: BracketTreeNode[],
-  round: BracketSlotData[]
+function roundSlotsAt(
+  column: KnockoutRoundColumn,
+  indices: readonly number[],
+  preview: boolean
+): BracketSlotData[] {
+  return indices.map((index) => slotAt(column, index, preview));
+}
+
+function mergeWithPairings(
+  children: BracketTreeNode[],
+  slots: BracketSlotData[],
+  pairings: readonly (readonly [number, number])[],
+  slotIndices: readonly number[]
 ): BracketTreeNode[] {
-  const next: BracketTreeNode[] = [];
-  for (let i = 0; i < round.length; i++) {
-    next.push({
-      slot: round[i],
-      left: leaves[i * 2],
-      right: leaves[i * 2 + 1],
-    });
-  }
-  return next;
+  return pairings.map((pair, i) => ({
+    slot: slots[slotIndices[i]],
+    left: children[pair[0]],
+    right: children[pair[1]],
+  }));
 }
 
 export function buildSideTree(
@@ -62,31 +73,49 @@ export function buildSideTree(
 ): BracketTreeNode {
   const r32 = getColumn(columns, "r32");
   const r16 = getColumn(columns, "r16");
-  const qf = getColumn(columns, "qf");
   const sf = getColumn(columns, "sf");
 
-  const r32Start = side === "left" ? 0 : 8;
-  const r16Start = side === "left" ? 0 : 4;
-  const qfStart = side === "left" ? 0 : 2;
+  const r16Base = side === "left" ? 0 : 4;
+  const qfFifaIndices = R16_PAIR_TO_QF_FIFA_INDEX[side];
   const sfIndex = side === "left" ? 0 : 1;
 
-  let nodes: BracketTreeNode[] = roundSlots(r32, r32Start, 8, preview).map(
-    (slot) => ({ slot })
+  const r32Leaves = roundSlotsAt(
+    r32,
+    R32_TREE_LEAF_ORDER[side],
+    preview
+  ).map((slot) => ({ slot }));
+
+  const r16Slots = roundSlotsAt(
+    r16,
+    [0, 1, 2, 3].map((i) => r16Base + i),
+    preview
   );
 
-  nodes = pairLevels(nodes, roundSlots(r16, r16Start, 4, preview));
-  nodes = pairLevels(nodes, roundSlots(qf, qfStart, 2, preview));
-  nodes = pairLevels(nodes, [
-    {
-      match: sf.matches[sfIndex],
-      preview:
-        preview && !sf.matches[sfIndex]
-          ? sf.previews[sfIndex]
-          : undefined,
-    },
-  ]);
+  const r16Nodes = mergeWithPairings(
+    r32Leaves,
+    r16Slots,
+    R32_TO_R16_PAIRINGS,
+    R32_PAIR_TO_R16_LOCAL_INDEX[side]
+  );
 
-  return nodes[0];
+  const qfSlots = roundSlotsAt(r16, qfFifaIndices, preview);
+
+  const qfNodes = mergeWithPairings(
+    r16Nodes,
+    qfSlots,
+    R16_TO_QF_PAIRINGS[side],
+    R16_PAIR_TO_QF_LOCAL_INDEX[side]
+  );
+
+  const [sfPair] = QF_TO_SF_PAIRINGS;
+  const [sfNode] = mergeWithPairings(
+    qfNodes,
+    [slotAt(sf, sfIndex, preview)],
+    [sfPair],
+    [0]
+  );
+
+  return sfNode;
 }
 
 export function getCenterSlots(

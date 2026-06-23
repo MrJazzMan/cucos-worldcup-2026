@@ -1,3 +1,4 @@
+import { orderMatchesInFifaSlots } from "@/lib/knockout-fifa-order";
 import {
   buildBracketContext,
   enrichSlotPreview,
@@ -37,29 +38,29 @@ const KNOCKOUT_SKELETON: Record<KnockoutRoundKey, KnockoutSlotPreview[]> = {
     { home: "2A", away: "2B" },
     { home: "1E", away: "3º" },
     { home: "1F", away: "2C" },
+    { home: "1C", away: "2F" },
     { home: "1I", away: "3º" },
     { home: "2E", away: "2I" },
     { home: "1A", away: "3º" },
-    { home: "1C", away: "2F" },
     { home: "1L", away: "3º" },
     { home: "1D", away: "3º" },
     { home: "1G", away: "3º" },
-    { home: "1B", away: "3º" },
-    { home: "1K", away: "3º" },
     { home: "2K", away: "2L" },
     { home: "1H", away: "2J" },
-    { home: "2D", away: "2G" },
+    { home: "1B", away: "3º" },
     { home: "1J", away: "2H" },
+    { home: "1K", away: "3º" },
+    { home: "2D", away: "2G" },
   ],
   r16: [
-    { home: "V73", away: "V75" },
     { home: "V74", away: "V77" },
+    { home: "V73", away: "V75" },
     { home: "V76", away: "V78" },
     { home: "V79", away: "V80" },
-    { home: "V81", away: "V82" },
     { home: "V83", away: "V84" },
-    { home: "V85", away: "V87" },
+    { home: "V81", away: "V82" },
     { home: "V86", away: "V88" },
+    { home: "V85", away: "V87" },
   ],
   qf: [
     { home: "V89", away: "V90" },
@@ -186,20 +187,27 @@ export function buildKnockoutColumns(
 
   return ROUND_DEFS.map((def) => {
     const data = byKey.get(def.key);
+    const previews = KNOCKOUT_SKELETON[def.key].map((p) =>
+      enrichSlotPreview(
+        p,
+        standingsByGroup,
+        locksByGroup,
+        def.key === "r32" ? thirdPlaceContext : null
+      )
+    );
+    const matches = orderMatchesInFifaSlots(
+      data?.matches ?? [],
+      previews,
+      def.slotCount
+    );
+
     return {
       key: def.key,
       round: data?.round ?? def.key,
       labelKey: def.labelKey,
-      matches: data?.matches ?? [],
+      matches,
       slotCount: def.slotCount,
-      previews: KNOCKOUT_SKELETON[def.key].map((p) =>
-        enrichSlotPreview(
-          p,
-          standingsByGroup,
-          locksByGroup,
-          def.key === "r32" ? thirdPlaceContext : null
-        )
-      ),
+      previews,
     };
   });
 }

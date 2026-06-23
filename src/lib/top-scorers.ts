@@ -17,7 +17,7 @@ function scorerKey(goal: MatchGoalEvent): string {
   return `${goal.player.toLowerCase()}|${goal.team_id}`;
 }
 
-/** Artilharia do torneio a partir dos marcadores sincronizados nos jogos. */
+/** Melhores marcadores do torneio a partir dos golos sincronizados nos jogos. */
 export function aggregateTopScorers(
   matches: Match[],
   limit = 10
