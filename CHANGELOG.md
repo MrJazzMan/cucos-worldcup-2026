@@ -17,9 +17,11 @@ Versão actual em produção: **0.5.0** (`wc26.pt`).
 - Documentação **`docs/admin-analytics.md`**.
 - Canais TV visíveis apenas para utilizadores com sessão iniciada.
 - Link inline «Inicia sessão» nos cartões de jogo para login Google directo.
+- Chave `/fasefinal` preenche slots de grupo com equipas matematicamente qualificadas.
 
 ### Alterado
 - Páginas admin com `noindex` e acesso restrito ao `SITE_ADMIN_USER_ID`.
+- Nomenclatura PT: **«16 avos»** (primeira ronda eliminatória, 32 equipas).
 
 ## [0.5.0] — 2026-06-20 — Perfil, calendário e novidades
 
