@@ -244,14 +244,24 @@ export function SettingsMenu() {
             </button>
           ))}
           {showAdmin && (
-            <Link
-              href="/admin"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 px-3 py-3 text-base font-semibold text-accent transition hover:bg-accent/20"
-            >
-              <span>⚙️</span>
-              {t("account.adminLink")}
-            </Link>
+            <>
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 px-3 py-3 text-base font-semibold text-accent transition hover:bg-accent/20"
+              >
+                <span>⚙️</span>
+                {t("account.adminLink")}
+              </Link>
+              <a
+                href="/admin/analytics"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl border border-border-base bg-surface-2 px-3 py-3 text-base font-semibold text-foreground transition hover:bg-surface"
+              >
+                <span>📊</span>
+                Métricas do site
+              </a>
+            </>
           )}
         </nav>
       );

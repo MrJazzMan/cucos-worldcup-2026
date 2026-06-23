@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { isSiteAdmin } from "@/lib/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {

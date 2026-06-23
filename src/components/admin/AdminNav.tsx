@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LINKS = [
@@ -8,6 +7,7 @@ const LINKS = [
   { href: "/admin/analytics", label: "Métricas" },
 ] as const;
 
+/** Links nativos evitam 404 com bundle RSC em cache após deploy. */
 export function AdminNav() {
   const pathname = usePathname();
 
@@ -16,7 +16,7 @@ export function AdminNav() {
       {LINKS.map(({ href, label }) => {
         const active = pathname === href;
         return (
-          <Link
+          <a
             key={href}
             href={href}
             className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
@@ -26,7 +26,7 @@ export function AdminNav() {
             }`}
           >
             {label}
-          </Link>
+          </a>
         );
       })}
     </nav>

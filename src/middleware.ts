@@ -78,6 +78,10 @@ export async function middleware(request: NextRequest) {
   const origin = getRequestOrigin(request);
   const ua = request.headers.get("user-agent");
 
+  if (pathname === "/analytics") {
+    return NextResponse.redirect(new URL("/admin/analytics", origin));
+  }
+
   // Rotas /api/, /feed/ e /calendar/ são isentas: auth própria ou URL secreta; clientes não-browser.
   if (
     !pathname.startsWith("/api/") &&
