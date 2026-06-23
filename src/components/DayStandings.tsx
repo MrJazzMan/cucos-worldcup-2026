@@ -10,19 +10,19 @@ import type { GroupStanding, Match } from "@/types";
 interface DayStandingsProps {
   matches: Match[];
   standings: GroupStanding[];
-  selectedDay: string;
+  dayMatches: Match[];
 }
 
 export function DayStandings({
   matches,
   standings,
-  selectedDay,
+  dayMatches,
 }: DayStandingsProps) {
-  const { t, tz } = useSettings();
+  const { t } = useSettings();
 
   const groups = useMemo(
-    () => getDayStandingsGroups(matches, standings, selectedDay, tz),
-    [matches, standings, selectedDay, tz]
+    () => getDayStandingsGroups(dayMatches, matches, standings),
+    [dayMatches, matches, standings]
   );
 
   if (groups.length === 0) return null;

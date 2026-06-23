@@ -15,16 +15,25 @@ import { FeaturedMatch } from "@/components/FeaturedMatch";
 import { MatchCard } from "@/components/MatchCard";
 import { DayStandings } from "@/components/DayStandings";
 import { PortugalUpcomingMatches } from "@/components/PortugalUpcomingMatches";
+import { TeamSearch, useTeamSearchParam } from "@/components/TeamSearch";
 import { CoffeeBanner } from "@/components/CoffeeBanner";
 import { WhatsNewBanner } from "@/components/WhatsNewBanner";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { useSettings } from "@/components/SettingsProvider";
-import { dateKeyInTz, dayKeyWithOffset } from "@/lib/datetime";
+import { dateKeyInTz, dayKeyWithOffset, displayDate } from "@/lib/datetime";
+import {
+  buildTournamentDays,
+  findActiveTournamentDayId,
+  formatTournamentDayRange,
+  type TournamentDay,
+} from "@/lib/tournament-days";
 import { HomePageSkeleton } from "@/components/skeleton/HomePageSkeleton";
 import { pickFeaturedMatch } from "@/lib/featured-match";
-import type { GroupStanding, Match } from "@/types";
+import type { GroupStanding, Match, TeamOption } from "@/types";
 
 type DayMatch = Match & { isFavourite?: boolean };
+
+type ScheduleView = "calendar" | "tournament";
 
 const LIVE_REFRESH_MS = 30_000;
 const IDLE_REFRESH_MS = 90_000;
@@ -56,29 +65,77 @@ function dayLabel(
   return `${weekday.replace(".", "")} ${dayMonth}`;
 }
 
+function tournamentDayTabLabel(
+  day: TournamentDay,
+  t: (k: string) => string
+): string {
+  return t("matches.tournamentDay").replace("{n}", String(day.number));
+}
+
 export function MatchesView({
   matches,
   standings = [],
+  teams = [],
   loggedIn = false,
 }: {
   matches: DayMatch[];
   standings?: GroupStanding[];
+  teams?: TeamOption[];
   loggedIn?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { selectedTeamId, setTeamId } = useTeamSearchParam();
   const { t, tz, locale, mounted } = useSettings();
   const scrollRef = useRef<HTMLDivElement>(null);
   const dayButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const todayKey = useMemo(() => dayKeyWithOffset(tz, 0), [tz]);
 
-  // All unique days that have matches, sorted
-  const allDays = useMemo(() => {
-    const days = new Set(matches.map((m) => dateKeyInTz(m.kickoff_utc, tz)));
-    return Array.from(days).sort();
-  }, [matches, tz]);
+  const scheduleView: ScheduleView =
+    searchParams.get("view") === "calendar" ? "calendar" : "tournament";
 
-  const [selectedDay, setSelectedDay] = useState<string>(() => todayKey);
+  const setScheduleView = useCallback(
+    (view: ScheduleView) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (view === "tournament") params.delete("view");
+      else params.set("view", "calendar");
+      const qs = params.toString();
+      router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const teamFilteredMatches = useMemo(() => {
+    if (!selectedTeamId) return matches;
+    return matches.filter(
+      (m) =>
+        m.home_team_id === selectedTeamId ||
+        m.away_team_id === selectedTeamId
+    );
+  }, [matches, selectedTeamId]);
+
+  const sourceMatches = selectedTeamId ? teamFilteredMatches : matches;
+
+  const tournamentDays = useMemo(
+    () => buildTournamentDays(sourceMatches, tz),
+    [sourceMatches, tz]
+  );
+
+  // All unique calendar days that have matches, sorted
+  const allCalendarDays = useMemo(() => {
+    const days = new Set(sourceMatches.map((m) => dateKeyInTz(m.kickoff_utc, tz)));
+    return Array.from(days).sort();
+  }, [sourceMatches, tz]);
+
+  const allTabs = useMemo(
+    () =>
+      scheduleView === "tournament"
+        ? tournamentDays.map((d) => d.id)
+        : allCalendarDays,
+    [scheduleView, tournamentDays, allCalendarDays]
+  );
+
+  const [selectedTab, setSelectedTab] = useState<string>(() => todayKey);
   const [showOnlyFavourites, setShowOnlyFavourites] = useState(false);
 
   const [indicator, setIndicator] = useState<{ left: number; width: number } | null>(
@@ -87,31 +144,60 @@ export function MatchesView({
   const [indicatorAnimated, setIndicatorAnimated] = useState(false);
 
   const measureIndicator = useCallback(() => {
-    const btn = dayButtonRefs.current.get(selectedDay);
+    const btn = dayButtonRefs.current.get(selectedTab);
     const track = scrollRef.current;
     if (!btn || !track) return;
     setIndicator({ left: btn.offsetLeft, width: btn.offsetWidth });
-  }, [selectedDay]);
+  }, [selectedTab]);
 
   const hasFavourites = useMemo(
     () => matches.some((m) => m.isFavourite),
     [matches]
   );
 
-  // If today has no matches, default to nearest future day
+  // Ao mudar de vista, saltar para o período actual
   useEffect(() => {
-    if (!allDays.includes(todayKey) && allDays.length > 0) {
-      const future = allDays.find((d) => d >= todayKey);
-      setSelectedDay(future ?? allDays[allDays.length - 1]);
-    } else if (allDays.includes(todayKey)) {
-      setSelectedDay(todayKey);
+    if (allTabs.length === 0) return;
+
+    if (scheduleView === "tournament") {
+      const activeId = findActiveTournamentDayId(tournamentDays, todayKey);
+      if (activeId) setSelectedTab(activeId);
+      return;
     }
-  }, [allDays, todayKey]);
+
+    if (allCalendarDays.includes(todayKey)) {
+      setSelectedTab(todayKey);
+      return;
+    }
+    const future = allCalendarDays.find((d) => d >= todayKey);
+    setSelectedTab(future ?? allCalendarDays[allCalendarDays.length - 1]!);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só ao mudar de vista
+  }, [scheduleView]);
+
+  // Se a tab seleccionada deixar de existir (ex. filtro de equipa), reajustar
+  useEffect(() => {
+    if (allTabs.length === 0) return;
+    if (allTabs.includes(selectedTab)) return;
+
+    if (scheduleView === "tournament") {
+      const activeId = findActiveTournamentDayId(tournamentDays, todayKey);
+      setSelectedTab(activeId ?? allTabs[0]!);
+      return;
+    }
+
+    const future = allCalendarDays.find((d) => d >= todayKey);
+    setSelectedTab(future ?? allCalendarDays[allCalendarDays.length - 1]!);
+  }, [allTabs, selectedTab, scheduleView, tournamentDays, allCalendarDays, todayKey]);
 
   // Bottom nav: Jogos → hoje; Favoritos → filtro activo
   useEffect(() => {
     if (searchParams.get("today") === "1") {
-      setSelectedDay(todayKey);
+      if (scheduleView === "tournament") {
+        const activeId = findActiveTournamentDayId(tournamentDays, todayKey);
+        if (activeId) setSelectedTab(activeId);
+      } else {
+        setSelectedTab(todayKey);
+      }
       setShowOnlyFavourites(false);
       router.replace("/", { scroll: false });
       return;
@@ -119,12 +205,12 @@ export function MatchesView({
     if (searchParams.get("favourites") === "1") {
       setShowOnlyFavourites(true);
     }
-  }, [searchParams, todayKey, router]);
+  }, [searchParams, todayKey, router, scheduleView, tournamentDays, tz]);
 
   useLayoutEffect(() => {
     if (!mounted) return;
     measureIndicator();
-  }, [mounted, measureIndicator, allDays, locale]);
+  }, [mounted, measureIndicator, allTabs, locale]);
 
   useLayoutEffect(() => {
     if (!mounted || indicator === null) return;
@@ -140,19 +226,46 @@ export function MatchesView({
     ro.observe(track);
     for (const btn of dayButtonRefs.current.values()) ro.observe(btn);
     return () => ro.disconnect();
-  }, [mounted, measureIndicator, allDays]);
+  }, [mounted, measureIndicator, allTabs]);
 
   // Scroll active tab into view
   useEffect(() => {
     if (!mounted) return;
     const el = scrollRef.current?.querySelector("[data-active='true']");
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  }, [selectedDay, mounted]);
+  }, [selectedTab, mounted]);
 
-  const dayMatches = useMemo(
-    () => matches.filter((m) => dateKeyInTz(m.kickoff_utc, tz) === selectedDay),
-    [matches, tz, selectedDay]
+  const selectedTournamentDay = useMemo(
+    () => tournamentDays.find((d) => d.id === selectedTab) ?? null,
+    [tournamentDays, selectedTab]
   );
+
+  const dayMatches = useMemo(() => {
+    if (scheduleView === "tournament") {
+      return selectedTournamentDay?.matches ?? [];
+    }
+    return sourceMatches.filter(
+      (m) => dateKeyInTz(m.kickoff_utc, tz) === selectedTab
+    );
+  }, [scheduleView, selectedTournamentDay, sourceMatches, selectedTab, tz]);
+
+  const kickoffAnchorDay = useMemo(() => {
+    if (scheduleView === "tournament" && selectedTournamentDay) {
+      return selectedTournamentDay.sessionStartKey;
+    }
+    return selectedTab;
+  }, [scheduleView, selectedTournamentDay, selectedTab]);
+
+  const showKickoffDatesOnCards = useMemo(() => {
+    if (showOnlyFavourites) return true;
+    if (scheduleView === "tournament" && selectedTournamentDay) {
+      return (
+        selectedTournamentDay.sessionStartKey !==
+        selectedTournamentDay.sessionEndKey
+      );
+    }
+    return false;
+  }, [showOnlyFavourites, scheduleView, selectedTournamentDay]);
 
   const visibleMatches = useMemo(
     () =>
@@ -173,32 +286,91 @@ export function MatchesView({
     [visibleMatches, featuredMatch]
   );
 
-  const hasLiveToday = useMemo(
-    () =>
-      matches.some(
-        (m) => m.status === "live" && dateKeyInTz(m.kickoff_utc, tz) === todayKey
-      ),
-    [matches, tz, todayKey]
+  const isCurrentPeriod = useMemo(() => {
+    if (scheduleView === "tournament" && selectedTournamentDay) {
+      return (
+        selectedTournamentDay.sessionStartKey <= todayKey &&
+        todayKey <= selectedTournamentDay.sessionEndKey
+      );
+    }
+    return selectedTab === todayKey;
+  }, [scheduleView, selectedTournamentDay, selectedTab, todayKey]);
+
+  const hasLiveNow = useMemo(
+    () => dayMatches.some((m) => m.status === "live"),
+    [dayMatches]
   );
 
-  // Auto-refresh when on today
+  // Auto-refresh no período actual
   useEffect(() => {
-    if (!mounted || selectedDay !== todayKey) return;
+    if (!mounted || !isCurrentPeriod) return;
     const tick = () => router.refresh();
-    const ms = hasLiveToday ? LIVE_REFRESH_MS : IDLE_REFRESH_MS;
+    const ms = hasLiveNow ? LIVE_REFRESH_MS : IDLE_REFRESH_MS;
     const id = setInterval(tick, ms);
     return () => clearInterval(id);
-  }, [mounted, selectedDay, todayKey, hasLiveToday, router]);
+  }, [mounted, isCurrentPeriod, hasLiveNow, router]);
+
+  const periodHeading = useMemo(() => {
+    if (scheduleView === "tournament" && selectedTournamentDay) {
+      const range = formatTournamentDayRange(selectedTournamentDay, tz, locale);
+      const heading = t("matches.tournamentDayHeading").replace(
+        "{n}",
+        String(selectedTournamentDay.number)
+      );
+      return `${heading} · ${range}`;
+    }
+    return displayDate(selectedTab, tz, locale);
+  }, [scheduleView, selectedTournamentDay, selectedTab, tz, locale, t]);
 
   if (!mounted) {
     return <HomePageSkeleton />;
   }
 
-  const isToday = selectedDay === todayKey;
-
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
       <AccountDeletedBanner />
+
+      {teams.length > 0 && (
+        <TeamSearch
+          teams={teams}
+          selectedTeamId={selectedTeamId}
+          onSelectTeam={setTeamId}
+        />
+      )}
+
+      {/* Vista: por data civil vs dia de jogos do torneio */}
+      <div
+        role="tablist"
+        aria-label={t("matches.viewModeLabel")}
+        className="flex w-full rounded-2xl border border-border-base bg-surface p-1"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scheduleView === "tournament"}
+          onClick={() => setScheduleView("tournament")}
+          className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+            scheduleView === "tournament"
+              ? "bg-accent/15 text-accent"
+              : "text-muted hover:text-foreground"
+          }`}
+        >
+          {t("matches.view.tournament")}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scheduleView === "calendar"}
+          onClick={() => setScheduleView("calendar")}
+          className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+            scheduleView === "calendar"
+              ? "bg-accent/15 text-accent"
+              : "text-muted hover:text-foreground"
+          }`}
+        >
+          {t("matches.view.calendar")}
+        </button>
+      </div>
 
       {/* Seletor de dias — scroll horizontal no telemóvel; grelha igual no desktop */}
       <div
@@ -213,19 +385,28 @@ export function MatchesView({
             style={{ left: indicator.left, width: indicator.width }}
           />
         )}
-        {allDays.map((day) => {
-          const isActive = day === selectedDay;
-          const label = dayLabel(day, todayKey, tz, locale, t);
+        {allTabs.map((tabKey) => {
+          const isActive = tabKey === selectedTab;
+          const tDay = tournamentDays.find((d) => d.id === tabKey);
+          const label =
+            scheduleView === "tournament" && tDay
+              ? tournamentDayTabLabel(tDay, t)
+              : dayLabel(tabKey, todayKey, tz, locale, t);
           return (
             <button
-              key={day}
+              key={tabKey}
               ref={(el) => {
-                if (el) dayButtonRefs.current.set(day, el);
-                else dayButtonRefs.current.delete(day);
+                if (el) dayButtonRefs.current.set(tabKey, el);
+                else dayButtonRefs.current.delete(tabKey);
               }}
               data-active={isActive}
-              data-day={day}
-              onClick={() => setSelectedDay(day)}
+              data-day={tabKey}
+              onClick={() => setSelectedTab(tabKey)}
+              title={
+                scheduleView === "tournament" && tDay
+                  ? formatTournamentDayRange(tDay, tz, locale)
+                  : undefined
+              }
               className={`relative z-[1] shrink-0 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors md:min-w-0 md:flex-1 md:shrink md:px-2 md:text-center ${
                 isActive
                   ? "text-accent"
@@ -242,12 +423,7 @@ export function MatchesView({
       <div className="flex w-full items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <span className="truncate text-sm font-medium text-foreground first-letter:capitalize">
-            {new Intl.DateTimeFormat(locale, {
-              timeZone: tz,
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            }).format(new Date(`${selectedDay}T12:00:00Z`))}
+            {periodHeading}
           </span>
         </div>
         <div className="shrink-0 text-right">
@@ -255,7 +431,7 @@ export function MatchesView({
             {dayMatches.length}{" "}
             {dayMatches.length === 1 ? t("matches.countOne") : t("matches.count")}
           </p>
-          {isToday && hasLiveToday && (
+          {isCurrentPeriod && hasLiveNow && (
             <span className="inline-flex items-center gap-1 text-[10px] text-red-500">
               <LivePulseDot size="sm" className="text-red-500" />
               {t("matches.liveRefresh")}
@@ -298,24 +474,28 @@ export function MatchesView({
           <p className="text-lg font-medium text-foreground">
             {showOnlyFavourites
               ? t("matches.noFavMatches")
-              : t("matches.empty.title")}
+              : selectedTeamId
+                ? t("matches.noTeamMatches")
+                : t("matches.empty.title")}
           </p>
           <p className="mt-1 text-sm text-muted">
             {showOnlyFavourites
               ? t("matches.noFavMatchesHint")
-              : t("matches.empty.subtitle")}
+              : selectedTeamId
+                ? t("matches.noTeamMatchesHint")
+                : t("matches.empty.subtitle")}
           </p>
         </div>
       ) : (
-        <div key={selectedDay} className="flex w-full flex-col gap-4">
+        <div key={selectedTab} className="flex w-full flex-col gap-4">
           {featuredMatch && (
             <FeaturedMatch
               match={featuredMatch}
               loggedIn={loggedIn}
               staggerIndex={0}
-              selectedDay={selectedDay}
+              selectedDay={kickoffAnchorDay}
               showKickoffDate={
-                showOnlyFavourites || featuredMatch.status === "finished"
+                showKickoffDatesOnCards || featuredMatch.status === "finished"
               }
             />
           )}
@@ -327,8 +507,8 @@ export function MatchesView({
                   match={match}
                   loggedIn={loggedIn}
                   staggerIndex={featuredMatch ? i + 1 : i}
-                  selectedDay={selectedDay}
-                  showKickoffDate={showOnlyFavourites}
+                  selectedDay={kickoffAnchorDay}
+                  showKickoffDate={showKickoffDatesOnCards}
                 />
               ))}
             </div>
@@ -345,7 +525,7 @@ export function MatchesView({
       <DayStandings
         matches={matches}
         standings={standings}
-        selectedDay={selectedDay}
+        dayMatches={dayMatches}
       />
     </div>
   );

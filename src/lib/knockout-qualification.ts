@@ -1,3 +1,8 @@
+import {
+  buildThirdPlaceContext,
+  resolveThirdPlaceSlot,
+  type ThirdPlaceBracketContext,
+} from "@/lib/third-place";
 import type { GroupStanding, StandingRow } from "@/types";
 
 /** Jogos por equipa na fase de grupos (Mundial 2026). */
@@ -65,11 +70,45 @@ function parseGroupSlot(
   return { rank: Number(m[1]) as 1 | 2, groupLetter: m[2] };
 }
 
+function parseWinnerGroupFromCode(code: string): string | null {
+  const m = code.match(/^1([A-L])$/);
+  return m ? m[1] : null;
+}
+
 export function resolveSlotCode(
   code: string,
   standingsByGroup: Map<string, GroupStanding>,
-  locksByGroup: Map<string, Map<number, 1 | 2>>
+  locksByGroup: Map<string, Map<number, 1 | 2>>,
+  thirdPlaceContext?: ThirdPlaceBracketContext | null,
+  /** Grupo do vencedor fixo quando code é `3º` (ex. home `1E` → `E`). */
+  thirdPlaceWinnerGroup?: string | null
 ): ResolvedSlotSide {
+  if (code === "3º" && thirdPlaceContext && thirdPlaceWinnerGroup) {
+    const row = resolveThirdPlaceSlot(
+      thirdPlaceWinnerGroup,
+      thirdPlaceContext,
+      standingsByGroup
+    );
+    if (!row) return { code };
+
+    const thirdGroup = thirdPlaceContext.byWinner[
+      thirdPlaceWinnerGroup as keyof typeof thirdPlaceContext.byWinner
+    ];
+    const groupName = `Grupo ${thirdGroup}`;
+    const group = standingsByGroup.get(groupName);
+    const complete =
+      group !== undefined &&
+      group.rows.every((r) => r.played >= GROUP_MATCHES_PER_TEAM);
+
+    return {
+      code: `3${thirdGroup}`,
+      team_id: row.team_id,
+      team_name: row.team_name,
+      team_logo: row.team_logo,
+      confirmed: complete,
+    };
+  }
+
   const slot = parseGroupSlot(code);
   if (!slot) return { code };
 
@@ -107,11 +146,32 @@ export function buildStandingsMaps(standings: GroupStanding[]) {
 export function enrichSlotPreview(
   preview: { home: string; away: string },
   standingsByGroup: Map<string, GroupStanding>,
-  locksByGroup: Map<string, Map<number, 1 | 2>>
+  locksByGroup: Map<string, Map<number, 1 | 2>>,
+  thirdPlaceContext?: ThirdPlaceBracketContext | null
 ) {
+  const winnerForThird =
+    preview.away === "3º" ? parseWinnerGroupFromCode(preview.home) : null;
+
   return {
     ...preview,
-    homeResolved: resolveSlotCode(preview.home, standingsByGroup, locksByGroup),
-    awayResolved: resolveSlotCode(preview.away, standingsByGroup, locksByGroup),
+    homeResolved: resolveSlotCode(
+      preview.home,
+      standingsByGroup,
+      locksByGroup,
+      thirdPlaceContext
+    ),
+    awayResolved: resolveSlotCode(
+      preview.away,
+      standingsByGroup,
+      locksByGroup,
+      thirdPlaceContext,
+      winnerForThird
+    ),
   };
+}
+
+export function buildBracketContext(standings: GroupStanding[]) {
+  const { standingsByGroup, locksByGroup } = buildStandingsMaps(standings);
+  const thirdPlaceContext = buildThirdPlaceContext(standings);
+  return { standingsByGroup, locksByGroup, thirdPlaceContext };
 }

@@ -1,4 +1,3 @@
-import { dateKeyInTz } from "@/lib/datetime";
 import { isKnockoutRound } from "@/lib/knockout-bracket";
 import { getMatchPhase, isPortugalMatch } from "@/lib/portugal-upcoming";
 import { PORTUGAL_TEAM_ID } from "@/lib/world-cup";
@@ -53,29 +52,27 @@ function resolveMatchGroupName(
 }
 
 /**
- * Grupos a mostrar no resumo do dia: grupos com jogos no dia seleccionado
+ * Grupos a mostrar no resumo do dia: grupos com jogos no período seleccionado
  * + grupo de Portugal se ainda estiver na fase de grupos.
  */
 export function getDayStandingsGroups(
-  matches: Match[],
-  standings: GroupStanding[],
-  selectedDay: string,
-  tz: string
+  dayMatches: Match[],
+  allMatches: Match[],
+  standings: GroupStanding[]
 ): GroupStanding[] {
-  if (standings.length === 0) return [];
+  if (standings.length === 0 || dayMatches.length === 0) return [];
 
   const teamToGroup = buildTeamToGroupMap(standings);
   const groupNames = new Set<string>();
 
-  for (const match of matches) {
-    if (dateKeyInTz(match.kickoff_utc, tz) !== selectedDay) continue;
+  for (const match of dayMatches) {
     if (isKnockoutRound(match.round) && !match.group_name) continue;
 
     const groupName = resolveMatchGroupName(match, teamToGroup);
     if (groupName) groupNames.add(groupName);
   }
 
-  if (isPortugalInGroupPhase(matches)) {
+  if (isPortugalInGroupPhase(allMatches)) {
     const portugalGroup = findPortugalGroupName(standings);
     if (portugalGroup) groupNames.add(portugalGroup);
   }

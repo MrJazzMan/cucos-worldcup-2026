@@ -1,5 +1,5 @@
 import {
-  buildStandingsMaps,
+  buildBracketContext,
   enrichSlotPreview,
   type ResolvedSlotSide,
 } from "@/lib/knockout-qualification";
@@ -163,7 +163,8 @@ export function buildKnockoutColumns(
   rounds: { round: string; matches: Match[] }[],
   standings: GroupStanding[] = []
 ): KnockoutRoundColumn[] {
-  const { standingsByGroup, locksByGroup } = buildStandingsMaps(standings);
+  const { standingsByGroup, locksByGroup, thirdPlaceContext } =
+    buildBracketContext(standings);
   const byKey = new Map<KnockoutRoundKey, { round: string; matches: Match[] }>();
 
   for (const { round, matches } of rounds) {
@@ -192,7 +193,12 @@ export function buildKnockoutColumns(
       matches: data?.matches ?? [],
       slotCount: def.slotCount,
       previews: KNOCKOUT_SKELETON[def.key].map((p) =>
-        enrichSlotPreview(p, standingsByGroup, locksByGroup)
+        enrichSlotPreview(
+          p,
+          standingsByGroup,
+          locksByGroup,
+          def.key === "r32" ? thirdPlaceContext : null
+        )
       ),
     };
   });
