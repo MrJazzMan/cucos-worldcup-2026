@@ -13,6 +13,7 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [historico-e-setup.md](historico-e-setup.md) | Stack, Supabase, Vercel, domínio, dados reais |
 | [deploy.md](deploy.md) | Vercel, variáveis, crons, pós-deploy |
 | [setup-analytics-ads.md](setup-analytics-ads.md) | GA4 + AdSense (verificação, env vars) |
+| [admin-analytics.md](admin-analytics.md) | Dashboard interno `/admin/analytics` (KPIs, gráficos) |
 | [seo.md](seo.md) | Checklist SEO — Search Console, indexação |
 | [google-auth.md](google-auth.md) | Sign in with Google |
 | [data-sources.md](data-sources.md) | API-Football, OndeBola, sync |
@@ -47,7 +48,7 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 ```
 Visitante anónimo  → jogos + grupos + fase final + canais TV + SEO
 Utilizador logado  → + favoritos + notificações + perfil (menu)
-Admin (hardcoded)  → /admin (canais)
+Admin (hardcoded)  → /admin (canais) + /admin/analytics (métricas)
 ```
 
 ## Links rápidos
@@ -56,6 +57,7 @@ Admin (hardcoded)  → /admin (canais)
 - **Privacidade:** https://wc26.pt/privacidade
 - **ads.txt:** https://wc26.pt/ads.txt
 - **Admin canais:** https://wc26.pt/admin
+- **Admin métricas:** https://wc26.pt/admin/analytics
 - **GitHub:** https://github.com/MrJazzMan/cucos-worldcup-2026
 - **Vercel:** projecto `cucos-worldcup-2026`
 - **Supabase:** projecto `vsbmdqzabegcvjupwcpj`

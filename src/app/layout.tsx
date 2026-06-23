@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { AppChrome } from "@/components/AppChrome";
 import { ConsentProvider } from "@/components/ConsentProvider";
 import { CookieConsent } from "@/components/CookieConsent";
 import { GoogleAnalyticsLoader } from "@/components/GoogleAnalytics";
+import { PageVisitTracker } from "@/components/PageVisitTracker";
 import { ProfileSync } from "@/components/ProfileSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
@@ -82,6 +84,9 @@ export default function RootLayout({
         <SettingsProvider>
           <ConsentProvider>
             <ProfileSync />
+            <Suspense fallback={null}>
+              <PageVisitTracker />
+            </Suspense>
             <AppChrome>
             <main className="w-full flex-1 px-4 py-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6 lg:px-6">
               {children}

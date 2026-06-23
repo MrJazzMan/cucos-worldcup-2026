@@ -8,6 +8,13 @@ Versão actual em produção: **0.5.0** (`wc26.pt`).
 
 ## [Unreleased]
 
+### Adicionado
+- **Dashboard admin de métricas** em `/admin/analytics` — KPIs, gráficos (30 dias) e tabelas (top páginas, últimos utilizadores).
+- API **`GET /api/admin/analytics`** com RPC `get_admin_analytics` (uma query consolidada).
+- Migration **`019_get_admin_analytics.sql`** — função RPC com agregações em `Europe/Lisbon`.
+- Navegação admin entre **Canais TV** e **Métricas** (`AdminNav`).
+- Documentação **`docs/admin-analytics.md`**.
+
 ---
 
 ## [0.5.0] — 2026-06-20 — Perfil, calendário e novidades

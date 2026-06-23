@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { CHANNEL_LINKS, CHANNEL_REGIONS, channelsOutsidePresets } from "@/lib/channels";
 import { ptTeam } from "@/lib/team-names";
 
@@ -83,12 +84,15 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Admin — Canais TV</h1>
-        <p className="mt-1 text-sm text-muted">
-          Canais OndeBola (ex. Sport.Tv1) vêm do sync automático. Acrescenta outros
-          por região — ficam guardados mesmo após o próximo sync.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Admin — Canais TV</h1>
+          <p className="mt-1 text-sm text-muted">
+            Canais OndeBola (ex. Sport.Tv1) vêm do sync automático. Acrescenta outros
+            por região — ficam guardados mesmo após o próximo sync.
+          </p>
+        </div>
+        <AdminNav />
       </div>
 
       {error && (
