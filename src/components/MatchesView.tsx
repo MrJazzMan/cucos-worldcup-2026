@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { teamLabel } from "@/components/Display";
 import { AccountDeletedBanner } from "@/components/AccountDeletedBanner";
 import { LivePulseDot } from "@/components/LivePulseDot";
 import { FeaturedMatch } from "@/components/FeaturedMatch";
@@ -20,7 +21,7 @@ import { CoffeeBanner } from "@/components/CoffeeBanner";
 import { WhatsNewBanner } from "@/components/WhatsNewBanner";
 import { AdSenseUnit } from "@/components/AdSenseUnit";
 import { useSettings } from "@/components/SettingsProvider";
-import { dateKeyInTz, dayKeyWithOffset, displayDate } from "@/lib/datetime";
+import { dateKeyInTz, dayKeyWithOffset, displayDate, isCalendarDayKey } from "@/lib/datetime";
 import {
   buildTournamentDays,
   findActiveTournamentDayId,
@@ -86,7 +87,7 @@ export function MatchesView({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { selectedTeamId, setTeamId } = useTeamSearchParam();
-  const { t, tz, locale, mounted } = useSettings();
+  const { t, tz, locale, lang, mounted } = useSettings();
   const scrollRef = useRef<HTMLDivElement>(null);
   const dayButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const todayKey = useMemo(() => dayKeyWithOffset(tz, 0), [tz]);
@@ -143,12 +144,34 @@ export function MatchesView({
   );
   const [indicatorAnimated, setIndicatorAnimated] = useState(false);
 
+  const isTeamSearch = selectedTeamId !== null;
+
+  const activeTab = useMemo(() => {
+    if (allTabs.includes(selectedTab)) return selectedTab;
+    if (scheduleView === "tournament") {
+      return (
+        findActiveTournamentDayId(tournamentDays, todayKey) ??
+        allTabs[0] ??
+        todayKey
+      );
+    }
+    if (allCalendarDays.includes(todayKey)) return todayKey;
+    return allCalendarDays[allCalendarDays.length - 1] ?? todayKey;
+  }, [
+    allTabs,
+    selectedTab,
+    scheduleView,
+    tournamentDays,
+    todayKey,
+    allCalendarDays,
+  ]);
+
   const measureIndicator = useCallback(() => {
-    const btn = dayButtonRefs.current.get(selectedTab);
+    const btn = dayButtonRefs.current.get(activeTab);
     const track = scrollRef.current;
     if (!btn || !track) return;
     setIndicator({ left: btn.offsetLeft, width: btn.offsetWidth });
-  }, [selectedTab]);
+  }, [activeTab]);
 
   const hasFavourites = useMemo(
     () => matches.some((m) => m.isFavourite),
@@ -233,39 +256,43 @@ export function MatchesView({
     if (!mounted) return;
     const el = scrollRef.current?.querySelector("[data-active='true']");
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-  }, [selectedTab, mounted]);
+  }, [activeTab, mounted]);
 
   const selectedTournamentDay = useMemo(
-    () => tournamentDays.find((d) => d.id === selectedTab) ?? null,
-    [tournamentDays, selectedTab]
+    () => tournamentDays.find((d) => d.id === activeTab) ?? null,
+    [tournamentDays, activeTab]
   );
 
   const dayMatches = useMemo(() => {
+    if (isTeamSearch) {
+      return [...teamFilteredMatches].sort(
+        (a, b) =>
+          new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime()
+      );
+    }
     if (scheduleView === "tournament") {
       return selectedTournamentDay?.matches ?? [];
     }
     return sourceMatches.filter(
-      (m) => dateKeyInTz(m.kickoff_utc, tz) === selectedTab
+      (m) => dateKeyInTz(m.kickoff_utc, tz) === activeTab
     );
-  }, [scheduleView, selectedTournamentDay, sourceMatches, selectedTab, tz]);
+  }, [
+    isTeamSearch,
+    teamFilteredMatches,
+    scheduleView,
+    selectedTournamentDay,
+    sourceMatches,
+    activeTab,
+    tz,
+  ]);
 
   const kickoffAnchorDay = useMemo(() => {
+    if (isTeamSearch) return undefined;
     if (scheduleView === "tournament" && selectedTournamentDay) {
       return selectedTournamentDay.sessionStartKey;
     }
-    return selectedTab;
-  }, [scheduleView, selectedTournamentDay, selectedTab]);
-
-  const showKickoffDatesOnCards = useMemo(() => {
-    if (showOnlyFavourites) return true;
-    if (scheduleView === "tournament" && selectedTournamentDay) {
-      return (
-        selectedTournamentDay.sessionStartKey !==
-        selectedTournamentDay.sessionEndKey
-      );
-    }
-    return false;
-  }, [showOnlyFavourites, scheduleView, selectedTournamentDay]);
+    return isCalendarDayKey(activeTab) ? activeTab : undefined;
+  }, [isTeamSearch, scheduleView, selectedTournamentDay, activeTab]);
 
   const visibleMatches = useMemo(
     () =>
@@ -287,14 +314,29 @@ export function MatchesView({
   );
 
   const isCurrentPeriod = useMemo(() => {
+    if (isTeamSearch) {
+      return dayMatches.some(
+        (m) =>
+          m.status === "live" ||
+          dateKeyInTz(m.kickoff_utc, tz) === todayKey
+      );
+    }
     if (scheduleView === "tournament" && selectedTournamentDay) {
       return (
         selectedTournamentDay.sessionStartKey <= todayKey &&
         todayKey <= selectedTournamentDay.sessionEndKey
       );
     }
-    return selectedTab === todayKey;
-  }, [scheduleView, selectedTournamentDay, selectedTab, todayKey]);
+    return activeTab === todayKey;
+  }, [
+    isTeamSearch,
+    dayMatches,
+    tz,
+    todayKey,
+    scheduleView,
+    selectedTournamentDay,
+    activeTab,
+  ]);
 
   const hasLiveNow = useMemo(
     () => dayMatches.some((m) => m.status === "live"),
@@ -311,16 +353,34 @@ export function MatchesView({
   }, [mounted, isCurrentPeriod, hasLiveNow, router]);
 
   const periodHeading = useMemo(() => {
-    if (scheduleView === "tournament" && selectedTournamentDay) {
-      const range = formatTournamentDayRange(selectedTournamentDay, tz, locale);
+    if (isTeamSearch) {
+      const team = teams.find((entry) => entry.team_id === selectedTeamId);
+      return team ? teamLabel(team.team_name, lang) : t("search.showingTeam");
+    }
+    if (scheduleView === "tournament") {
+      const day = tournamentDays.find((d) => d.id === activeTab);
+      if (!day) return "";
+      const range = formatTournamentDayRange(day, tz, locale);
       const heading = t("matches.tournamentDayHeading").replace(
         "{n}",
-        String(selectedTournamentDay.number)
+        String(day.number)
       );
       return `${heading} · ${range}`;
     }
-    return displayDate(selectedTab, tz, locale);
-  }, [scheduleView, selectedTournamentDay, selectedTab, tz, locale, t]);
+    if (!isCalendarDayKey(activeTab)) return "";
+    return displayDate(activeTab, tz, locale);
+  }, [
+    isTeamSearch,
+    teams,
+    selectedTeamId,
+    lang,
+    scheduleView,
+    tournamentDays,
+    activeTab,
+    tz,
+    locale,
+    t,
+  ]);
 
   if (!mounted) {
     return <HomePageSkeleton />;
@@ -339,40 +399,43 @@ export function MatchesView({
       )}
 
       {/* Vista: por data civil vs dia de jogos do torneio */}
-      <div
-        role="tablist"
-        aria-label={t("matches.viewModeLabel")}
-        className="flex w-full rounded-2xl border border-border-base bg-surface p-1"
-      >
-        <button
-          type="button"
-          role="tab"
-          aria-selected={scheduleView === "tournament"}
-          onClick={() => setScheduleView("tournament")}
-          className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-            scheduleView === "tournament"
-              ? "bg-accent/15 text-accent"
-              : "text-muted hover:text-foreground"
-          }`}
+      {!isTeamSearch && (
+        <div
+          role="tablist"
+          aria-label={t("matches.viewModeLabel")}
+          className="flex w-full rounded-2xl border border-border-base bg-surface p-1"
         >
-          {t("matches.view.tournament")}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={scheduleView === "calendar"}
-          onClick={() => setScheduleView("calendar")}
-          className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-            scheduleView === "calendar"
-              ? "bg-accent/15 text-accent"
-              : "text-muted hover:text-foreground"
-          }`}
-        >
-          {t("matches.view.calendar")}
-        </button>
-      </div>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={scheduleView === "tournament"}
+            onClick={() => setScheduleView("tournament")}
+            className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+              scheduleView === "tournament"
+                ? "bg-accent/15 text-accent"
+                : "text-muted hover:text-foreground"
+            }`}
+          >
+            {t("matches.view.tournament")}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={scheduleView === "calendar"}
+            onClick={() => setScheduleView("calendar")}
+            className={`flex-1 rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+              scheduleView === "calendar"
+                ? "bg-accent/15 text-accent"
+                : "text-muted hover:text-foreground"
+            }`}
+          >
+            {t("matches.view.calendar")}
+          </button>
+        </div>
+      )}
 
       {/* Seletor de dias — scroll horizontal no telemóvel; grelha igual no desktop */}
+      {!isTeamSearch && (
       <div
         ref={scrollRef}
         className="day-tabs__track flex w-full gap-1.5 overflow-x-auto rounded-2xl border border-border-base bg-surface p-1.5 scrollbar-none md:overflow-visible"
@@ -386,7 +449,7 @@ export function MatchesView({
           />
         )}
         {allTabs.map((tabKey) => {
-          const isActive = tabKey === selectedTab;
+          const isActive = tabKey === activeTab;
           const tDay = tournamentDays.find((d) => d.id === tabKey);
           const label =
             scheduleView === "tournament" && tDay
@@ -418,6 +481,7 @@ export function MatchesView({
           );
         })}
       </div>
+      )}
 
       {/* Cabeçalho do dia */}
       <div className="flex w-full items-center justify-between gap-2">
@@ -487,16 +551,13 @@ export function MatchesView({
           </p>
         </div>
       ) : (
-        <div key={selectedTab} className="flex w-full flex-col gap-4">
+        <div key={isTeamSearch ? `team-${selectedTeamId}` : activeTab} className="flex w-full flex-col gap-4">
           {featuredMatch && (
             <FeaturedMatch
               match={featuredMatch}
               loggedIn={loggedIn}
               staggerIndex={0}
               selectedDay={kickoffAnchorDay}
-              showKickoffDate={
-                showKickoffDatesOnCards || featuredMatch.status === "finished"
-              }
             />
           )}
           {gridMatches.length > 0 && (
@@ -508,7 +569,6 @@ export function MatchesView({
                   loggedIn={loggedIn}
                   staggerIndex={featuredMatch ? i + 1 : i}
                   selectedDay={kickoffAnchorDay}
-                  showKickoffDate={showKickoffDatesOnCards}
                 />
               ))}
             </div>
@@ -516,17 +576,21 @@ export function MatchesView({
         </div>
       )}
 
+      {!isTeamSearch && (
       <PortugalUpcomingMatches
         matches={matches}
         excludeFixtureId={featuredMatch?.fixture_id}
         loggedIn={loggedIn}
       />
+      )}
 
+      {!isTeamSearch && (
       <DayStandings
         matches={matches}
         standings={standings}
         dayMatches={dayMatches}
       />
+      )}
     </div>
   );
 }

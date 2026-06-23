@@ -1,12 +1,10 @@
 "use client";
 
-import { dateKeyInTz, formatShortMatchDate, timeInTz } from "@/lib/datetime";
+import { formatCompactMatchDate, timeInTz } from "@/lib/datetime";
 import { useSettings } from "@/components/SettingsProvider";
 
 type MatchFinishedKickoffProps = {
   kickoffUtc: string;
-  selectedDay?: string;
-  showKickoffDate?: boolean;
   variant?: "card" | "featured";
 };
 
@@ -28,20 +26,11 @@ function ClockIcon({ className }: { className?: string }) {
 
 export function MatchFinishedKickoff({
   kickoffUtc,
-  selectedDay,
-  showKickoffDate = false,
   variant = "card",
 }: MatchFinishedKickoffProps) {
   const { tz, locale } = useSettings();
-  const matchDay = dateKeyInTz(kickoffUtc, tz);
-  const includeDate =
-    showKickoffDate ||
-    selectedDay === undefined ||
-    matchDay !== selectedDay;
   const time = timeInTz(kickoffUtc, tz);
-  const dateLabel = includeDate
-    ? formatShortMatchDate(kickoffUtc, tz, locale)
-    : null;
+  const dateLabel = formatCompactMatchDate(kickoffUtc, tz, locale);
   const textSize = variant === "featured" ? "text-xs" : "text-[10px]";
 
   return (
@@ -49,12 +38,8 @@ export function MatchFinishedKickoff({
       className={`inline-flex items-center gap-1 tabular-nums ${textSize} font-medium text-muted`}
     >
       <ClockIcon className="h-3 w-3 shrink-0 opacity-70" />
-      {dateLabel && (
-        <>
-          <span>{dateLabel}</span>
-          <span aria-hidden>·</span>
-        </>
-      )}
+      <span>{dateLabel}</span>
+      <span aria-hidden>·</span>
       <span>{time}</span>
     </span>
   );

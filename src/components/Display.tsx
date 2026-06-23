@@ -1,7 +1,7 @@
 "use client";
 
 import { useSettings } from "@/components/SettingsProvider";
-import { timeInTz, tzShortName } from "@/lib/datetime";
+import { formatCompactMatchDate, timeInTz, tzShortName } from "@/lib/datetime";
 import { usesPortugueseTeams, type Lang } from "@/lib/i18n";
 import { ptTeam } from "@/lib/team-names";
 
@@ -27,6 +27,12 @@ export function teamLabel(name: string | null | undefined, lang: Lang): string {
 export function KickoffTime({ utc }: { utc: string }) {
   const { tz } = useSettings();
   return <>{timeInTz(utc, tz)}</>;
+}
+
+/** Data discreta para cartões (ex.: 22 jun). */
+export function MatchCompactDate({ utc }: { utc: string }) {
+  const { tz, locale } = useSettings();
+  return <>{formatCompactMatchDate(utc, tz, locale)}</>;
 }
 
 /** Etiqueta curta do fuso actual (ex.: WEST). */

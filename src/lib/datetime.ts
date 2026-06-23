@@ -66,6 +66,38 @@ export function displayDate(dayKey: string, tz: string, locale: string): string 
   }).format(date);
 }
 
+/** Data curta para cartões de jogo (ex.: «22 jun»). */
+export function formatCompactMatchDate(
+  utcIso: string,
+  tz: string,
+  locale: string
+): string {
+  const date = new Date(utcIso);
+  const day = new Intl.DateTimeFormat(locale, {
+    timeZone: tz,
+    day: "numeric",
+  }).format(date);
+  let month = new Intl.DateTimeFormat(locale, {
+    timeZone: tz,
+    month: "short",
+  })
+    .format(date)
+    .replace(/\.$/, "");
+  if (/^\d+$/.test(month)) {
+    const longMonth =
+      new Intl.DateTimeFormat(locale, { timeZone: tz, month: "long" })
+        .formatToParts(date)
+        .find((p) => p.type === "month")?.value ?? month;
+    month = longMonth.slice(0, 3);
+  }
+  return `${day} ${month}`;
+}
+
+/** Chave yyyy-MM-dd válida para formatação de calendário. */
+export function isCalendarDayKey(key: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(key);
+}
+
 /** Data curta legível (ex.: "Dom, 14 jun" / "Sun, 14 Jun"). */
 export function formatShortMatchDate(
   utcIso: string,

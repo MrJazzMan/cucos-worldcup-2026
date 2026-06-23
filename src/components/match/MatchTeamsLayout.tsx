@@ -1,6 +1,6 @@
 "use client";
 
-import { KickoffTime, TeamName } from "@/components/Display";
+import { KickoffTime, MatchCompactDate, TeamName } from "@/components/Display";
 import { MatchFinishedKickoff } from "@/components/match/MatchFinishedKickoff";
 import { MatchTeamScorers } from "@/components/match/MatchTeamScorers";
 import { TeamFlag } from "@/components/TeamFlag";
@@ -90,32 +90,45 @@ export function MatchTeamsLayout({
         className={`flex ${sizes.center} shrink-0 flex-col items-center justify-center gap-1 self-center`}
       >
         {showScoreboard && match.home_score != null ? (
-          <p
-            className={`flex items-center gap-1.5 font-bold tabular-nums ${sizes.score} ${
-              isLive ? "text-red-500" : "text-foreground"
-            }`}
-          >
-            <span>{match.home_score}</span>
-            <span className={`${sizes.scoreDash} font-light opacity-40`}>–</span>
-            <span>{match.away_score}</span>
-          </p>
+          <div className="flex flex-col items-center gap-0.5">
+            <p
+              className={`flex items-center gap-1.5 font-bold tabular-nums ${sizes.score} ${
+                isLive ? "text-red-500" : "text-foreground"
+              }`}
+            >
+              <span>{match.home_score}</span>
+              <span className={`${sizes.scoreDash} font-light opacity-40`}>–</span>
+              <span>{match.away_score}</span>
+            </p>
+            <p className="text-[9px] font-medium tabular-nums text-muted/75">
+              <MatchCompactDate utc={match.kickoff_utc} />
+            </p>
+          </div>
         ) : (
-          <p
-            className={`font-semibold tabular-nums text-muted ${sizes.score}`}
-          >
-            <KickoffTime utc={match.kickoff_utc} />
-          </p>
+          <div className="flex flex-col items-center gap-0.5">
+            <p
+              className={`font-semibold tabular-nums text-muted ${sizes.score}`}
+            >
+              <KickoffTime utc={match.kickoff_utc} />
+            </p>
+            <p className="text-[9px] font-medium tabular-nums text-muted/75">
+              <MatchCompactDate utc={match.kickoff_utc} />
+            </p>
+          </div>
         )}
         {isLive && liveMinute != null && (
           <span className="text-[10px] font-bold uppercase tracking-wide text-red-500">
             {liveMinute}&apos;
           </span>
         )}
+        {isLive && liveMinute == null && (
+          <p className="text-[9px] font-medium tabular-nums text-muted/75">
+            <MatchCompactDate utc={match.kickoff_utc} />
+          </p>
+        )}
         {isFinished && (
           <MatchFinishedKickoff
             kickoffUtc={match.kickoff_utc}
-            selectedDay={selectedDay}
-            showKickoffDate={showKickoffDate}
             variant={variant}
           />
         )}
