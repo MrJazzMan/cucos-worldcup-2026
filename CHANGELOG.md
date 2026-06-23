@@ -15,8 +15,10 @@ Versão actual em produção: **0.5.0** (`wc26.pt`).
 - Migration **`020_fix_admin_analytics_rpc.sql`** — remove check `is_site_admin()` no RPC (incompatível com service_role).
 - Navegação admin entre **Canais TV** e **Métricas** (`AdminNav`).
 - Documentação **`docs/admin-analytics.md`**.
+- Canais TV visíveis apenas para utilizadores com sessão iniciada.
 
----
+### Alterado
+- Páginas admin com `noindex` e acesso restrito ao `SITE_ADMIN_USER_ID`.
 
 ## [0.5.0] — 2026-06-20 — Perfil, calendário e novidades
 

@@ -36,11 +36,22 @@ export function channelBadgeClass(channel: string) {
 interface MatchChannelsProps {
   channels: string[] | undefined;
   emptyLabel: string;
+  loggedIn?: boolean;
+  lockedLabel?: string;
 }
 
-export function MatchChannels({ channels, emptyLabel }: MatchChannelsProps) {
+export function MatchChannels({
+  channels,
+  emptyLabel,
+  loggedIn = false,
+  lockedLabel,
+}: MatchChannelsProps) {
   if (!channels?.length) {
     return <span className="text-xs text-muted">{emptyLabel}</span>;
+  }
+
+  if (!loggedIn) {
+    return <span className="text-xs text-muted">{lockedLabel ?? emptyLabel}</span>;
   }
 
   return (

@@ -339,6 +339,7 @@ export function MatchesView({
       <PortugalUpcomingMatches
         matches={matches}
         excludeFixtureId={featuredMatch?.fixture_id}
+        loggedIn={loggedIn}
       />
 
       <DayStandings

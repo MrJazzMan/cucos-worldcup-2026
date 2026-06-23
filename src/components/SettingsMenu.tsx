@@ -259,7 +259,7 @@ export function SettingsMenu() {
                 className="flex items-center gap-3 rounded-xl border border-border-base bg-surface-2 px-3 py-3 text-base font-semibold text-foreground transition hover:bg-surface"
               >
                 <span>📊</span>
-                Métricas do site
+                {t("account.adminAnalyticsLink")}
               </a>
             </>
           )}

@@ -43,6 +43,7 @@ export const nl: Dict = {
   "status.finished": "Einde",
   "status.upcoming": "Binnenkort",
   "card.channelTBC": "Zender nog te bevestigen",
+  "card.channelsSignIn": "Log in met Google om tv-zenders te zien",
   "card.favouriteAdd": "Teams toevoegen aan favorieten",
   "card.favouriteRemove": "Teams verwijderen uit favorieten",
   "card.flag": "Vlag",

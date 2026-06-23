@@ -82,6 +82,7 @@ export const pt: Dict = {
   "account.yourAccount": "A tua conta",
   "account.signOut": "Terminar sessão",
   "account.adminLink": "Painel de Admin",
+  "account.adminAnalyticsLink": "Métricas do site",
   "profile.title": "Perfil",
   "profile.displayName": "Nome",
   "profile.location": "Localização",

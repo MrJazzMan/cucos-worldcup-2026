@@ -42,6 +42,7 @@ export const fr: Dict = {
   "status.finished": "Terminé",
   "status.upcoming": "À venir",
   "card.channelTBC": "Chaîne à confirmer",
+  "card.channelsSignIn": "Connectez-vous avec Google pour voir les chaînes TV",
   "card.favouriteAdd": "Ajouter les équipes aux favoris",
   "card.favouriteRemove": "Retirer les équipes des favoris",
   "card.flag": "Drapeau",

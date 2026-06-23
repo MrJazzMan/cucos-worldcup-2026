@@ -42,6 +42,7 @@ export const es: Dict = {
   "status.finished": "Final",
   "status.upcoming": "Próximamente",
   "card.channelTBC": "Canal por confirmar",
+  "card.channelsSignIn": "Inicia sesión con Google para ver los canales de TV",
   "card.favouriteAdd": "Añadir selecciones a favoritos",
   "card.favouriteRemove": "Quitar selecciones de favoritos",
   "card.flag": "Bandera",

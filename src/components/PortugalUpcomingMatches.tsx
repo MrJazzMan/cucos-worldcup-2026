@@ -19,6 +19,7 @@ import type { Match } from "@/types";
 interface PortugalUpcomingMatchesProps {
   matches: Match[];
   excludeFixtureId?: number | null;
+  loggedIn?: boolean;
 }
 
 function localizePhase(phase: MatchPhase, t: (k: string) => string): string {
@@ -34,7 +35,13 @@ function localizePhase(phase: MatchPhase, t: (k: string) => string): string {
   return t(`portugalUpcoming.phase.${phase.key}`);
 }
 
-function PortugalUpcomingCard({ match }: { match: Match }) {
+function PortugalUpcomingCard({
+  match,
+  loggedIn = false,
+}: {
+  match: Match;
+  loggedIn?: boolean;
+}) {
   const { t, tz, locale } = useSettings();
   const opponent = getOpponent(match);
   const isLive = match.status === "live";
@@ -94,6 +101,8 @@ function PortugalUpcomingCard({ match }: { match: Match }) {
         <MatchChannels
           channels={match.channels}
           emptyLabel={t("portugalUpcoming.channelTBC")}
+          loggedIn={loggedIn}
+          lockedLabel={t("card.channelsSignIn")}
         />
       </div>
     </article>
@@ -103,6 +112,7 @@ function PortugalUpcomingCard({ match }: { match: Match }) {
 export function PortugalUpcomingMatches({
   matches,
   excludeFixtureId,
+  loggedIn = false,
 }: PortugalUpcomingMatchesProps) {
   const { t } = useSettings();
 
@@ -126,7 +136,11 @@ export function PortugalUpcomingMatches({
       </h2>
       <div className="flex flex-col gap-3">
         {upcoming.map((match) => (
-          <PortugalUpcomingCard key={match.fixture_id} match={match} />
+          <PortugalUpcomingCard
+            key={match.fixture_id}
+            match={match}
+            loggedIn={loggedIn}
+          />
         ))}
       </div>
     </section>

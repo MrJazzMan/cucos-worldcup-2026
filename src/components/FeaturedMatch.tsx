@@ -87,6 +87,8 @@ export function FeaturedMatch({
         <MatchChannels
           channels={match.channels}
           emptyLabel={t("card.channelTBC")}
+          loggedIn={loggedIn}
+          lockedLabel={t("card.channelsSignIn")}
         />
       </div>
 

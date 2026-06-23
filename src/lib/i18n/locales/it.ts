@@ -43,6 +43,7 @@ export const it: Dict = {
   "status.finished": "Finale",
   "status.upcoming": "In arrivo",
   "card.channelTBC": "Canale da confermare",
+  "card.channelsSignIn": "Accedi con Google per vedere i canali TV",
   "card.favouriteAdd": "Aggiungi squadre ai preferiti",
   "card.favouriteRemove": "Rimuovi squadre dai preferiti",
   "card.flag": "Bandiera",

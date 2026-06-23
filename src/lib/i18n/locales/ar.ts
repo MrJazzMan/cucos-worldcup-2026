@@ -42,6 +42,7 @@ export const ar: Dict = {
   "status.finished": "انتهت",
   "status.upcoming": "لم تبدأ بعد",
   "card.channelTBC": "القناة قيد التحديد",
+  "card.channelsSignIn": "سجّل الدخول عبر Google لرؤية قنوات البث",
   "card.favouriteAdd": "إضافة الفرق إلى المفضلة",
   "card.favouriteRemove": "إزالة الفرق من المفضلة",
   "card.flag": "علم",
