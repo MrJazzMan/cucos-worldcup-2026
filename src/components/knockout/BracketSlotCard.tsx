@@ -3,6 +3,7 @@
 import { KickoffTime, TeamName } from "@/components/Display";
 import { TeamFlag } from "@/components/TeamFlag";
 import { useSettings } from "@/components/SettingsProvider";
+import type { ResolvedSlotSide } from "@/lib/knockout-qualification";
 import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
 import type { KnockoutSlotPreview } from "@/lib/knockout-bracket";
 
@@ -11,6 +12,41 @@ type BracketSlotCardProps = {
   tbd: string;
   compact?: boolean;
 };
+
+function PreviewSide({
+  side,
+  compact,
+}: {
+  side: ResolvedSlotSide;
+  compact?: boolean;
+}) {
+  if (side.team_name && side.team_id) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <TeamFlag name={side.team_name} teamId={side.team_id} size={compact ? 14 : 16} />
+        <span
+          className={`truncate text-[10px] font-semibold ${
+            side.confirmed ? "text-foreground" : "text-foreground/80"
+          }`}
+          title={side.code}
+        >
+          <TeamName name={side.team_name} />
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-surface text-[7px] font-bold text-muted">
+        ?
+      </span>
+      <span className="truncate text-[10px] font-semibold text-foreground/80">
+        {side.code}
+      </span>
+    </div>
+  );
+}
 
 function PreviewCard({
   preview,
@@ -21,29 +57,23 @@ function PreviewCard({
   tbd: string;
   compact?: boolean;
 }) {
+  const home = preview.homeResolved ?? { code: preview.home };
+  const away = preview.awayResolved ?? { code: preview.away };
+  const hasTeam = Boolean(home.team_name || away.team_name);
+
   return (
     <div
-      className={`flex flex-col justify-center rounded-xl border border-dashed border-border-base bg-surface-2/60 px-2 ${
-        compact ? "min-h-[2.75rem] py-1.5" : "min-h-[3.25rem] py-2"
-      }`}
+      className={`flex flex-col justify-center rounded-xl border px-2 ${
+        hasTeam
+          ? "border-border-base bg-surface/80"
+          : "border-dashed border-border-base bg-surface-2/60"
+      } ${compact ? "min-h-[2.75rem] py-1.5" : "min-h-[3.25rem] py-2"}`}
     >
-      <div className="flex items-center gap-1.5">
-        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-surface text-[7px] font-bold text-muted">
-          ?
-        </span>
-        <span className="truncate text-[10px] font-semibold text-foreground/80">
-          {preview.home}
-        </span>
+      <PreviewSide side={home} compact={compact} />
+      <div className="mt-0.5">
+        <PreviewSide side={away} compact={compact} />
       </div>
-      <div className="mt-0.5 flex items-center gap-1.5">
-        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-surface text-[7px] font-bold text-muted">
-          ?
-        </span>
-        <span className="truncate text-[10px] font-semibold text-foreground/80">
-          {preview.away}
-        </span>
-      </div>
-      {!compact && (
+      {!compact && !hasTeam && (
         <p className="mt-1 text-center text-[8px] uppercase tracking-wide text-muted">
           {tbd}
         </p>

@@ -3,6 +3,7 @@ import { MatchCard } from "@/components/MatchCard";
 import { T } from "@/components/Display";
 import { buildKnockoutColumns } from "@/lib/knockout-bracket";
 import {
+  getGroupStandings,
   getKnockoutRounds,
   getUserFavouriteTeamIds,
 } from "@/lib/matches";
@@ -22,8 +23,11 @@ export default async function FaseFinalPage() {
     ? await getUserFavouriteTeamIds().catch(() => [] as number[])
     : [];
 
-  const rounds = await getKnockoutRounds();
-  const columns = buildKnockoutColumns(rounds);
+  const [rounds, standings] = await Promise.all([
+    getKnockoutRounds(),
+    getGroupStandings(),
+  ]);
+  const columns = buildKnockoutColumns(rounds, standings);
   const hasMatches = rounds.some((r) => r.matches.length > 0);
 
   const roundsWithFavourites = rounds.map((round) => ({

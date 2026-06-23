@@ -1,4 +1,11 @@
-import type { Match } from "@/types";
+import {
+  buildStandingsMaps,
+  enrichSlotPreview,
+  type ResolvedSlotSide,
+} from "@/lib/knockout-qualification";
+import type { GroupStanding, Match } from "@/types";
+
+export type { ResolvedSlotSide };
 
 export type KnockoutRoundKey =
   | "r32"
@@ -11,6 +18,8 @@ export type KnockoutRoundKey =
 export type KnockoutSlotPreview = {
   home: string;
   away: string;
+  homeResolved?: ResolvedSlotSide;
+  awayResolved?: ResolvedSlotSide;
 };
 
 export type KnockoutRoundColumn = {
@@ -77,7 +86,11 @@ const ROUND_DEFS: {
     labelKey: "knockouts.round.r32",
     slotCount: 16,
     matches: (r) =>
-      r.includes("round of 32") || r.includes("32 avos") || r.includes("32avos"),
+      r.includes("round of 32") ||
+      r.includes("32 avos") ||
+      r.includes("32avos") ||
+      r.includes("16 avos") ||
+      r.includes("dezasseis"),
   },
   {
     key: "r16",
@@ -143,8 +156,10 @@ export function sortKnockoutRoundNames(rounds: string[]): string[] {
 }
 
 export function buildKnockoutColumns(
-  rounds: { round: string; matches: Match[] }[]
+  rounds: { round: string; matches: Match[] }[],
+  standings: GroupStanding[] = []
 ): KnockoutRoundColumn[] {
+  const { standingsByGroup, locksByGroup } = buildStandingsMaps(standings);
   const byKey = new Map<KnockoutRoundKey, { round: string; matches: Match[] }>();
 
   for (const { round, matches } of rounds) {
@@ -172,7 +187,9 @@ export function buildKnockoutColumns(
       labelKey: def.labelKey,
       matches: data?.matches ?? [],
       slotCount: def.slotCount,
-      previews: KNOCKOUT_SKELETON[def.key],
+      previews: KNOCKOUT_SKELETON[def.key].map((p) =>
+        enrichSlotPreview(p, standingsByGroup, locksByGroup)
+      ),
     };
   });
 }

@@ -75,7 +75,7 @@ export const en: Dict = {
   "knockouts.scrollHint": "Swipe to explore the bracket",
   "knockouts.schedule": "Schedule",
   "knockouts.previewHint":
-    "Real fixtures appear here as the tournament progresses.",
+    "Real fixtures appear here as the tournament progresses. Confirmed qualifiers show in the bracket before groups end.",
   "account.title": "Account",
   "account.needSupabase": "Configure Supabase to enable authentication.",
   "account.signInPrompt":

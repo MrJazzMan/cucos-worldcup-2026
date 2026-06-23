@@ -65,7 +65,7 @@ export const pt: Dict = {
   "knockouts.empty.title": "Chave ainda não disponível",
   "knockouts.empty.subtitle":
     "Os jogos eliminatórios serão publicados à medida que o torneio avança.",
-  "knockouts.round.r32": "32 avos",
+  "knockouts.round.r32": "16 avos",
   "knockouts.round.r16": "Oitavos",
   "knockouts.round.qf": "Quartos",
   "knockouts.round.sf": "Meias",
@@ -75,7 +75,7 @@ export const pt: Dict = {
   "knockouts.scrollHint": "Desliza para ver a chave",
   "knockouts.schedule": "Calendário",
   "knockouts.previewHint":
-    "Os jogos reais aparecem aqui à medida que o torneio avança.",
+    "Os jogos reais aparecem aqui à medida que o torneio avança. Equipas já qualificadas surgem na chave antes do fim dos grupos.",
   "account.title": "Conta",
   "account.needSupabase": "Configura Supabase para activar autenticação.",
   "account.signInPrompt":

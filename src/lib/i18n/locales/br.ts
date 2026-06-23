@@ -62,7 +62,7 @@ export const br: Dict = {
   "knockouts.empty.title": "Chave ainda não disponível",
   "knockouts.empty.subtitle":
     "Os jogos eliminatórios serão publicados conforme o torneio avança.",
-  "knockouts.round.r32": "32 avos",
+  "knockouts.round.r32": "16 avos",
   "knockouts.round.r16": "Oitavas",
   "knockouts.round.qf": "Quartas",
   "knockouts.round.sf": "Semis",
