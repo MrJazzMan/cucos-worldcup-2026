@@ -90,26 +90,30 @@ const ROUND_DEFS: {
       r.includes("32 avos") ||
       r.includes("32avos") ||
       r.includes("16 avos") ||
-      r.includes("dezasseis"),
+      r.includes("dezasseis") ||
+      r.includes("fase de 32"),
   },
   {
     key: "r16",
     labelKey: "knockouts.round.r16",
     slotCount: 8,
     matches: (r) =>
-      r.includes("round of 16") || r.includes("oitav") || r.includes("16 avos"),
+      r.includes("round of 16") ||
+      r.includes("oitav") ||
+      r.includes("16 avos") ||
+      r.includes("oitavas"),
   },
   {
     key: "qf",
     labelKey: "knockouts.round.qf",
     slotCount: 4,
-    matches: (r) => r.includes("quarter"),
+    matches: (r) => r.includes("quarter") || r.includes("quartos") || r.includes("quartas"),
   },
   {
     key: "sf",
     labelKey: "knockouts.round.sf",
     slotCount: 2,
-    matches: (r) => r.includes("semi"),
+    matches: (r) => r.includes("semi") || r.includes("meias"),
   },
   {
     key: "third",
