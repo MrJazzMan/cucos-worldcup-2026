@@ -1,4 +1,5 @@
 import { getChannelHref } from "@/lib/channels";
+import { ChannelsSignInPrompt } from "@/components/match/ChannelsSignInPrompt";
 
 const BASE_BADGE =
   "inline-flex items-center rounded-lg px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide";
@@ -37,21 +38,19 @@ interface MatchChannelsProps {
   channels: string[] | undefined;
   emptyLabel: string;
   loggedIn?: boolean;
-  lockedLabel?: string;
 }
 
 export function MatchChannels({
   channels,
   emptyLabel,
   loggedIn = false,
-  lockedLabel,
 }: MatchChannelsProps) {
   if (!channels?.length) {
     return <span className="text-xs text-muted">{emptyLabel}</span>;
   }
 
   if (!loggedIn) {
-    return <span className="text-xs text-muted">{lockedLabel ?? emptyLabel}</span>;
+    return <ChannelsSignInPrompt />;
   }
 
   return (

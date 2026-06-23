@@ -16,6 +16,7 @@ Versão actual em produção: **0.5.0** (`wc26.pt`).
 - Navegação admin entre **Canais TV** e **Métricas** (`AdminNav`).
 - Documentação **`docs/admin-analytics.md`**.
 - Canais TV visíveis apenas para utilizadores com sessão iniciada.
+- Link inline «Inicia sessão» nos cartões de jogo para login Google directo.
 
 ### Alterado
 - Páginas admin com `noindex` e acesso restrito ao `SITE_ADMIN_USER_ID`.

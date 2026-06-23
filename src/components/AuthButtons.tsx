@@ -1,19 +1,17 @@
 "use client";
 
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import { getAuthCallbackUrl, signInWithGoogle } from "@/lib/google-sign-in";
 import { useT } from "@/components/SettingsProvider";
 
 export function AuthButtons({ next: nextProp }: { next?: string }) {
   const t = useT();
 
-  function getAuthCallbackUrl() {
-    const host = window.location.hostname;
-    const isProdHost = host === "wc26.pt" || host.endsWith(".wc26.pt");
-    const origin = isProdHost ? "https://wc26.pt" : window.location.origin;
-    return `${origin}/auth/callback`;
-  }
-
   async function signIn(provider: "google" | "apple") {
+    if (provider === "google") {
+      await signInWithGoogle(nextProp);
+      return;
+    }
     const supabase = createSupabaseBrowser();
     const next =
       nextProp ??
@@ -22,9 +20,7 @@ export function AuthButtons({ next: nextProp }: { next?: string }) {
     const redirectTo = `${getAuthCallbackUrl()}?next=${encodeURIComponent(next)}`;
     await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo,
-      },
+      options: { redirectTo },
     });
   }
 

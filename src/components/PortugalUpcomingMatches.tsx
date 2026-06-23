@@ -102,7 +102,6 @@ function PortugalUpcomingCard({
           channels={match.channels}
           emptyLabel={t("portugalUpcoming.channelTBC")}
           loggedIn={loggedIn}
-          lockedLabel={t("card.channelsSignIn")}
         />
       </div>
     </article>
