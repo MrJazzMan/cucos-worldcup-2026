@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { applySecurityHeaders } from "@/lib/security-headers";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // User-agents de scrapers / AI crawlers conhecidos
 const BLOCKED_UA_PATTERNS = [
@@ -29,6 +30,13 @@ const BLOCKED_UA_PATTERNS = [
 function isBlockedBot(ua: string | null): boolean {
   if (!ua) return false;
   return BLOCKED_UA_PATTERNS.some((p) => p.test(ua));
+}
+
+/** IP do cliente a partir dos cabeçalhos da Vercel (primeiro de `x-forwarded-for`). */
+function getClientIp(request: NextRequest): string {
+  const fwd = request.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0]!.trim();
+  return request.headers.get("x-real-ip")?.trim() || "unknown";
 }
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
@@ -83,13 +91,25 @@ export async function middleware(request: NextRequest) {
   }
 
   // Rotas /api/, /feed/ e /calendar/ são isentas: auth própria ou URL secreta; clientes não-browser.
-  if (
-    !pathname.startsWith("/api/") &&
-    !pathname.startsWith("/feed/") &&
-    !pathname.startsWith("/calendar/") &&
-    isBlockedBot(ua)
-  ) {
+  const isExemptPath =
+    pathname.startsWith("/api/") ||
+    pathname.startsWith("/feed/") ||
+    pathname.startsWith("/calendar/");
+
+  if (!isExemptPath && isBlockedBot(ua)) {
     return new NextResponse("Access denied", { status: 403 });
+  }
+
+  // Rate limiting por IP nas rotas públicas (anti-scraping em massa).
+  // No-op se não configurado; fail-open se o Upstash falhar (ver lib/rate-limit).
+  if (!isExemptPath) {
+    const rl = await checkRateLimit(getClientIp(request));
+    if (rl && !rl.allowed) {
+      return new NextResponse("Too many requests", {
+        status: 429,
+        headers: { "Retry-After": "60" },
+      });
+    }
   }
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
