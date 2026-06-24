@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { MatchesView } from "@/components/MatchesView";
 import {
   getAllMatches,
@@ -79,5 +80,12 @@ export default async function HomePage() {
     />
   );
 }
+
+export const metadata: Metadata = {
+  title: "Mundial 2026: horários, canais de TV e onde ver em Portugal",
+  description:
+    "Vê que jogos do Mundial FIFA 2026 há hoje, a que horas em Portugal e em que canal de TV. Resultados ao vivo, grupos e fase final num só sítio.",
+  alternates: { canonical: "/" },
+};
 
 export const revalidate = 60;

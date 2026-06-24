@@ -33,14 +33,26 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Cucos WC26 — Jogos e TV Portugal",
+  metadataBase: new URL("https://wc26.pt"),
+  title: "wc26.pt — Mundial 2026: jogos, horários e canais de TV em Portugal",
   description:
-    "Mundial FIFA 2026: jogos de hoje, horários em Portugal e canais de TV.",
+    "Mundial FIFA 2026: jogos de hoje, horários em Portugal e canais de TV. Resultados ao vivo, grupos e fase final.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Cucos WC26",
+  },
+  // og:title / og:description derivam do título/descrição de cada rota;
+  // og:image vem da convenção `opengraph-image.tsx` (URL absoluto via metadataBase).
+  openGraph: {
+    type: "website",
+    locale: "pt_PT",
+    siteName: "wc26.pt",
+    url: "https://wc26.pt",
+  },
+  twitter: {
+    card: "summary_large_image",
   },
 };
 
@@ -59,7 +71,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt"
       dir="ltr"
       data-theme="dark"
       suppressHydrationWarning
