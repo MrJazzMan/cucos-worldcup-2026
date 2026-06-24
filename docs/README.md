@@ -2,13 +2,14 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-**Versão actual:** `0.5.0` — ver [sessao-handoff-2026-06-21-fase3.md](sessao-handoff-2026-06-21-fase3.md) (handoff mais recente).
+**Versão actual:** `0.5.0` — ver [sessao-handoff-2026-06-23.md](sessao-handoff-2026-06-23.md) (handoff mais recente).
 
 ## Índice
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [**sessao-handoff-2026-06-21-fase3.md**](sessao-handoff-2026-06-21-fase3.md) | **Handoff Fase 3 (Jun 2026)** — segurança, RGPD, homepage, cookies |
+| [**sessao-handoff-2026-06-23.md**](sessao-handoff-2026-06-23.md) | **Handoff Jun 23** — pesquisa, dia de jogos, marcadores, chave FIFA |
+| [**sessao-handoff-2026-06-21-fase3.md**](sessao-handoff-2026-06-21-fase3.md) | Handoff Fase 3 — segurança, RGPD, homepage, cookies |
 | [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md) | Handoff anterior — QStash, classificações, perfil/calendário |
 | [historico-e-setup.md](historico-e-setup.md) | Stack, Supabase, Vercel, domínio, dados reais |
 | [deploy.md](deploy.md) | Vercel, variáveis, crons, pós-deploy |
@@ -20,6 +21,7 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | [notifications.md](notifications.md) | Web Push, preferências, cron |
 | [operacoes.md](operacoes.md) | Comandos do dia-a-dia |
 | [coding-guidelines.md](coding-guidelines.md) | Convenções de código |
+| [testes-fase-final.md](testes-fase-final.md) | Suite de testes (`npm test`) + correcção da árvore do bracket |
 
 ## Estado actual (0.5.0)
 
@@ -29,7 +31,8 @@ Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel*
 | **Perfil** | Nome/local via `PATCH /api/profile` (login) |
 | **Calendário iCal** | Menu → Calendário; token em `profiles.calendar_token` |
 | **Jogos** | Públicos (SEO) — equipas, horários, resultados, **canais TV** |
-| **Fase final** | https://wc26.pt/fasefinal — bracket desktop + preview FIFA |
+| **Homepage** | Pesquisa equipa, dia de jogos (cutoff 06:00), melhores marcadores |
+| **Fase final** | https://wc26.pt/fasefinal — Annex C, ordem FIFA M73+, árvore com pairings correctos |
 | **Layout homepage** | `max-w-7xl` alinhado; destaque + grelha 2 colunas |
 | **Marcadores** | Golos por equipa (live + final) |
 | **Sync live** | QStash + refresh 30s na homepage |

@@ -9,6 +9,32 @@ Versão actual em produção: **0.5.0** (`wc26.pt`).
 ## [Unreleased]
 
 ### Adicionado
+- **Suite de testes** (`tests/`, `npm test`) — `node:test` + loader de alias `@/`, sem dependências novas. 34 testes: Annex C (round-trip das 495 combinações), terceiros, locks, ordem FIFA e coerência da chave. Ver [docs/testes-fase-final.md](docs/testes-fase-final.md).
+- **Melhores marcadores** na homepage (`TopScorers`) — agregação de `goal_events`, top 5 expandível até 15.
+- **Pesquisa por equipa** na homepage (`TeamSearch`) — autocomplete, `?team=id`, todos os jogos da equipa.
+- **Vista «Dia de jogos»** — dias do torneio com cutoff 06:00 (`tournament-days.ts`); toggle com «Por data» (`?view=calendar`).
+- **Annex C FIFA** — 495 combinações de 3.ºs (`knockout-annex-c.ts`); ranking e resolução de slots (`third-place.ts`).
+- **Ordem FIFA na chave** — `knockout-fifa-order.ts`, pairings explícitos na árvore, `orderMatchesInFifaSlots()`.
+- Rótulos de seed nos cartões preview (`knockout-slot-labels.ts`: «1.º Gr. E», «3.º Gr. C»).
+- Datas compactas nos cartões KO (`MatchCompactDate` em `BracketSlotCard`).
+
+### Alterado
+- **`KNOCKOUT_SKELETON`** — R32/R16 na ordem oficial M73–M96.
+- **`buildSideTree()`** — deixa de usar emparelhamento binário simples; usa pairings FIFA.
+- PT-PT: **«Melhores Marcadores»** (BR mantém «Artilharia»); **«Agendado»** para jogos por começar.
+- PT-PT/PT-BR: nomenclatura eliminatórias (dezasseis-avos / oitavas vs fase de 32 / oitavos).
+
+### Corrigido
+- **Árvore desktop da chave (`buildSideTree`)** — quartos liam slots da coluna `r16` (mostravam jogos dos dezasseis-avos); split de metades contíguo emparelhava M97 com M99 em vez de M97 com M98 (meias-finais erradas). Topologia tabelada substituída por `SIDE_TREE_SPEC` declarativo, coberto por testes.
+- Ordem errada dos jogos na chave `/fasefinal` (skeleton + árvore + colocação de jogos da BD).
+- Crash ao alternar «Dia de jogos» ↔ «Por data» (`isCalendarDayKey`, `activeTab` derivado).
+- Pesquisa por equipa só mostrava jogos futuros.
+- Datas em falta nos cartões de jogo (`formatCompactMatchDate`).
+
+### Documentação
+- **`docs/sessao-handoff-2026-06-23.md`** — handoff completo desta sessão.
+
+### Adicionado (anterior nesta release)
 - **Dashboard admin de métricas** em `/admin/analytics` — KPIs, gráficos (30 dias) e tabelas (top páginas, últimos utilizadores).
 - API **`GET /api/admin/analytics`** com RPC `get_admin_analytics` (uma query consolidada).
 - Migration **`019_get_admin_analytics.sql`** — função RPC com agregações em `Europe/Lisbon`.

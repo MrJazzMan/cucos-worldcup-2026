@@ -11,55 +11,78 @@ export const FIFA_MATCH_NUMBERS = {
   final: [104],
 } as const;
 
+export type FifaRoundKey = keyof typeof FIFA_MATCH_NUMBERS;
+
+/** Localização de um jogo FIFA (M73–M104) na coluna+índice da sua ronda. */
+export function fifaSlotLocation(matchNumber: number): {
+  key: FifaRoundKey;
+  index: number;
+} {
+  for (const key of Object.keys(FIFA_MATCH_NUMBERS) as FifaRoundKey[]) {
+    const index = (FIFA_MATCH_NUMBERS[key] as readonly number[]).indexOf(
+      matchNumber
+    );
+    if (index !== -1) return { key, index };
+  }
+  throw new Error(`Número FIFA desconhecido: M${matchNumber}`);
+}
+
 /**
- * Ordem visual dos dezasseis-avos em cada metade da árvore (índices 0–15 do array FIFA).
- * Garante que o par binário alimenta os oitavos correctos (M89–M92 à esquerda, M93–M96 à direita).
+ * Estrutura oficial da árvore eliminatória, por metade (FIFA 2026).
+ * Cada nó é o número FIFA do jogo; as folhas são jogos dos dezasseis-avos (R32).
+ *
+ * A metade esquerda alimenta a meia-final M101 (V97 vs V98); a direita, M102
+ * (V99 vs V100). Os emparelhamentos seguem o calendário oficial M73–M104 — ver
+ * `KNOCKOUT_SKELETON` em `knockout-bracket.ts`, que é a fonte de verdade.
+ *
+ *              M101                                  M102
+ *           ╱       ╲                            ╱       ╲
+ *        M97         M98                      M99         M100
+ *       ╱   ╲       ╱   ╲                    ╱   ╲       ╱    ╲
+ *     M89   M90   M93   M94                M91   M92   M95   M96
+ *     ╱ ╲   ╱ ╲   ╱ ╲   ╱ ╲                ╱ ╲   ╱ ╲   ╱ ╲   ╱ ╲
+ *   74 77 73 75 83 84 81 82            76 78 79 80 86 88 85 87
  */
+export type BracketNodeSpec = {
+  /** Número FIFA do jogo neste nó. */
+  match: number;
+  /** Sub-árvores que o alimentam (ausente nas folhas R32). */
+  children?: [BracketNodeSpec, BracketNodeSpec];
+};
+
+const leaf = (match: number): BracketNodeSpec => ({ match });
+const node = (
+  match: number,
+  left: BracketNodeSpec,
+  right: BracketNodeSpec
+): BracketNodeSpec => ({ match, children: [left, right] });
+
+export const SIDE_TREE_SPEC: Record<"left" | "right", BracketNodeSpec> = {
+  left: node(
+    101,
+    node(97, node(89, leaf(74), leaf(77)), node(90, leaf(73), leaf(75))),
+    node(98, node(93, leaf(83), leaf(84)), node(94, leaf(81), leaf(82)))
+  ),
+  right: node(
+    102,
+    node(99, node(91, leaf(76), leaf(78)), node(92, leaf(79), leaf(80))),
+    node(100, node(95, leaf(86), leaf(88)), node(96, leaf(85), leaf(87)))
+  ),
+};
+
+function collectLeafIndices(spec: BracketNodeSpec): number[] {
+  if (!spec.children) return [fifaSlotLocation(spec.match).index];
+  return [
+    ...collectLeafIndices(spec.children[0]),
+    ...collectLeafIndices(spec.children[1]),
+  ];
+}
+
+/** Índices R32 (0–15) das folhas de cada metade, em ordem visual (topo→base). */
 export const R32_TREE_LEAF_ORDER = {
-  left: [0, 2, 3, 5, 1, 4, 6, 7],
-  right: [8, 9, 10, 11, 12, 14, 13, 15],
+  left: collectLeafIndices(SIDE_TREE_SPEC.left),
+  right: collectLeafIndices(SIDE_TREE_SPEC.right),
 } as const;
-
-/** Índices dos nós de oitavos (0–3 por lado) alimentados por cada par de folhas R32. */
-export const R32_TO_R16_PAIRINGS = [
-  [0, 1],
-  [2, 3],
-  [4, 5],
-  [6, 7],
-] as const;
-
-/** Índice local do oitavo (0–3) produzido por cada par de folhas R32. */
-export const R32_PAIR_TO_R16_LOCAL_INDEX = {
-  left: [1, 2, 0, 3],
-  right: [1, 0, 3, 2],
-} as const;
-
-/** Nós de oitavos (índices locais 0–3) que alimentam cada quarto-de-final local. */
-export const R16_TO_QF_PAIRINGS = {
-  left: [
-    [2, 0],
-    [1, 3],
-  ],
-  right: [
-    [1, 0],
-    [3, 2],
-  ],
-} as const;
-
-/** Índice local do quarto (0–1 por lado) para cada par de oitavos. */
-export const R16_PAIR_TO_QF_LOCAL_INDEX = {
-  left: [0, 1],
-  right: [0, 1],
-} as const;
-
-/** Índices FIFA do quarto-de-final (0–3 global) por par de oitavos. */
-export const R16_PAIR_TO_QF_FIFA_INDEX = {
-  left: [0, 2],
-  right: [1, 3],
-} as const;
-
-/** Quartos-de-final locais que alimentam a meia-final desse lado (índice 0 = SF FIFA). */
-export const QF_TO_SF_PAIRINGS = [[0, 1]] as const;
 
 function teamIdsFromMatch(match: Match): [number, number] {
   return [match.home_team_id, match.away_team_id];

@@ -1,12 +1,8 @@
 import type { KnockoutRoundColumn, KnockoutSlotPreview } from "@/lib/knockout-bracket";
 import {
-  QF_TO_SF_PAIRINGS,
-  R16_PAIR_TO_QF_FIFA_INDEX,
-  R16_PAIR_TO_QF_LOCAL_INDEX,
-  R16_TO_QF_PAIRINGS,
-  R32_PAIR_TO_R16_LOCAL_INDEX,
-  R32_TO_R16_PAIRINGS,
-  R32_TREE_LEAF_ORDER,
+  fifaSlotLocation,
+  SIDE_TREE_SPEC,
+  type BracketNodeSpec,
 } from "@/lib/knockout-fifa-order";
 import type { Match } from "@/types";
 
@@ -45,25 +41,25 @@ function slotAt(
   };
 }
 
-function roundSlotsAt(
-  column: KnockoutRoundColumn,
-  indices: readonly number[],
+/**
+ * Constrói recursivamente um nó da árvore a partir da especificação FIFA:
+ * lê a slot do jogo na coluna+índice certos e desce para os filhos.
+ */
+function buildNode(
+  spec: BracketNodeSpec,
+  columns: KnockoutRoundColumn[],
   preview: boolean
-): BracketSlotData[] {
-  return indices.map((index) => slotAt(column, index, preview));
-}
+): BracketTreeNode {
+  const { key, index } = fifaSlotLocation(spec.match);
+  const slot = slotAt(getColumn(columns, key), index, preview);
 
-function mergeWithPairings(
-  children: BracketTreeNode[],
-  slots: BracketSlotData[],
-  pairings: readonly (readonly [number, number])[],
-  slotIndices: readonly number[]
-): BracketTreeNode[] {
-  return pairings.map((pair, i) => ({
-    slot: slots[slotIndices[i]],
-    left: children[pair[0]],
-    right: children[pair[1]],
-  }));
+  if (!spec.children) return { slot };
+
+  return {
+    slot,
+    left: buildNode(spec.children[0], columns, preview),
+    right: buildNode(spec.children[1], columns, preview),
+  };
 }
 
 export function buildSideTree(
@@ -71,51 +67,7 @@ export function buildSideTree(
   side: "left" | "right",
   preview: boolean
 ): BracketTreeNode {
-  const r32 = getColumn(columns, "r32");
-  const r16 = getColumn(columns, "r16");
-  const sf = getColumn(columns, "sf");
-
-  const r16Base = side === "left" ? 0 : 4;
-  const qfFifaIndices = R16_PAIR_TO_QF_FIFA_INDEX[side];
-  const sfIndex = side === "left" ? 0 : 1;
-
-  const r32Leaves = roundSlotsAt(
-    r32,
-    R32_TREE_LEAF_ORDER[side],
-    preview
-  ).map((slot) => ({ slot }));
-
-  const r16Slots = roundSlotsAt(
-    r16,
-    [0, 1, 2, 3].map((i) => r16Base + i),
-    preview
-  );
-
-  const r16Nodes = mergeWithPairings(
-    r32Leaves,
-    r16Slots,
-    R32_TO_R16_PAIRINGS,
-    R32_PAIR_TO_R16_LOCAL_INDEX[side]
-  );
-
-  const qfSlots = roundSlotsAt(r16, qfFifaIndices, preview);
-
-  const qfNodes = mergeWithPairings(
-    r16Nodes,
-    qfSlots,
-    R16_TO_QF_PAIRINGS[side],
-    R16_PAIR_TO_QF_LOCAL_INDEX[side]
-  );
-
-  const [sfPair] = QF_TO_SF_PAIRINGS;
-  const [sfNode] = mergeWithPairings(
-    qfNodes,
-    [slotAt(sf, sfIndex, preview)],
-    [sfPair],
-    [0]
-  );
-
-  return sfNode;
+  return buildNode(SIDE_TREE_SPEC[side], columns, preview);
 }
 
 export function getCenterSlots(

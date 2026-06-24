@@ -129,6 +129,27 @@ Registo cumulativo em português de Portugal. Organizado por **frente** e **data
 
 ---
 
+## Testes e qualidade
+
+### 2026-06-23 — Primeira suite de testes + bug na árvore do bracket
+
+**Contexto:** O projecto não tinha testes. Ao escrever testes para a lógica da fase final, a validação de topologia revelou dois bugs na árvore desktop (`buildSideTree`).
+
+**Infra (sem dependências novas):** `node:test` + type-stripping nativo (Node ≥ 22.18) + um loader ESM (`scripts/test-support/ts-alias-loader.mjs`) que resolve o alias `@/`. `npm test` corre `tests/*.test.mjs`.
+
+**Bugs encontrados:**
+1. **Slots de QF lidas de `r16`** — a coluna de quartos mostrava jogos dos dezasseis-avos.
+2. **Split de metades contíguo** (`r16Base 0..3 / 4..7`) incompatível com `SF M101 = V97 vs V98` — emparelhava M97 com M99 em vez de M97 com M98.
+
+**Correcção:** Topologia tabelada (índices) → **especificação declarativa** (`SIDE_TREE_SPEC` em `knockout-fifa-order.ts`, árvore literal de números FIFA) + walk recursivo `buildNode`. Ver [testes-fase-final.md](testes-fase-final.md).
+
+**Lições:**
+- **Topologia de bracket descreve-se com dados declarativos, não tabelas de índices** — a árvore literal é auto-documentada e impossível de desalinhar das meias-finais.
+- **O `KNOCKOUT_SKELETON` é a fonte de verdade**; qualquer vista (mobile/desktop) tem de o reproduzir. O teste compara a árvore com ele por identidade de referência.
+- **Testes de invariantes** («cada ronda consome a anterior uma vez», «cada nó = vencedores dos filhos») apanham bugs estruturais invisíveis em modo preview.
+
+---
+
 ## Como acrescentar entradas
 
 No fim de cada trabalho relevante, adicionar uma subsecção `### yyyy-mm-dd — Título` na frente correcta (ou criar nova frente). Incluir: contexto, decisão/correcção, e lição reutilizável.

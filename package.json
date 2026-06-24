@@ -8,7 +8,8 @@
     "build": "node scripts/sync-circle-flags.mjs && next build",
     "postinstall": "node scripts/sync-circle-flags.mjs",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node --experimental-loader ./scripts/test-support/ts-alias-loader.mjs --test tests/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
