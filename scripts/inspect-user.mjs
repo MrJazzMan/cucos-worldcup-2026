@@ -46,7 +46,11 @@ for (const file of [".env.production.local", ".env.local", ".env.vercel"]) {
 }
 
 const url = env("NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_URL");
-const serviceKey = env("SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY");
+const serviceKey = env(
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_SECRET_KEY",
+  "VERCEL_SERVICE_ROLE"
+);
 
 if (!url || !serviceKey) {
   console.error(

@@ -55,6 +55,31 @@ Registo cumulativo em português de Portugal. Organizado por **frente** e **data
 
 ---
 
+### 2026-06-24 — Anti-scraping em camadas (a porta nunca fecha 100%)
+
+**Contexto:** Um site público para SEO é, por definição, copiável — o mesmo canal que serve o Google serve o scraper. Não há cadeado; só dissuasores que aumentam o custo de copiar.
+
+**Camadas (cada uma fecha um buraco da anterior):**
+1. `robots.txt` — pedido educado; só bots honestos respeitam.
+2. Middleware bloqueia por **User-Agent** conhecido (`403`) — apanha quem se identifica.
+3. Middleware faz **rate limiting por IP** (`429`, default 60/min) — apanha o scraper com UA de browser falso, que as camadas 1–2 não distinguem de um humano.
+
+**Princípios de implementação:** o rate limiter é **no-op sem config** (não parte dev nem deploy antes do Redis) e **fail-open** em erro de infra (nunca bloqueia utilizador real). Isenta `/api/`, `/feed/`, `/calendar/` (crons/QStash/URLs secretas).
+
+**Lição:** Camadas agressivas demais bloqueiam o Google e partilhas legítimas (já aconteceu: `robots` bloqueava o `FacebookBot` → previews partidos). O ativo a proteger não é o HTML (vem da API-Football) mas a **curadoria** — e essa já está atrás de login. Rate-limitar por *comportamento* protege sem tocar no SEO.
+
+---
+
+### 2026-06-24 — Investigar utilizador suspeito (humano vs bot)
+
+**Contexto:** Apareceu um utilizador «bot bot» (`botebotas23@gmail.com`). Como o login é **Google OAuth apenas**, qualquer perfil tem um email verificado por uma pessoa — scrapers automáticos não fazem login. Era um humano curioso (2 páginas, 1 sessão, ~40s, 0 ativações).
+
+**Ferramenta:** `scripts/inspect-user.mjs <email>` — relatório read-only (identidade, `page_visits`, favoritos/push) + heurística de cadência. O **IP não está na BD**; vê-se nos logs da Vercel pelos timestamps.
+
+**Lição:** O risco de scraping vem de **anónimos disfarçados** (camada 3), não de utilizadores logados. Distinguir os dois evita banir humanos por engano.
+
+---
+
 ## RGPD e privacidade
 
 ### 2026-06-21 — Google Analytics antes do consentimento (Consent Mode v2)

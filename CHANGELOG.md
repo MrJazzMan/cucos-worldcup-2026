@@ -9,6 +9,9 @@ Versão actual em produção: **0.5.0** (`wc26.pt`).
 ## [Unreleased]
 
 ### Adicionado
+- **Rate limiting por IP** nas rotas públicas (`src/lib/rate-limit.ts`, Upstash Redis) — 60/min (configurável via `RATE_LIMIT_PER_MIN`); `429` quando excedido. Terceira camada anti-scraping; no-op sem config, fail-open em erro. Ver [docs/operacoes.md](docs/operacoes.md#segurança--anti-scraping-e-utilizadores).
+- **Metadata global + Open Graph** — `metadataBase`, `lang="pt"`, OG/Twitter cards, OG image gerada (`opengraph-image.tsx`), títulos/canonical por rota.
+- **`scripts/inspect-user.mjs`** — relatório read-only de um utilizador (identidade, visitas, ativações) com heurística humano-vs-bot.
 - **Suite de testes** (`tests/`, `npm test`) — `node:test` + loader de alias `@/`, sem dependências novas. 34 testes: Annex C (round-trip das 495 combinações), terceiros, locks, ordem FIFA e coerência da chave. Ver [docs/testes-fase-final.md](docs/testes-fase-final.md).
 - **Melhores marcadores** na homepage (`TopScorers`) — agregação de `goal_events`, top 5 expandível até 15.
 - **Pesquisa por equipa** na homepage (`TeamSearch`) — autocomplete, `?team=id`, todos os jogos da equipa.

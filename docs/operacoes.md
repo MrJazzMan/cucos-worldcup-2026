@@ -233,6 +233,45 @@ Nunca commitar ficheiros com chaves.
 
 ---
 
+## Segurança — anti-scraping e utilizadores
+
+### Camadas anti-scraping
+
+O site é público (necessário para SEO), por isso nenhuma defesa é à prova de bala — são dissuasores em camadas:
+
+1. **`robots.txt`** — pede a bots de IA (GPTBot, ClaudeBot, etc.) para não indexarem. Só os bots honestos respeitam.
+2. **Middleware — bloqueio por User-Agent** (`src/middleware.ts`) — devolve `403` a bots/ferramentas conhecidos (`scrapy`, `python-requests`, `curl`, `wget`…). Apanha quem se identifica honestamente.
+3. **Middleware — rate limiting por IP** (`src/lib/rate-limit.ts`) — limita cada IP a `RATE_LIMIT_PER_MIN` (default **60/min**) nas rotas públicas; devolve `429`. Trava cópia em massa mesmo por scrapers com UA disfarçado de browser. Isenta `/api/`, `/feed/`, `/calendar/`.
+4. **(Manual)** Vercel Firewall / bot protection no painel — filtra por comportamento/IP.
+
+**Ativar o rate limiting** (está desativado/no-op até configurares):
+
+1. Criar Redis grátis em [console.upstash.com/redis](https://console.upstash.com/redis).
+2. No Vercel (Production), adicionar `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` e (opcional) `RATE_LIMIT_PER_MIN`.
+3. Redeploy. Confirmar:
+
+```bash
+# 200 deve virar 429 perto do 60.º pedido
+for i in $(seq 1 70); do curl -s -o /dev/null -w "%{http_code} " https://wc26.pt/; done
+```
+
+> Sem as env vars do Redis, o rate limiting é **no-op** (deixa passar). Se o Upstash falhar, **fail-open** — nunca bloqueia utilizadores reais por erro de infra.
+
+### Investigar um utilizador suspeito
+
+```bash
+node scripts/inspect-user.mjs <email>
+node scripts/inspect-user.mjs --id <user_uuid>
+```
+
+Relatório **read-only**: identidade (registo, último login, provider), páginas visitadas (`page_visits`), favoritos/push ativados, e heurística **humano vs bot** (cadência das visitas, ativação de funcionalidades). Precisa da service-role key em `.env.production.local` (aceita `SUPABASE_SERVICE_ROLE_KEY` ou `VERCEL_SERVICE_ROLE`).
+
+- Como o login é **Google OAuth apenas**, qualquer utilizador com perfil tem um email verificado por uma pessoa — scrapers automáticos não fazem login.
+- O **IP não está na BD** (`page_visits` não o guarda). Para o IP, ver os logs da Vercel (`vercel logs` / Observability) à volta dos timestamps do relatório.
+- **Banir:** Supabase → Authentication → Users → email → Delete (CASCADE limpa perfil, favoritos, push, etc.).
+
+---
+
 ## Troubleshooting
 
 | Sintoma | Acção |
