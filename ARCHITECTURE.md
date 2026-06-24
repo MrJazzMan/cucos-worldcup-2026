@@ -1,6 +1,6 @@
 # Arquitectura — Cucos World Cup 2026
 
-Última actualização: 2026-06-19.
+Última actualização: 2026-06-23.
 
 ## Visão geral
 
@@ -43,7 +43,7 @@ flowchart LR
 
 | Rota | Acesso | Descrição |
 |------|--------|-----------|
-| `/` | Público | Jogos por dia — seletor, destaque, grelha 2 colunas, canais TV |
+| `/` | Público | Jogos por dia ou dia de torneio, pesquisa equipa, melhores marcadores, destaque, grelha |
 | `/grupos` | Público | Classificações dos grupos (tabelas alinhadas) |
 | `/fasefinal` | Público | Chave eliminatória — bracket simétrico desktop, colunas mobile |
 | `/eliminatorias` | Redirect | → `/fasefinal` (legado) |
@@ -66,7 +66,10 @@ Canais e jogos são SSR públicos (SEO). Favoritos exigem Supabase Auth.
 
 | Componente | Função |
 |------------|--------|
-| `MatchesView` | Barra de dias, destaque, grelha, filtro favoritos, refresh live |
+| `MatchesView` | Barra de dias (torneio ou calendário), pesquisa equipa, destaque, grelha, classificações do dia, melhores marcadores |
+| `TeamSearch` | Autocomplete equipas, filtro `?team=` |
+| `TopScorers` | Melhores marcadores (goal_events) |
+| `DayStandings` | Classificações dos grupos com jogos no dia activo |
 | `MatchCard` | Cartão grelha — hover desktop, estrela, pulso live |
 | `FeaturedMatch` | Jogo em destaque full-width (não hover) |
 | `MatchFavouriteToggle` | Estrela favoritos + pop animação |
@@ -81,16 +84,28 @@ Canais e jogos são SSR públicos (SEO). Favoritos exigem Supabase Auth.
 
 ## Fase final — dados e layout
 
-- **`buildKnockoutColumns()`** — agrupa jogos KO da DB/API por ronda.
-- **`KNOCKOUT_SKELETON`** — 16+8+4+2+1+1 placeholders FIFA 2026 quando não há dados.
-- **`buildSideTree()`** — árvore recursiva: 8 jogos 32 avos → … → meia-final (cada metade).
+- **`buildKnockoutColumns()`** — agrupa jogos KO, gera previews com qualificação + 3.ºs, ordena jogos reais por slot FIFA.
+- **`KNOCKOUT_SKELETON`** — placeholders M73–M104 (ordem oficial FIFA).
+- **`knockout-fifa-order.ts`** — números FIFA M73–M104, `fifaSlotLocation()` e `SIDE_TREE_SPEC` (árvore declarativa da chave por metade).
+- **`orderMatchesInFifaSlots()`** — associa jogos da BD ao índice correcto (equipas vs preview).
+- **`third-place.ts` + `knockout-annex-c.ts`** — 8 melhores 3.ºs + Annex C (495 combinações).
+- **`knockout-qualification.ts`** — resolve `1A`/`2B`/`3º`; locks matemáticos 1.º/2.º.
+- **`buildSideTree()`** — walk recursivo sobre `SIDE_TREE_SPEC` (coberto por testes de coerência).
 - Desktop: `lg` breakpoint; mobile: scroll horizontal por ronda.
 
-Ficheiros: `src/lib/knockout-bracket.ts`, `src/lib/knockout-bracket-tree.ts`, `src/components/knockout/*`.
+Ficheiros: `src/lib/knockout-bracket.ts`, `knockout-bracket-tree.ts`, `knockout-fifa-order.ts`, `third-place.ts`, `knockout-annex-c.ts`, `knockout-qualification.ts`, `knockout-slot-labels.ts`, `src/components/knockout/*`.
+
+Handoff detalhado: [docs/sessao-handoff-2026-06-23.md](docs/sessao-handoff-2026-06-23.md).
+
+## Homepage — calendário e marcadores
+
+- **`tournament-days.ts`** — dias do torneio (cutoff 06:00); chaves `td-N` vs `YYYY-MM-DD`.
+- **`top-scorers.ts`** — `aggregateTopScorers()` a partir de `goal_events` (exclui autogolos).
+- Pesquisa equipa: `TeamSearch` + `getAllTeams()`; URL `?team=` e `?view=calendar`.
 
 ## Internacionalização (i18n)
 
-12 locales em `src/lib/i18n/locales/`. Chaves relevantes fase final: `knockouts.title`, `knockouts.previewHint`, `knockouts.round.*`.
+12 locales em `src/lib/i18n/locales/`. Chaves recentes: `search.*`, `matches.view.*`, `topScorers.*`, `knockouts.*`, `matches.tournamentDay*`.
 
 ## Animações (`globals.css`)
 

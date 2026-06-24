@@ -34,6 +34,7 @@ Ver [.env.example](.env.example).
 Documentação completa em [`docs/`](docs/) (GitHub only — excluída do deploy Vercel).
 
 - [docs/README.md](docs/README.md) — índice
+- [docs/sessao-handoff-2026-06-23.md](docs/sessao-handoff-2026-06-23.md) — handoff recente (pesquisa, chave FIFA, marcadores)
 - [CHANGELOG.md](CHANGELOG.md) — releases
 - [docs/seo.md](docs/seo.md) — checklist SEO
 - [docs/setup-analytics-ads.md](docs/setup-analytics-ads.md) — GA4 + AdSense
