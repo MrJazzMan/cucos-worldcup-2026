@@ -2,13 +2,14 @@
 
 Documentação interna do projecto. **Vai para o GitHub, não vai para o Vercel** (ver [`.vercelignore`](../.vercelignore)).
 
-**Versão actual:** `0.5.0` — ver [sessao-handoff-2026-06-23.md](sessao-handoff-2026-06-23.md) (handoff mais recente).
+**Versão actual:** `0.5.0` — ver [sessao-handoff-2026-06-25.md](sessao-handoff-2026-06-25.md) (handoff mais recente).
 
 ## Índice
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [**sessao-handoff-2026-06-23.md**](sessao-handoff-2026-06-23.md) | **Handoff Jun 23** — pesquisa, dia de jogos, marcadores, chave FIFA |
+| [**sessao-handoff-2026-06-25.md**](sessao-handoff-2026-06-25.md) | **Handoff Jun 25** — testes do bracket, SEO/OG, rate limiting anti-scraping |
+| [sessao-handoff-2026-06-23.md](sessao-handoff-2026-06-23.md) | Handoff Jun 23 — pesquisa, dia de jogos, marcadores, chave FIFA |
 | [**sessao-handoff-2026-06-21-fase3.md**](sessao-handoff-2026-06-21-fase3.md) | Handoff Fase 3 — segurança, RGPD, homepage, cookies |
 | [sessao-handoff-jun-2026.md](sessao-handoff-jun-2026.md) | Handoff anterior — QStash, classificações, perfil/calendário |
 | [historico-e-setup.md](historico-e-setup.md) | Stack, Supabase, Vercel, domínio, dados reais |
