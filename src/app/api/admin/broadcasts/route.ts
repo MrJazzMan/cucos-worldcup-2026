@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isRelevantAdminBroadcastMatch } from "@/lib/admin-broadcasts";
 import { requireAdminOrCron } from "@/lib/admin-auth";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -35,7 +36,9 @@ export async function GET(request: Request) {
   const admin = createSupabaseAdmin();
   const { data: matches } = await admin
     .from("matches")
-    .select("fixture_id, home_team_name, away_team_name, match_date, kickoff_utc")
+    .select(
+      "fixture_id, home_team_name, away_team_name, match_date, kickoff_utc, status, round"
+    )
     .order("kickoff_utc", { ascending: true });
 
   const { data: broadcasts } = await admin.from("broadcasts").select("*");
@@ -44,10 +47,12 @@ export async function GET(request: Request) {
     (broadcasts ?? []).map((b) => [b.fixture_id, b.channels])
   );
 
-  const result = (matches ?? []).map((m) => ({
-    ...m,
-    channels: broadcastMap.get(m.fixture_id) ?? [],
-  }));
+  const result = (matches ?? [])
+    .filter(isRelevantAdminBroadcastMatch)
+    .map((m) => ({
+      ...m,
+      channels: broadcastMap.get(m.fixture_id) ?? [],
+    }));
 
   return NextResponse.json(result);
 }

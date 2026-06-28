@@ -10,6 +10,9 @@ interface AdminMatch {
   home_team_name: string;
   away_team_name: string;
   match_date: string;
+  kickoff_utc: string;
+  status: string;
+  round: string | null;
   channels: string[];
 }
 
@@ -89,8 +92,14 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold text-foreground">Admin — Canais TV</h1>
           <p className="mt-1 text-sm text-muted">
             Canais OndeBola (ex. Sport.Tv1) vêm do sync automático. Acrescenta outros
-            por região — ficam guardados mesmo após o próximo sync.
+            por região — ficam guardados mesmo após o próximo sync. Só aparecem jogos
+            por jogar, ao vivo, ou terminados ontem/hoje.
           </p>
+          {!loading && matches.length > 0 && (
+            <p className="mt-2 text-xs text-muted">
+              {matches.length} {matches.length === 1 ? "jogo" : "jogos"}
+            </p>
+          )}
         </div>
         <AdminNav />
       </div>
@@ -117,7 +126,11 @@ export default function AdminPage() {
                 {ptTeam(match.home_team_name)} vs {ptTeam(match.away_team_name)}
               </p>
               <p className="text-xs text-muted">
-                {match.match_date} · ID {match.fixture_id}
+                {match.match_date} · Jogo {match.fixture_id}
+                {match.round ? ` · ${match.round}` : ""}
+                {match.status === "live" && (
+                  <span className="ml-1 font-semibold text-red-500">· Ao vivo</span>
+                )}
               </p>
 
               {syncedChannels.length > 0 && (
