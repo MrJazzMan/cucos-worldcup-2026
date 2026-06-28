@@ -1,11 +1,16 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
-import { mergeBroadcastChannels } from "@/lib/channels";
+import {
+  mergeBroadcastChannels,
+  normalizeBroadcastChannels,
+} from "@/lib/channels";
 import {
   carregarAgenda,
-  canalParaJogo,
+  equipasCoincidem,
   jogoMundialSenior,
   jogosDoDia,
+  limparCacheOndeBola,
   parseCanaisLista,
+  type JogoTV,
 } from "@/lib/ondebola";
 import { ptTeam } from "@/lib/team-names";
 import { TIMEZONE } from "@/lib/timezone";
@@ -19,17 +24,33 @@ interface DbMatch {
   match_date: string;
 }
 
-function matchDbToOndeBola(
-  db: DbMatch,
-  agenda: Awaited<ReturnType<typeof carregarAgenda>>
-): string | null {
-  const kickoff = new Date(db.kickoff_utc);
-  return canalParaJogo(
-    agenda,
-    ptTeam(db.home_team_name),
-    ptTeam(db.away_team_name),
-    kickoff
-  );
+function findDbMatchForJogo(jogo: JogoTV, matches: DbMatch[]): DbMatch | null {
+  let melhor: { diff: number; match: DbMatch } | null = null;
+  const jogoDay = formatInTimeZone(jogo.inicio_lisboa, TIMEZONE, "yyyy-MM-dd");
+
+  for (const m of matches) {
+    const dbDay = formatInTimeZone(new Date(m.kickoff_utc), TIMEZONE, "yyyy-MM-dd");
+    if (dbDay !== jogoDay) continue;
+
+    const home = ptTeam(m.home_team_name);
+    const away = ptTeam(m.away_team_name);
+    const casaOk = equipasCoincidem(home, jogo.equipa_casa);
+    const foraOk = equipasCoincidem(away, jogo.equipa_fora);
+    const casaForaOk = equipasCoincidem(home, jogo.equipa_fora);
+    const foraCasaOk = equipasCoincidem(away, jogo.equipa_casa);
+    if (!((casaOk && foraOk) || (casaForaOk && foraCasaOk))) continue;
+
+    const diff = Math.abs(
+      new Date(m.kickoff_utc).getTime() - jogo.inicio_lisboa.getTime()
+    );
+    if (diff > 180 * 60 * 1000) continue;
+
+    if (!melhor || diff < melhor.diff) {
+      melhor = { diff, match: m };
+    }
+  }
+
+  return melhor?.match ?? null;
 }
 
 export async function syncBroadcastsFromOndeBola(options?: {
@@ -40,7 +61,8 @@ export async function syncBroadcastsFromOndeBola(options?: {
   const onlyWorldCup = options?.onlyWorldCup ?? true;
 
   const admin = createSupabaseAdmin();
-  const agenda = await carregarAgenda();
+  limparCacheOndeBola();
+  const agenda = await carregarAgenda(true);
 
   if (!agenda.length) {
     return { synced: 0, source: "ondebola", reason: "agenda vazia" };
@@ -68,12 +90,17 @@ export async function syncBroadcastsFromOndeBola(options?: {
     return { synced: 0, source: "ondebola", reason: "sem jogos na BD" };
   }
 
+  const dbMatches = matches as DbMatch[];
+
   const { data: existingBroadcasts } = await admin
     .from("broadcasts")
     .select("fixture_id, channels");
 
   const existingMap = new Map(
-    (existingBroadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+    (existingBroadcasts ?? []).map((b) => [
+      b.fixture_id,
+      normalizeBroadcastChannels(b.channels),
+    ])
   );
 
   const broadcasts: {
@@ -82,17 +109,23 @@ export async function syncBroadcastsFromOndeBola(options?: {
     notes: string;
   }[] = [];
 
-  for (const m of matches as DbMatch[]) {
-    const canaisStr = matchDbToOndeBola(m, agendaFiltrada);
-    if (!canaisStr) continue;
+  const seenFixtures = new Set<number>();
 
+  for (const jogo of agendaFiltrada) {
+    const ondebolaChannels = parseCanaisLista(jogo.canais);
+    if (!ondebolaChannels.length) continue;
+
+    const dbMatch = findDbMatchForJogo(jogo, dbMatches);
+    if (!dbMatch || seenFixtures.has(dbMatch.fixture_id)) continue;
+
+    seenFixtures.add(dbMatch.fixture_id);
     broadcasts.push({
-      fixture_id: m.fixture_id,
+      fixture_id: dbMatch.fixture_id,
       channels: mergeBroadcastChannels(
-        parseCanaisLista(canaisStr),
-        existingMap.get(m.fixture_id) ?? []
+        ondebolaChannels,
+        existingMap.get(dbMatch.fixture_id) ?? []
       ),
-      notes: `OndeBola — ${m.home_team_name} vs ${m.away_team_name}`,
+      notes: `OndeBola — ${jogo.equipa_casa} vs ${jogo.equipa_fora}`,
     });
   }
 
@@ -108,9 +141,11 @@ export async function syncBroadcastsFromOndeBola(options?: {
   }
 
   const jogosHoje = jogosDoDia(agendaFiltrada).length;
+  const channelsTotal = broadcasts.reduce((n, b) => n + b.channels.length, 0);
 
   return {
     synced: broadcasts.length,
+    channelsTotal,
     source: "ondebola",
     agenda_total: agenda.length,
     jogos_mundial_hoje: jogosHoje,

@@ -1,4 +1,5 @@
 import { getMatchPhase, type MatchPhase } from "@/lib/portugal-upcoming";
+import { formatVenueShort } from "@/lib/venues";
 import type { Match } from "@/types";
 
 export function localizeMatchPhase(
@@ -63,7 +64,8 @@ export function formatMatchMetaFooter(
     parts.push(t("card.matchNumber").replace("{n}", String(matchNumber)));
   }
   if (options?.includeVenue && match.venue) {
-    parts.push(match.venue);
+    const venueLabel = formatVenueShort(match.venue);
+    if (venueLabel) parts.push(venueLabel);
   }
   return parts.length > 0 ? parts.join(" · ") : null;
 }

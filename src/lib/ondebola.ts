@@ -248,12 +248,34 @@ export function canalParaJogo(
   equipaCasa: string,
   equipaFora: string,
   kickoff: Date,
-  toleranciaMinutos = 90
+  toleranciaMinutos = 180
 ): string | null {
-  let melhor: { diff: number; canais: string } | null = null;
+  const jogo = findJogoNaAgenda(
+    agenda,
+    equipaCasa,
+    equipaFora,
+    kickoff,
+    toleranciaMinutos
+  );
+  return jogo?.canais ?? null;
+}
+
+/** Melhor entrada OndeBola para um jogo da BD (mesmo dia civil + equipas). */
+export function findJogoNaAgenda(
+  agenda: JogoTV[],
+  equipaCasa: string,
+  equipaFora: string,
+  kickoff: Date,
+  toleranciaMinutos = 180
+): JogoTV | null {
+  const kickoffDay = formatInTimeZone(kickoff, TIMEZONE, "yyyy-MM-dd");
+  let melhor: { diff: number; jogo: JogoTV } | null = null;
 
   for (const jogo of agenda) {
     if (!jogoSeniorHomens(jogo)) continue;
+
+    const jogoDay = formatInTimeZone(jogo.inicio_lisboa, TIMEZONE, "yyyy-MM-dd");
+    if (jogoDay !== kickoffDay) continue;
 
     const casaOk = equipasCoincidem(equipaCasa, jogo.equipa_casa);
     const foraOk = equipasCoincidem(equipaFora, jogo.equipa_fora);
@@ -266,11 +288,11 @@ export function canalParaJogo(
     if (diff > toleranciaMinutos * 60 * 1000) continue;
 
     if (!melhor || diff < melhor.diff) {
-      melhor = { diff, canais: jogo.canais };
+      melhor = { diff, jogo };
     }
   }
 
-  return melhor?.canais ?? null;
+  return melhor?.jogo ?? null;
 }
 
 /** "RTP1, Sport.Tv1" → ["RTP1", "Sport.Tv1"] normalizado */

@@ -74,13 +74,30 @@ export function channelsOutsidePresets(channels: string[]): string[] {
 }
 
 /**
- * Junta canais OndeBola com presets que o admin activou manualmente.
- * Preserva adições manuais (LiveModeTv, UK, …); actualiza sempre os nomes do scrape.
+ * Junta canais OndeBola com presets estrangeiros que o admin activou manualmente.
+ * Canais PT do scrape substituem sempre os anteriores (evita Sport.Tv5 stale, etc.).
  */
 export function mergeBroadcastChannels(
   ondebolaChannels: string[],
   existingChannels: string[]
 ): string[] {
-  const manualPresets = existingChannels.filter((c) => ALL_PRESET_CHANNELS.has(c));
-  return [...new Set([...ondebolaChannels, ...manualPresets])];
+  const ptSet = new Set<string>(PT_CHANNELS);
+  const foreignManual = existingChannels.filter(
+    (c) => ALL_PRESET_CHANNELS.has(c) && !ptSet.has(c)
+  );
+  return [...new Set([...ondebolaChannels, ...foreignManual])];
+}
+
+/** Garante array de strings ao ler da BD (Supabase devolve TEXT[]). */
+export function normalizeBroadcastChannels(channels: unknown): string[] {
+  if (Array.isArray(channels)) {
+    return channels.filter((c): c is string => typeof c === "string" && c.length > 0);
+  }
+  if (typeof channels === "string" && channels.length > 0) {
+    return channels
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean);
+  }
+  return [];
 }

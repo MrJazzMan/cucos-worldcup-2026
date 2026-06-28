@@ -9,6 +9,28 @@ const HOST_COUNTRY: Record<string, { flag: string; labelPt: string; labelEn: str
   Mexico: { flag: "🇲🇽", labelPt: "México", labelEn: "Mexico" },
 };
 
+/** Estádio → cidade anfitriã (quando a API só envia o nome do recinto). */
+const STADIUM_CITY: Record<string, string> = {
+  "Mercedes-Benz Stadium": "Atlanta",
+  "Gillette Stadium": "Boston",
+  "AT&T Stadium": "Dallas",
+  "NRG Stadium": "Houston",
+  "SoFi Stadium": "Los Angeles",
+  "Hard Rock Stadium": "Miami",
+  "MetLife Stadium": "East Rutherford",
+  "Lincoln Financial Field": "Philadelphia",
+  "Levi's Stadium": "Santa Clara",
+  "Lumen Field": "Seattle",
+  "Arrowhead Stadium": "Kansas City",
+  "BC Place": "Vancouver",
+  "BMO Field": "Toronto",
+  "Estadio Azteca": "Mexico City",
+  "Estadio Akron": "Guadalajara",
+  "Estadio BBVA": "Monterrey",
+  "Estadio Guadalajara": "Guadalajara",
+  "Estadio Monterrey": "Monterrey",
+};
+
 const HOST_COUNTRY_CODE: Record<keyof typeof HOST_COUNTRY, string> = {
   USA: "us",
   Canada: "ca",
@@ -65,8 +87,12 @@ export function parseVenue(venue: string | null | undefined): VenueDisplay {
   }
 
   const parts = venue.split(" · ").map((p) => p.trim());
-  const city = parts.length >= 2 ? parts[0] : null;
+  let city = parts.length >= 2 ? parts[0] : null;
   const stadium = parts.length >= 2 ? parts.slice(1).join(" · ") : venue;
+
+  if (!city && stadium) {
+    city = STADIUM_CITY[stadium] ?? null;
+  }
 
   const hostMeta = city ? CITY_HOST[city] : null;
   const host = hostMeta ? HOST_COUNTRY[hostMeta.country] : null;
@@ -99,6 +125,17 @@ export function venueStateLabel(
   const hostMeta = CITY_HOST[city];
   if (!hostMeta) return null;
   return usesPortugueseTeams(lang) ? hostMeta.statePt : hostMeta.stateEn;
+}
+
+/** Linha curta para cards: «SoFi Stadium · Los Angeles · 🇺🇸». */
+export function formatVenueShort(venue: string | null | undefined): string | null {
+  if (!venue) return null;
+  const { city, stadium, countryFlag } = parseVenue(venue);
+  const label = stadium ?? venue;
+  const parts = [label];
+  if (city) parts.push(city);
+  if (countryFlag) parts.push(countryFlag);
+  return parts.join(" · ");
 }
 
 export function formatVenueField(

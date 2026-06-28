@@ -1,3 +1,4 @@
+import { normalizeBroadcastChannels } from "@/lib/channels";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { DayOffset, GroupStanding, Match, TeamOption } from "@/types";
@@ -41,7 +42,10 @@ export async function getMatchesForDay(
     .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
 
   const broadcastMap = new Map(
-    (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+    (broadcasts ?? []).map((b) => [
+      b.fixture_id,
+      normalizeBroadcastChannels(b.channels),
+    ])
   );
 
   return wcMatches.map((m) => ({
@@ -73,7 +77,10 @@ export async function getAllMatches(
     .select("fixture_id, channels");
 
   const broadcastMap = new Map(
-    (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+    (broadcasts ?? []).map((b) => [
+      b.fixture_id,
+      normalizeBroadcastChannels(b.channels),
+    ])
   );
 
   return wcMatches.map((m) => ({
@@ -161,7 +168,10 @@ export async function getKnockoutRounds(): Promise<
         .select("fixture_id, channels")
         .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
       const broadcastMap = new Map(
-        (broadcasts ?? []).map((b) => [b.fixture_id, b.channels as string[]])
+        (broadcasts ?? []).map((b) => [
+          b.fixture_id,
+          normalizeBroadcastChannels(b.channels),
+        ])
       );
       const wcWithChannels = wcMatches.map((m) => ({
         ...m,
