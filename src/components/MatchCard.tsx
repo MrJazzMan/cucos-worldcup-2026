@@ -5,6 +5,7 @@ import { LivePulseDot } from "@/components/LivePulseDot";
 import { MatchFavouriteToggle } from "@/components/match/MatchFavouriteToggle";
 import { MatchChannels } from "@/components/match/MatchChannels";
 import { MatchTeamsLayout } from "@/components/match/MatchTeamsLayout";
+import { MatchMetaFooter } from "@/components/match/MatchMetaFooter";
 import { MatchVenue } from "@/components/match/MatchVenue";
 import { useSettings } from "@/components/SettingsProvider";
 import { useLiveMinute } from "@/lib/match-time";
@@ -16,6 +17,7 @@ interface MatchCardProps {
   staggerIndex?: number;
   selectedDay?: string;
   showKickoffDate?: boolean;
+  matchNumber?: number;
 }
 
 export function MatchCard({
@@ -24,6 +26,7 @@ export function MatchCard({
   staggerIndex,
   selectedDay,
   showKickoffDate,
+  matchNumber,
 }: MatchCardProps) {
   const { t } = useSettings();
   const [isFavourite, setIsFavourite] = useState(!!match.isFavourite);
@@ -97,11 +100,7 @@ export function MatchCard({
           />
         </div>
 
-        {match.group_name && (
-          <p className="mt-2 text-center text-[10px] uppercase tracking-wide text-muted">
-            {match.group_name}
-          </p>
-        )}
+        <MatchMetaFooter match={match} matchNumber={matchNumber} />
       </div>
     </article>
   );

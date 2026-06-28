@@ -11,8 +11,8 @@ import {
   getMatchPhase,
   getOpponent,
   getPortugalUpcomingMatches,
-  type MatchPhase,
 } from "@/lib/portugal-upcoming";
+import { localizeMatchPhase } from "@/lib/match-meta";
 import { PORTUGAL_TEAM_ID } from "@/lib/world-cup";
 import type { Match } from "@/types";
 
@@ -20,19 +20,6 @@ interface PortugalUpcomingMatchesProps {
   matches: Match[];
   excludeFixtureId?: number | null;
   loggedIn?: boolean;
-}
-
-function localizePhase(phase: MatchPhase, t: (k: string) => string): string {
-  if (phase.kind === "group") {
-    const base = t("portugalUpcoming.phase.group");
-    if (phase.matchday == null) return base;
-    const matchday = t("portugalUpcoming.phase.matchday").replace(
-      "{n}",
-      String(phase.matchday)
-    );
-    return `${base} · ${matchday}`;
-  }
-  return t(`portugalUpcoming.phase.${phase.key}`);
 }
 
 function PortugalUpcomingCard({
@@ -46,7 +33,7 @@ function PortugalUpcomingCard({
   const opponent = getOpponent(match);
   const isLive = match.status === "live";
   const phase = getMatchPhase(match);
-  const phaseLabel = phase ? localizePhase(phase, t) : null;
+  const phaseLabel = phase ? localizeMatchPhase(phase, t) : null;
   const dateLabel = formatShortMatchDate(match.kickoff_utc, tz, locale);
   const time = timeInTz(match.kickoff_utc, tz);
 

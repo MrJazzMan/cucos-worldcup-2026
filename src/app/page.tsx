@@ -3,7 +3,6 @@ import { MatchesView } from "@/components/MatchesView";
 import {
   getAllMatches,
   getAllTeams,
-  getGroupStandings,
   getUserFavouriteTeamIds,
 } from "@/lib/matches";
 import { getMockMatchesForDate } from "@/lib/mock-data";
@@ -65,16 +64,14 @@ export default async function HomePage() {
   const favouriteIds = loggedIn
     ? await getUserFavouriteTeamIds().catch(() => [] as number[])
     : [];
-  const [matches, standings, teams] = await Promise.all([
+  const [matches, teams] = await Promise.all([
     loadAllMatches(favouriteIds),
-    getGroupStandings().catch(() => [] as Awaited<ReturnType<typeof getGroupStandings>>),
     getAllTeams().catch(() => [] as Awaited<ReturnType<typeof getAllTeams>>),
   ]);
 
   return (
     <MatchesView
       matches={matches}
-      standings={standings}
       teams={teams}
       loggedIn={loggedIn}
     />
