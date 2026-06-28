@@ -2,6 +2,11 @@
 // As selecções na API-Football vêm em inglês; aqui mapeamos para pt-PT.
 // Apenas se traduz quando há entrada no mapa — caso contrário fica o original.
 
+/** Normaliza variantes da API («Bosnia & Herzegovina» → «Bosnia and Herzegovina»). */
+export function normalizeApiTeamName(name: string): string {
+  return name.trim().replace(/\s*&\s*/g, " and ");
+}
+
 const TEAM_NAMES_PT: Record<string, string> = {
   // Anfitriões
   "USA": "Estados Unidos",
@@ -109,5 +114,6 @@ const TEAM_NAMES_PT: Record<string, string> = {
 /** Devolve o nome da equipa em Português de Portugal (ou o original se não houver tradução). */
 export function ptTeam(name: string | null | undefined): string {
   if (!name) return "";
-  return TEAM_NAMES_PT[name.trim()] ?? name;
+  const key = normalizeApiTeamName(name);
+  return TEAM_NAMES_PT[key] ?? name;
 }

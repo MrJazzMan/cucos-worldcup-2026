@@ -1,4 +1,5 @@
 import { PORTUGAL_TEAM_ID } from "@/lib/world-cup";
+import { normalizeApiTeamName } from "@/lib/team-names";
 
 /** Nome API-Football (inglês) → código circle-flags */
 const TEAM_NAME_TO_FLAG: Record<string, string> = {
@@ -99,5 +100,6 @@ export function getTeamFlagCode(
   teamId?: number
 ): string | null {
   if (teamId === PORTUGAL_TEAM_ID) return "pt";
-  return TEAM_NAME_TO_FLAG[teamName] ?? null;
+  const key = normalizeApiTeamName(teamName);
+  return TEAM_NAME_TO_FLAG[key] ?? null;
 }
