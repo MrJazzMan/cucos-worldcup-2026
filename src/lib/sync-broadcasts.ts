@@ -7,6 +7,7 @@ import {
   jogosDoDia,
   parseCanaisLista,
 } from "@/lib/ondebola";
+import { ptTeam } from "@/lib/team-names";
 import { TIMEZONE } from "@/lib/timezone";
 import { formatInTimeZone } from "date-fns-tz";
 
@@ -25,8 +26,8 @@ function matchDbToOndeBola(
   const kickoff = new Date(db.kickoff_utc);
   return canalParaJogo(
     agenda,
-    db.home_team_name,
-    db.away_team_name,
+    ptTeam(db.home_team_name),
+    ptTeam(db.away_team_name),
     kickoff
   );
 }
