@@ -48,7 +48,7 @@ export async function GET(request: Request) {
   );
 
   const result = (matches ?? [])
-    .filter(isRelevantAdminBroadcastMatch)
+    .filter((m) => isRelevantAdminBroadcastMatch(m))
     .map((m) => ({
       ...m,
       channels: broadcastMap.get(m.fixture_id) ?? [],
