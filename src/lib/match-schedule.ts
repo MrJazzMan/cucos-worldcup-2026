@@ -12,24 +12,26 @@ export function formatScheduleDayHeading(
   tz: string,
   locale: string
 ): string {
-  return new Intl.DateTimeFormat(locale, {
+  const formatted = new Intl.DateTimeFormat(locale, {
     timeZone: tz,
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(new Date(`${dayKey}T12:00:00Z`));
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
 
-/** Jogos a partir de hoje (inclusive), no fuso do utilizador. */
-export function filterMatchesFromToday(
-  matches: Match[],
-  tz: string,
+/** Dia de scroll inicial: hoje, ou o mais próximo com jogos. */
+export function resolveScrollTargetDay(
+  dayKeys: string[],
   todayKey: string
-): Match[] {
-  return matches.filter(
-    (m) => dateKeyInTz(m.kickoff_utc, tz) >= todayKey
-  );
+): string | null {
+  if (dayKeys.length === 0) return null;
+  if (dayKeys.includes(todayKey)) return todayKey;
+  const future = dayKeys.find((k) => k >= todayKey);
+  if (future) return future;
+  return dayKeys[dayKeys.length - 1] ?? null;
 }
 
 /** Agrupa jogos por data civil, ordenados cronologicamente. */

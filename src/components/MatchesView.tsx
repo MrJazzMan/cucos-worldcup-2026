@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { teamLabel } from "@/components/Display";
 import { AccountDeletedBanner } from "@/components/AccountDeletedBanner";
@@ -16,8 +16,8 @@ import { dayKeyWithOffset } from "@/lib/datetime";
 import { HomePageSkeleton } from "@/components/skeleton/HomePageSkeleton";
 import { buildMatchNumberMap } from "@/lib/match-meta";
 import {
-  filterMatchesFromToday,
   groupMatchesByCalendarDay,
+  resolveScrollTargetDay,
 } from "@/lib/match-schedule";
 import type { Match, TeamOption } from "@/types";
 
@@ -40,6 +40,7 @@ export function MatchesView({
   const { t, tz, lang, mounted } = useSettings();
   const todayKey = useMemo(() => dayKeyWithOffset(tz, 0), [tz]);
   const [showOnlyFavourites, setShowOnlyFavourites] = useState(false);
+  const hasAutoScrolled = useRef(false);
 
   const isTeamSearch = selectedTeamId !== null;
 
@@ -54,26 +55,24 @@ export function MatchesView({
 
   const listMatches = useMemo(() => {
     let list = isTeamSearch ? teamFilteredMatches : matches;
-
     if (showOnlyFavourites) {
       list = list.filter((m) => m.isFavourite);
-    } else if (!isTeamSearch) {
-      list = filterMatchesFromToday(list, tz, todayKey);
     }
-
     return list;
-  }, [
-    isTeamSearch,
-    teamFilteredMatches,
-    matches,
-    showOnlyFavourites,
-    tz,
-    todayKey,
-  ]);
+  }, [isTeamSearch, teamFilteredMatches, matches, showOnlyFavourites]);
 
   const daySections = useMemo(
     () => groupMatchesByCalendarDay(listMatches, tz),
     [listMatches, tz]
+  );
+
+  const scrollTargetDay = useMemo(
+    () =>
+      resolveScrollTargetDay(
+        daySections.map((s) => s.dayKey),
+        todayKey
+      ),
+    [daySections, todayKey]
   );
 
   const matchNumberMap = useMemo(
@@ -98,20 +97,42 @@ export function MatchesView({
   }, [isTeamSearch, teams, selectedTeamId, lang, t]);
 
   useEffect(() => {
-    if (searchParams.get("today") === "1") {
-      setShowOnlyFavourites(false);
-      requestAnimationFrame(() => {
-        document
-          .getElementById(`match-day-${todayKey}`)
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-      router.replace("/", { scroll: false });
-      return;
-    }
     if (searchParams.get("favourites") === "1") {
       setShowOnlyFavourites(true);
     }
-  }, [searchParams, todayKey, router]);
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!mounted || !scrollTargetDay || isTeamSearch || showOnlyFavourites) {
+      return;
+    }
+
+    const fromBottomNav = searchParams.get("today") === "1";
+    const shouldScroll = fromBottomNav || !hasAutoScrolled.current;
+    if (!shouldScroll) return;
+
+    requestAnimationFrame(() => {
+      document
+        .getElementById(`match-day-${scrollTargetDay}`)
+        ?.scrollIntoView({
+          behavior: fromBottomNav ? "smooth" : "instant",
+          block: "start",
+        });
+      hasAutoScrolled.current = true;
+    });
+
+    if (fromBottomNav) {
+      setShowOnlyFavourites(false);
+      router.replace("/", { scroll: false });
+    }
+  }, [
+    mounted,
+    scrollTargetDay,
+    isTeamSearch,
+    showOnlyFavourites,
+    searchParams,
+    router,
+  ]);
 
   useEffect(() => {
     if (!mounted || !hasLiveNow) return;

@@ -191,18 +191,18 @@ export function BottomNav() {
           icon={<IconBall className={matchesActive ? "text-accent" : undefined} />}
         />
         <NavItem
-          label={t("nav.bottom.groups")}
-          active={groupsActive}
-          href="/grupos"
-          icon={<IconGrid className={groupsActive ? "text-accent" : undefined} />}
-        />
-        <NavItem
           label={t("nav.bottom.knockouts")}
           active={knockoutsActive}
           href="/fasefinal"
           icon={
             <IconTrophy className={knockoutsActive ? "text-accent" : undefined} />
           }
+        />
+        <NavItem
+          label={t("nav.bottom.groups")}
+          active={groupsActive}
+          href="/grupos"
+          icon={<IconGrid className={groupsActive ? "text-accent" : undefined} />}
         />
         <NavItem
           label={t("nav.bottom.favourites")}

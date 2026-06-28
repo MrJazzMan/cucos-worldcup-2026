@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { KnockoutBracket } from "@/components/KnockoutBracket";
-import { MatchCard } from "@/components/MatchCard";
+import { KnockoutSchedule } from "@/components/KnockoutSchedule";
 import { T } from "@/components/Display";
 import { buildKnockoutColumns } from "@/lib/knockout-bracket";
 import {
+  getAllMatches,
   getGroupStandings,
   getKnockoutRounds,
   getUserFavouriteTeamIds,
@@ -31,22 +32,22 @@ export default async function FaseFinalPage() {
     ? await getUserFavouriteTeamIds().catch(() => [] as number[])
     : [];
 
-  const [rounds, standings] = await Promise.all([
+  const [rounds, standings, allMatches] = await Promise.all([
     getKnockoutRounds(),
     getGroupStandings(),
+    getAllMatches(favouriteIds).catch(() => []),
   ]);
   const columns = buildKnockoutColumns(rounds, standings);
   const hasMatches = rounds.some((r) => r.matches.length > 0);
 
-  const roundsWithFavourites = rounds.map((round) => ({
-    ...round,
-    matches: round.matches.map((m) => ({
+  const knockoutMatches = rounds.flatMap((round) =>
+    round.matches.map((m) => ({
       ...m,
       isFavourite:
         favouriteIds.includes(m.home_team_id) ||
         favouriteIds.includes(m.away_team_id),
-    })),
-  }));
+    }))
+  );
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8">
@@ -64,25 +65,11 @@ export default async function FaseFinalPage() {
       <KnockoutBracket columns={columns} preview={!hasMatches} />
 
       {hasMatches && (
-        <div className="mx-auto w-full max-w-2xl space-y-6 pt-2">
-          <h2 className="text-lg font-semibold text-foreground">
-            <T k="knockouts.schedule" />
-          </h2>
-          {roundsWithFavourites.map((round) => (
-            <section key={round.round} className="space-y-3">
-              <h3 className="text-base font-semibold text-foreground">
-                {round.round}
-              </h3>
-              {round.matches.map((match) => (
-                <MatchCard
-                  key={match.fixture_id}
-                  match={match}
-                  loggedIn={loggedIn}
-                />
-              ))}
-            </section>
-          ))}
-        </div>
+        <KnockoutSchedule
+          matches={knockoutMatches}
+          allMatches={allMatches}
+          loggedIn={loggedIn}
+        />
       )}
     </div>
   );

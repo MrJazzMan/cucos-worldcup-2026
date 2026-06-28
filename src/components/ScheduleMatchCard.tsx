@@ -6,9 +6,11 @@ import { LivePulseDot } from "@/components/LivePulseDot";
 import { MatchChannels } from "@/components/match/MatchChannels";
 import { MatchMetaFooter } from "@/components/match/MatchMetaFooter";
 import { MatchFavouriteToggle } from "@/components/match/MatchFavouriteToggle";
+import { MatchTeamScorers } from "@/components/match/MatchTeamScorers";
 import { TeamFlag } from "@/components/TeamFlag";
 import { useSettings } from "@/components/SettingsProvider";
 import { timeInTz } from "@/lib/datetime";
+import { goalsForTeam } from "@/lib/match-events";
 import { useLiveMinute } from "@/lib/match-time";
 import type { Match } from "@/types";
 
@@ -27,8 +29,11 @@ export function ScheduleMatchCard({
   const [isFavourite, setIsFavourite] = useState(!!match.isFavourite);
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
+  const showScoreboard = isLive || isFinished;
   const liveMinute = useLiveMinute(isLive, match.minute);
   const time = timeInTz(match.kickoff_utc, tz);
+  const homeGoals = goalsForTeam(match.goal_events, match.home_team_id);
+  const awayGoals = goalsForTeam(match.goal_events, match.away_team_id);
 
   return (
     <article
@@ -48,20 +53,29 @@ export function ScheduleMatchCard({
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 px-6">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-sm font-semibold text-foreground sm:text-base">
-            <TeamName name={match.home_team_name} />
-          </span>
-          <TeamFlag
-            name={match.home_team_name}
-            teamId={match.home_team_id}
-            size={28}
-          />
+      <div className="flex items-start justify-center gap-x-3 gap-y-2 px-6">
+        <div className="flex min-w-0 flex-1 flex-col items-end">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-right text-sm font-semibold text-foreground sm:text-base">
+              <TeamName name={match.home_team_name} />
+            </span>
+            <TeamFlag
+              name={match.home_team_name}
+              teamId={match.home_team_id}
+              size={28}
+            />
+          </div>
+          {showScoreboard && (
+            <MatchTeamScorers
+              goals={homeGoals}
+              variant="schedule"
+              align="end"
+            />
+          )}
         </div>
 
-        <div className="flex min-w-[4.5rem] flex-col items-center justify-center">
-          {isLive || isFinished ? (
+        <div className="flex w-[4.5rem] shrink-0 flex-col items-center justify-center self-center">
+          {showScoreboard ? (
             <div className="flex items-center gap-1.5 font-bold tabular-nums">
               <span
                 className={`text-lg sm:text-xl ${
@@ -95,15 +109,24 @@ export function ScheduleMatchCard({
           )}
         </div>
 
-        <div className="flex min-w-0 items-center gap-2">
-          <TeamFlag
-            name={match.away_team_name}
-            teamId={match.away_team_id}
-            size={28}
-          />
-          <span className="truncate text-sm font-semibold text-foreground sm:text-base">
-            <TeamName name={match.away_team_name} />
-          </span>
+        <div className="flex min-w-0 flex-1 flex-col items-start">
+          <div className="flex items-center gap-2">
+            <TeamFlag
+              name={match.away_team_name}
+              teamId={match.away_team_id}
+              size={28}
+            />
+            <span className="truncate text-sm font-semibold text-foreground sm:text-base">
+              <TeamName name={match.away_team_name} />
+            </span>
+          </div>
+          {showScoreboard && (
+            <MatchTeamScorers
+              goals={awayGoals}
+              variant="schedule"
+              align="start"
+            />
+          )}
         </div>
       </div>
 

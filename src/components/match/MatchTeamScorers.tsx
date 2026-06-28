@@ -5,7 +5,8 @@ import type { MatchGoalEvent } from "@/types";
 
 type MatchTeamScorersProps = {
   goals: MatchGoalEvent[];
-  variant: "card" | "featured";
+  variant: "card" | "featured" | "schedule";
+  align?: "start" | "center" | "end";
 };
 
 function goalSuffix(detail: string): string {
@@ -14,14 +15,29 @@ function goalSuffix(detail: string): string {
   return "";
 }
 
-export function MatchTeamScorers({ goals, variant }: MatchTeamScorersProps) {
+export function MatchTeamScorers({
+  goals,
+  variant,
+  align = "center",
+}: MatchTeamScorersProps) {
   if (!goals.length) return null;
 
-  const textSize = variant === "featured" ? "text-base" : "text-sm";
+  const textSize =
+    variant === "featured"
+      ? "text-base"
+      : variant === "schedule"
+        ? "text-[11px]"
+        : "text-sm";
+  const alignClass =
+    align === "end"
+      ? "text-right"
+      : align === "start"
+        ? "text-left"
+        : "text-center";
 
   return (
     <ul
-      className={`mt-2 w-full space-y-0.5 ${textSize} leading-snug text-muted`}
+      className={`mt-1 w-full space-y-0.5 ${textSize} leading-snug text-muted ${alignClass}`}
       aria-label="Marcadores"
     >
       {goals.map((goal, index) => (

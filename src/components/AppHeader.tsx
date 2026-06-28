@@ -10,8 +10,8 @@ import { useT } from "@/components/SettingsProvider";
 
 const links = [
   { href: "/", key: "nav.matches" },
-  { href: "/grupos", key: "nav.groups" },
   { href: "/fasefinal", key: "nav.knockouts" },
+  { href: "/grupos", key: "nav.groups" },
 ] as const;
 
 export function AppHeader() {

@@ -14,20 +14,25 @@ interface MatchDaySectionProps {
   section: MatchDaySectionData;
   matchNumberMap: Map<number, number>;
   loggedIn?: boolean;
+  linkHref?: string;
+  linkLabel?: string;
 }
 
 export function MatchDaySection({
   section,
   matchNumberMap,
   loggedIn = false,
+  linkHref: linkHrefOverride,
+  linkLabel: linkLabelOverride,
 }: MatchDaySectionProps) {
   const { t, tz, locale } = useSettings();
   const heading = formatScheduleDayHeading(section.dayKey, tz, locale);
   const hasKnockout = section.matches.some((m) => isKnockoutRound(m.round));
-  const linkHref = hasKnockout ? "/fasefinal" : "/grupos";
-  const linkLabel = hasKnockout
-    ? t("matches.viewBrackets")
-    : t("matches.viewGroups");
+  const linkHref =
+    linkHrefOverride ?? (hasKnockout ? "/fasefinal" : "/grupos");
+  const linkLabel =
+    linkLabelOverride ??
+    (hasKnockout ? t("matches.viewBrackets") : t("matches.viewGroups"));
 
   return (
     <section
@@ -38,7 +43,7 @@ export function MatchDaySection({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2
           id={`match-day-heading-${section.dayKey}`}
-          className="text-sm font-medium capitalize text-foreground sm:text-base"
+          className="text-sm font-medium text-foreground sm:text-base"
         >
           {heading}
         </h2>
