@@ -101,16 +101,45 @@ function parseDataHora(tdDateHtml: string, ref: Date): Date | null {
   return dt;
 }
 
-function parseCanais(tdChannelHtml: string): string {
+/** Normaliza nomes do OndeBola para os presets do site (RTP 1 → RTP1, …). */
+export function normalizeCanalNome(nome: string): string {
+  const n = nome.trim();
+  if (/^rtp\s*1$/i.test(n)) return "RTP1";
+  if (/^rtp\s*2$/i.test(n)) return "RTP2";
+  if (/^rtp\s*3$/i.test(n)) return "RTP3";
+  if (/^livemode\s*tv$/i.test(n)) return "LiveModeTv";
+  return n;
+}
+
+/** Extrai todos os canais/streamings da célula OndeBola (não só «Detalhes canal»). */
+export function parseCanais(tdChannelHtml: string): string {
   const $ = cheerio.load(tdChannelHtml);
-  const link = $("a[title='Detalhes canal']");
-  if (!link.length) return "";
-  const partes = link
-    .text()
-    .split("\n")
-    .map((p) => p.trim().replace(/,$/, ""))
-    .filter(Boolean);
-  return partes.join(", ");
+  const found = new Set<string>();
+
+  $("a[title='Detalhes canal']").each((_, el) => {
+    $(el)
+      .text()
+      .split("\n")
+      .map((p) => p.trim().replace(/,$/, ""))
+      .filter(Boolean)
+      .forEach((parte) => found.add(normalizeCanalNome(parte)));
+  });
+
+  $("a[title='ver online']").each((_, el) => {
+    const nome = $(el).text().trim();
+    if (nome) found.add(normalizeCanalNome(nome));
+  });
+
+  $("span.video-link-text.livemodetv").each(() => {
+    found.add("LiveModeTv");
+  });
+
+  $("a[title='Betano livestream'] .video-link-text").each((_, el) => {
+    const nome = $(el).text().trim();
+    if (nome) found.add(normalizeCanalNome(nome));
+  });
+
+  return [...found].join(", ");
 }
 
 export function parseAgendaHtml(html: string, ref = new Date()): JogoTV[] {

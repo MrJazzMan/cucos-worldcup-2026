@@ -31,6 +31,10 @@ export function channelBadgeClass(channel: string) {
     return `${BASE_BADGE} bg-[#ff0000] text-white`;
   }
 
+  if (upper === "BETANO") {
+    return `${BASE_BADGE} bg-[#ff6600] text-white`;
+  }
+
   return `${BASE_BADGE} bg-surface-2 text-foreground border border-border-base`;
 }
 
