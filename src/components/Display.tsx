@@ -3,6 +3,7 @@
 import { useSettings } from "@/components/SettingsProvider";
 import { formatCompactMatchDate, timeInTz, tzShortName } from "@/lib/datetime";
 import { usesPortugueseTeams, type Lang } from "@/lib/i18n";
+import { feederFifaNumber } from "@/lib/feeder-teams";
 import { ptTeam } from "@/lib/team-names";
 
 /** Texto traduzido pela chave i18n. */
@@ -13,13 +14,19 @@ export function T({ k }: { k: string }) {
 
 /** Nome de equipa no idioma escolhido (PT traduzido, EN original). */
 export function TeamName({ name }: { name: string | null | undefined }) {
-  const { lang } = useSettings();
+  const { t, lang } = useSettings();
   if (!name) return null;
+  const feeder = feederFifaNumber(name);
+  if (feeder != null) {
+    return <>{t("card.feederWinner").replace("{n}", String(feeder))}</>;
+  }
   return <>{usesPortugueseTeams(lang) ? ptTeam(name) : name}</>;
 }
 
 export function teamLabel(name: string | null | undefined, lang: Lang): string {
   if (!name) return "";
+  const feeder = feederFifaNumber(name);
+  if (feeder != null) return name;
   return usesPortugueseTeams(lang) ? ptTeam(name) : name;
 }
 

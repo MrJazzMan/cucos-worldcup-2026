@@ -62,6 +62,7 @@ export const pt: Dict = {
   "featured.startsInMinutes": "Começa em {minutes}m",
   "card.channelTBC": "Canal a confirmar",
   "card.matchNumber": "Jogo {n}",
+  "card.feederWinner": "Vencedor do Jogo {n}",
   "card.favouriteAdd": "Adicionar equipas aos favoritos",
   "card.favouriteRemove": "Remover equipas dos favoritos",
   "card.channelsSignInLink": "Inicia sessão",

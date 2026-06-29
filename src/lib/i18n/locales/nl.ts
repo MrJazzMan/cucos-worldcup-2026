@@ -59,6 +59,7 @@ export const nl: Dict = {
   "status.upcoming": "Binnenkort",
   "card.channelTBC": "Zender nog te bevestigen",
   "card.matchNumber": "Wedstrijd {n}",
+  "card.feederWinner": "Winnaar wedstrijd {n}",
   "card.channelsSignInLink": "Inloggen",
   "card.channelsSignInHint": "met Google om tv-zenders te zien",
   "card.favouriteAdd": "Teams toevoegen aan favorieten",

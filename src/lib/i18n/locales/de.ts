@@ -58,6 +58,7 @@ export const de: Dict = {
   "status.upcoming": "Bevorstehend",
   "card.channelTBC": "Sender noch offen",
   "card.matchNumber": "Spiel {n}",
+  "card.feederWinner": "Sieger Spiel {n}",
   "card.channelsSignInLink": "Anmelden",
   "card.channelsSignInHint": "mit Google, um TV-Sender zu sehen",
   "card.favouriteAdd": "Teams zu Favoriten hinzufügen",

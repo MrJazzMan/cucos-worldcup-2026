@@ -59,6 +59,7 @@ export const br: Dict = {
   "status.upcoming": "Em breve",
   "card.channelTBC": "Canal a confirmar",
   "card.matchNumber": "Jogo {n}",
+  "card.feederWinner": "Vencedor do Jogo {n}",
   "card.channelsSignInLink": "Entrar",
   "card.channelsSignInHint": "com Google para ver os canais de TV",
   "card.favouriteAdd": "Adicionar seleções aos favoritos",

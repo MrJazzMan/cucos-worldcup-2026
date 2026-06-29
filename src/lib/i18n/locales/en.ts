@@ -62,6 +62,7 @@ export const en: Dict = {
   "featured.startsInMinutes": "Starts in {minutes}m",
   "card.channelTBC": "Channel TBC",
   "card.matchNumber": "Match {n}",
+  "card.feederWinner": "Winner of Match {n}",
   "card.favouriteAdd": "Add teams to favourites",
   "card.favouriteRemove": "Remove teams from favourites",
   "card.channelsSignInLink": "Sign in",
