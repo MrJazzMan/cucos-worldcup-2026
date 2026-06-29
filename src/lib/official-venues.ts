@@ -18,3 +18,11 @@ export function resolveMatchVenue(
   if (trimmed) return trimmed;
   return OFFICIAL_FIXTURE_VENUES[fixtureId] ?? null;
 }
+
+/** Aplica fallback de recinto ao ler da BD (API pode ainda não ter sincronizado). */
+export function enrichMatchVenue<T extends { fixture_id: number; venue: string | null }>(
+  match: T
+): T {
+  const venue = resolveMatchVenue(match.fixture_id, match.venue);
+  return venue === match.venue ? match : { ...match, venue };
+}

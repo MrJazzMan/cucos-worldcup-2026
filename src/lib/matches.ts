@@ -11,7 +11,7 @@ import {
   fetchFixturesByRound,
   fetchTeams,
 } from "@/lib/api-football";
-import { resolveMatchVenue } from "@/lib/official-venues";
+import { enrichMatchVenue, resolveMatchVenue } from "@/lib/official-venues";
 import { formatVenueField } from "@/lib/venues";
 import {
   getGroupStandingsFromDb,
@@ -50,13 +50,15 @@ export async function getMatchesForDay(
     ])
   );
 
-  return wcMatches.map((m) => ({
-    ...m,
-    channels: broadcastMap.get(m.fixture_id) ?? [],
-    isFavourite:
-      favouriteTeamIds.includes(m.home_team_id) ||
-      favouriteTeamIds.includes(m.away_team_id),
-  }));
+  return wcMatches.map((m) =>
+    enrichMatchVenue({
+      ...m,
+      channels: broadcastMap.get(m.fixture_id) ?? [],
+      isFavourite:
+        favouriteTeamIds.includes(m.home_team_id) ||
+        favouriteTeamIds.includes(m.away_team_id),
+    })
+  );
 }
 
 export async function getAllMatches(
@@ -85,13 +87,15 @@ export async function getAllMatches(
     ])
   );
 
-  return wcMatches.map((m) => ({
-    ...m,
-    channels: broadcastMap.get(m.fixture_id) ?? [],
-    isFavourite:
-      favouriteTeamIds.includes(m.home_team_id) ||
-      favouriteTeamIds.includes(m.away_team_id),
-  }));
+  return wcMatches.map((m) =>
+    enrichMatchVenue({
+      ...m,
+      channels: broadcastMap.get(m.fixture_id) ?? [],
+      isFavourite:
+        favouriteTeamIds.includes(m.home_team_id) ||
+        favouriteTeamIds.includes(m.away_team_id),
+    })
+  );
 }
 
 export async function getUserFavouriteTeamIds(): Promise<number[]> {
@@ -175,10 +179,12 @@ export async function getKnockoutRounds(): Promise<
           normalizeBroadcastChannels(b.channels),
         ])
       );
-      const wcWithChannels = wcMatches.map((m) => ({
-        ...m,
-        channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
-      }));
+      const wcWithChannels = wcMatches.map((m) =>
+        enrichMatchVenue({
+          ...m,
+          channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
+        })
+      );
       const fromDb = groupKnockoutMatchesFromDb(wcWithChannels);
       if (fromDb.length > 0) return fromDb;
     }
