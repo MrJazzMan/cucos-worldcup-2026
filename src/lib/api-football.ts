@@ -2,6 +2,7 @@ import type { MatchStatus } from "@/types";
 import { estimateFinishedUtcFromApi } from "@/lib/match-finish-time";
 import { formatMatchDate } from "@/lib/timezone";
 import { formatVenueField } from "@/lib/venues";
+import { resolveMatchVenue } from "@/lib/official-venues";
 import { WC_LEAGUE_ID, isWorldCupRound } from "@/lib/world-cup";
 
 const API_BASE = "https://v3.football.api-sports.io";
@@ -146,7 +147,10 @@ export function mapFixtureToMatch(fixture: ApiFixture) {
       status === "live" || status === "finished" ? elapsed : null,
     round: fixture.league.round,
     group_name: extractGroupName(fixture.league.round),
-    venue: formatVenueField(fixture.fixture.venue),
+    venue: resolveMatchVenue(
+      fixture.fixture.id,
+      formatVenueField(fixture.fixture.venue)
+    ),
     updated_at: new Date().toISOString(),
   };
 }

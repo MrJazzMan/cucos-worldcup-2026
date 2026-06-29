@@ -11,6 +11,8 @@ import {
   fetchFixturesByRound,
   fetchTeams,
 } from "@/lib/api-football";
+import { resolveMatchVenue } from "@/lib/official-venues";
+import { formatVenueField } from "@/lib/venues";
 import {
   getGroupStandingsFromDb,
   getComputedGroupStandings,
@@ -208,7 +210,10 @@ export async function getKnockoutRounds(): Promise<
             minute: null,
             round,
             group_name: null,
-            venue: f.fixture.venue?.name ?? null,
+            venue: resolveMatchVenue(
+              f.fixture.id,
+              formatVenueField(f.fixture.venue)
+            ),
             channels: [],
           };
           return m;
