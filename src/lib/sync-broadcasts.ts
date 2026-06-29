@@ -12,7 +12,6 @@ import {
   parseCanaisLista,
   type JogoTV,
 } from "@/lib/ondebola";
-import { knownBroadcastUpserts } from "@/lib/known-broadcasts";
 import { ptTeam } from "@/lib/team-names";
 import { TIMEZONE } from "@/lib/timezone";
 import { formatInTimeZone } from "date-fns-tz";
@@ -127,16 +126,6 @@ export async function syncBroadcastsFromOndeBola(options?: {
         existingMap.get(dbMatch.fixture_id) ?? []
       ),
       notes: `OndeBola — ${jogo.equipa_casa} vs ${jogo.equipa_fora}`,
-    });
-  }
-
-  for (const row of knownBroadcastUpserts(seenFixtures)) {
-    broadcasts.push({
-      ...row,
-      channels: mergeBroadcastChannels(
-        row.channels,
-        existingMap.get(row.fixture_id) ?? []
-      ),
     });
   }
 

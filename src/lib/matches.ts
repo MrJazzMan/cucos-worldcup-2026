@@ -12,7 +12,6 @@ import {
   fetchTeams,
 } from "@/lib/api-football";
 import { enrichMatchVenue, resolveMatchVenue } from "@/lib/official-venues";
-import { enrichBroadcastChannels } from "@/lib/known-broadcasts";
 import { formatVenueField } from "@/lib/venues";
 import {
   getGroupStandingsFromDb,
@@ -54,10 +53,7 @@ export async function getMatchesForDay(
   return wcMatches.map((m) =>
     enrichMatchVenue({
       ...m,
-      channels: enrichBroadcastChannels(
-        m.fixture_id,
-        broadcastMap.get(m.fixture_id) ?? []
-      ),
+      channels: broadcastMap.get(m.fixture_id) ?? [],
       isFavourite:
         favouriteTeamIds.includes(m.home_team_id) ||
         favouriteTeamIds.includes(m.away_team_id),
@@ -94,10 +90,7 @@ export async function getAllMatches(
   return wcMatches.map((m) =>
     enrichMatchVenue({
       ...m,
-      channels: enrichBroadcastChannels(
-        m.fixture_id,
-        broadcastMap.get(m.fixture_id) ?? []
-      ),
+      channels: broadcastMap.get(m.fixture_id) ?? [],
       isFavourite:
         favouriteTeamIds.includes(m.home_team_id) ||
         favouriteTeamIds.includes(m.away_team_id),
@@ -189,10 +182,7 @@ export async function getKnockoutRounds(): Promise<
       const wcWithChannels = wcMatches.map((m) =>
         enrichMatchVenue({
           ...m,
-          channels: enrichBroadcastChannels(
-            m.fixture_id,
-            broadcastMap.get(m.fixture_id) ?? m.channels ?? []
-          ),
+          channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
         })
       );
       const fromDb = groupKnockoutMatchesFromDb(wcWithChannels);
