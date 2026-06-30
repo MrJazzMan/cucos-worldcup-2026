@@ -90,6 +90,7 @@ export const en: Dict = {
   "knockouts.round.final": "Final",
   "knockouts.tbd": "TBD",
   "knockouts.scrollHint": "Swipe to explore the bracket",
+  "knockouts.radialHint": "Hover or tap a match to trace its path to the final",
   "knockouts.schedule": "Schedule",
   "knockouts.previewHint":
     "Real fixtures appear here as the tournament progresses. Confirmed qualifiers show in the bracket before groups end.",

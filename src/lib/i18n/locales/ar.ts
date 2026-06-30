@@ -86,6 +86,7 @@ export const ar: Dict = {
   "knockouts.round.final": "النهائي",
   "knockouts.tbd": "يُحدَّد لاحقًا",
   "knockouts.scrollHint": "مرّر لاستكشاف الجدول",
+  "knockouts.radialHint": "مرّر أو انقر على مباراة لعرض المسار نحو النهائي",
   "knockouts.schedule": "الجدول",
   "knockouts.previewHint":
     "ستظهر المباريات الحقيقية هنا مع تقدّم البطولة.",

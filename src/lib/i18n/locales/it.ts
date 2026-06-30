@@ -87,6 +87,7 @@ export const it: Dict = {
   "knockouts.round.final": "Finale",
   "knockouts.tbd": "Da definire",
   "knockouts.scrollHint": "Scorri per vedere il tabellone",
+  "knockouts.radialHint": "Passa il mouse o tocca una partita per vedere il percorso verso la finale",
   "knockouts.schedule": "Calendario",
   "knockouts.previewHint":
     "Le partite reali compariranno qui man mano che il torneo avanza.",

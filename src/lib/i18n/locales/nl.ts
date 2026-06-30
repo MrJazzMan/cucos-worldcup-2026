@@ -87,6 +87,7 @@ export const nl: Dict = {
   "knockouts.round.final": "Finale",
   "knockouts.tbd": "Nog te bepalen",
   "knockouts.scrollHint": "Veeg om het schema te zien",
+  "knockouts.radialHint": "Beweeg over een wedstrijd of tik erop om het pad naar de finale te zien",
   "knockouts.schedule": "Schema",
   "knockouts.previewHint":
     "Echte wedstrijden verschijnen hier naarmate het toernooi vordert.",

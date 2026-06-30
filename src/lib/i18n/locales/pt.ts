@@ -90,6 +90,7 @@ export const pt: Dict = {
   "knockouts.round.final": "Final",
   "knockouts.tbd": "A definir",
   "knockouts.scrollHint": "Desliza para ver a chave",
+  "knockouts.radialHint": "Passa o rato ou toca num jogo para ver o caminho até à final",
   "knockouts.schedule": "Calendário",
   "knockouts.previewHint":
     "Os jogos reais aparecem aqui à medida que o torneio avança. Equipas já qualificadas surgem na chave antes do fim dos grupos.",
