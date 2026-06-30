@@ -8,7 +8,6 @@ import {
   RADIAL_CENTER,
   RADIAL_VIEW_SIZE,
   buildRadialBracketLayout,
-  getHighlightedEdges,
   traceEdgesToRoot,
   type RadialBracketNode,
 } from "@/lib/knockout-bracket-radial-layout";
@@ -49,14 +48,9 @@ export function KnockoutBracketRadial({
     [columns, preview]
   );
 
-  const highlightedEdges = useMemo(
-    () => getHighlightedEdges(layout),
-    [layout]
-  );
-
   const [hoveredMatch, setHoveredMatch] = useState<number | null>(null);
 
-  const hoveredEdges = useMemo(() => {
+  const activeEdges = useMemo(() => {
     if (hoveredMatch == null) return new Set<string>();
     const parentOf = new Map<number, number>();
     for (const edge of layout.edges) {
@@ -105,8 +99,7 @@ export function KnockoutBracketRadial({
             if (!from || !to) return null;
 
             const key = `${edge.from}->${edge.to}`;
-            const active =
-              highlightedEdges.has(key) || hoveredEdges.has(key);
+            const active = activeEdges.has(key);
 
             return (
               <path
@@ -146,8 +139,7 @@ export function KnockoutBracketRadial({
           const edgeActive = layout.edges.some(
             (e) =>
               e.from === node.matchNumber &&
-              (highlightedEdges.has(`${e.from}->${e.to}`) ||
-                hoveredEdges.has(`${e.from}->${e.to}`))
+              activeEdges.has(`${e.from}->${e.to}`)
           );
 
           return (

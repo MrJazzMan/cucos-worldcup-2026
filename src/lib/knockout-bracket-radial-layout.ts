@@ -9,8 +9,6 @@ import {
   SIDE_TREE_SPEC,
   type BracketNodeSpec,
 } from "@/lib/knockout-fifa-order";
-import type { Match } from "@/types";
-
 export const RADIAL_VIEW_SIZE = 1000;
 export const RADIAL_CENTER = RADIAL_VIEW_SIZE / 2;
 export const RADIAL_R_OUTER = 400;
@@ -128,15 +126,6 @@ function flattenHalf(
   }
 }
 
-function getWinnerTeamId(match: Match): number | null {
-  if (match.status !== "finished") return null;
-  const home = match.home_score ?? 0;
-  const away = match.away_score ?? 0;
-  if (home > away) return match.home_team_id;
-  if (away > home) return match.away_team_id;
-  return null;
-}
-
 /** Ligações M101/M102 → final e derrotados das meias → 3.º lugar. */
 function addCenterEdges(edges: RadialBracketEdge[]): void {
   edges.push({ from: 101, to: 104 }, { from: 102, to: 104 });
@@ -223,21 +212,3 @@ function traceEdgesToRoot(
 }
 
 export { traceEdgesToRoot };
-
-export function getHighlightedEdges(layout: RadialBracketLayout): Set<string> {
-  const highlighted = new Set<string>();
-  const parentOf = new Map<number, number>();
-  for (const edge of layout.edges) {
-    parentOf.set(edge.from, edge.to);
-  }
-
-  for (const node of layout.nodes) {
-    const match = node.slot.match;
-    if (!match || getWinnerTeamId(match) == null) continue;
-    for (const key of traceEdgesToRoot(node.matchNumber, parentOf)) {
-      highlighted.add(key);
-    }
-  }
-
-  return highlighted;
-}
