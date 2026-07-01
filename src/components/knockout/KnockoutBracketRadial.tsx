@@ -7,10 +7,25 @@ import type { KnockoutRoundColumn } from "@/lib/knockout-bracket";
 import {
   RADIAL_CENTER,
   RADIAL_VIEW_SIZE,
+  RADIAL_R_OUTER,
+  RADIAL_R_RING,
   buildRadialBracketLayout,
   traceEdgesToRoot,
   type RadialBracketNode,
 } from "@/lib/knockout-bracket-radial-layout";
+
+const GUIDE_RING_COUNT = 4;
+
+function slotTitle(node: RadialBracketNode, tbd: string): string {
+  const { slot } = node;
+  if (slot.match) {
+    return `${slot.match.home_team_name} vs ${slot.match.away_team_name}`;
+  }
+  if (slot.preview) {
+    return `${slot.preview.home} vs ${slot.preview.away}`;
+  }
+  return tbd;
+}
 
 type KnockoutBracketRadialProps = {
   columns: KnockoutRoundColumn[];
@@ -49,18 +64,30 @@ export function KnockoutBracketRadial({
   );
 
   const [hoveredMatch, setHoveredMatch] = useState<number | null>(null);
+  const [pinnedMatch, setPinnedMatch] = useState<number | null>(null);
+  const activeMatch = pinnedMatch ?? hoveredMatch;
 
   const activeEdges = useMemo(() => {
-    if (hoveredMatch == null) return new Set<string>();
+    if (activeMatch == null) return new Set<string>();
     const parentOf = new Map<number, number>();
     for (const edge of layout.edges) {
       parentOf.set(edge.from, edge.to);
     }
-    return traceEdgesToRoot(hoveredMatch, parentOf);
-  }, [hoveredMatch, layout.edges]);
+    return traceEdgesToRoot(activeMatch, parentOf);
+  }, [activeMatch, layout.edges]);
+
+  const activeNode = activeMatch
+    ? layout.nodeByMatch.get(activeMatch)
+    : undefined;
 
   return (
     <div className="mx-auto w-full max-w-2xl">
+      <p className="mb-2 h-4 text-center text-[11px] text-muted">
+        {activeNode
+          ? `M${activeNode.matchNumber} · ${slotTitle(activeNode, tbd)}`
+          : t("knockouts.radialHint")}
+      </p>
+
       <div className="relative aspect-square w-full touch-pan-x touch-pan-y">
         <svg
           viewBox={`0 0 ${RADIAL_VIEW_SIZE} ${RADIAL_VIEW_SIZE}`}
@@ -92,6 +119,22 @@ export function KnockoutBracketRadial({
             strokeWidth={1}
             strokeOpacity={0.35}
           />
+
+          {Array.from(
+            { length: GUIDE_RING_COUNT },
+            (_, i) => RADIAL_R_OUTER - i * RADIAL_R_RING
+          ).map((r) => (
+            <circle
+              key={r}
+              cx={RADIAL_CENTER}
+              cy={RADIAL_CENTER}
+              r={r}
+              fill="none"
+              stroke="var(--border-base)"
+              strokeWidth={1}
+              strokeOpacity={0.18}
+            />
+          ))}
 
           {layout.edges.map((edge) => {
             const from = layout.nodeByMatch.get(edge.from);
@@ -135,12 +178,16 @@ export function KnockoutBracketRadial({
         </svg>
 
         {layout.nodes.map((node) => {
-          const isCenter = node.roundKey === "final" || node.roundKey === "third";
-          const edgeActive = layout.edges.some(
-            (e) =>
-              e.from === node.matchNumber &&
-              activeEdges.has(`${e.from}->${e.to}`)
-          );
+          const isCenter =
+            node.roundKey === "final" || node.roundKey === "third";
+          const isActive = activeMatch === node.matchNumber;
+          const edgeActive =
+            isActive ||
+            layout.edges.some(
+              (e) =>
+                e.from === node.matchNumber &&
+                activeEdges.has(`${e.from}->${e.to}`)
+            );
 
           return (
             <div
@@ -158,15 +205,16 @@ export function KnockoutBracketRadial({
               onMouseLeave={() => setHoveredMatch(null)}
               onFocus={() => setHoveredMatch(node.matchNumber)}
               onBlur={() => setHoveredMatch(null)}
-              onClick={() =>
-                setHoveredMatch((current) =>
+              onClick={() => {
+                setPinnedMatch((current) =>
                   current === node.matchNumber ? null : node.matchNumber
-                )
-              }
+                );
+                setHoveredMatch(null);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
-                  setHoveredMatch((current) =>
+                  setPinnedMatch((current) =>
                     current === node.matchNumber ? null : node.matchNumber
                   );
                 }
@@ -177,16 +225,12 @@ export function KnockoutBracketRadial({
                 roundKey={node.roundKey}
                 matchNumber={node.matchNumber}
                 tbd={tbd}
-                highlighted={edgeActive && node.roundKey !== "r32"}
+                highlighted={edgeActive}
               />
             </div>
           );
         })}
       </div>
-
-      <p className="mt-3 text-center text-[10px] text-muted">
-        {t("knockouts.radialHint")}
-      </p>
     </div>
   );
 }
