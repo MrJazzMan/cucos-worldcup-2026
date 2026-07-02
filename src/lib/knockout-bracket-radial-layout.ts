@@ -1,28 +1,105 @@
 import type { KnockoutRoundColumn } from "@/lib/knockout-bracket";
-import {
-  buildSideTree,
-  getCenterSlots,
-  type BracketSlotData,
-  type BracketTreeNode,
-} from "@/lib/knockout-bracket-tree";
-import {
-  FIFA_MATCH_NUMBERS,
-  SIDE_TREE_SPEC,
-  type BracketNodeSpec,
-} from "@/lib/knockout-fifa-order";
+import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
+import { getCenterSlots } from "@/lib/knockout-bracket-tree";
+import { FIFA_MATCH_NUMBERS } from "@/lib/knockout-fifa-order";
 import type { Match } from "@/types";
+
+// --------------------------------------------------------------------------
+// Geometry (ported from bracket_layout.py)
+// --------------------------------------------------------------------------
 
 export const RADIAL_VIEW_SIZE = 1000;
 export const RADIAL_CENTER = RADIAL_VIEW_SIZE / 2;
-export const RADIAL_R_TEAMS = 458;
-export const RADIAL_R_R16 = 368;
-export const RADIAL_R_QF = 278;
-export const RADIAL_R_SF = 188;
+
+export const RADIUS = {
+  slot: 435,
+  R32: 365,
+  R16: 290,
+  QF: 210,
+  SF: 130,
+  F: 0,
+} as const;
+
+export const RADIAL_R_TEAMS = RADIUS.slot;
+export const RADIAL_R_R32 = RADIUS.R32;
+export const RADIAL_R_R16 = RADIUS.R16;
+export const RADIAL_R_QF = RADIUS.QF;
+export const RADIAL_R_SF = RADIUS.SF;
 export const RADIAL_R_THIRD = 108;
 
-const RADIUS_BY_DEPTH = [RADIAL_R_TEAMS, RADIAL_R_R16, RADIAL_R_QF, RADIAL_R_SF, 0] as const;
-const LEAF_ANGLE_STEP = 360 / 32;
-const TOP_AXIS = 90;
+const HALF_GAP_DEG = 12;
+const PAIR_TIGHTEN = 0.42;
+const CX = RADIAL_CENTER;
+const CY = RADIAL_CENTER;
+
+export const BRACKET_COLORS = {
+  bg: "#0b0b0d",
+  line: "#33333a",
+  lineDim: "#232329",
+  node: "#4a4a52",
+  path: "#E9B949",
+  advanced: "#f0ead6",
+  eliminated: "#5a5a60",
+  trophy: "#F4C95D",
+} as const;
+
+// --------------------------------------------------------------------------
+// Official FIFA 2026 topology
+// --------------------------------------------------------------------------
+
+const R32_SLOTS: Record<string, [string, string]> = {
+  M73: ["RU-A", "RU-B"],
+  M74: ["W-E", "3rd-ABCDF"],
+  M75: ["W-F", "RU-C"],
+  M76: ["W-C", "RU-F"],
+  M77: ["W-I", "3rd-CDFGH"],
+  M78: ["RU-E", "RU-I"],
+  M79: ["W-A", "3rd-CEFHI"],
+  M80: ["W-L", "3rd-EHIJK"],
+  M81: ["W-D", "3rd-BEFIJ"],
+  M82: ["W-G", "3rd-AEHIJ"],
+  M83: ["RU-K", "RU-L"],
+  M84: ["W-H", "RU-J"],
+  M85: ["W-B", "3rd-EFGIJ"],
+  M86: ["W-J", "RU-H"],
+  M87: ["W-K", "3rd-DEIJL"],
+  M88: ["RU-D", "RU-G"],
+};
+
+const FEED: Record<string, [string, string]> = {
+  M89: ["M74", "M77"],
+  M90: ["M73", "M75"],
+  M91: ["M76", "M78"],
+  M92: ["M79", "M80"],
+  M93: ["M83", "M84"],
+  M94: ["M81", "M82"],
+  M95: ["M86", "M88"],
+  M96: ["M85", "M87"],
+  M97: ["M89", "M90"],
+  M98: ["M93", "M94"],
+  M99: ["M91", "M92"],
+  M100: ["M95", "M96"],
+  M101: ["M97", "M98"],
+  M102: ["M99", "M100"],
+  M104: ["M101", "M102"],
+};
+
+const ROOT = "M104";
+
+const ROUND_OF: Record<string, LayoutRound> = {};
+for (const m of Object.keys(R32_SLOTS)) ROUND_OF[m] = "R32";
+for (const m of ["M89", "M90", "M91", "M92", "M93", "M94", "M95", "M96"]) {
+  ROUND_OF[m] = "R16";
+}
+for (const m of ["M97", "M98", "M99", "M100"]) ROUND_OF[m] = "QF";
+for (const m of ["M101", "M102"]) ROUND_OF[m] = "SF";
+ROUND_OF.M104 = "F";
+
+// --------------------------------------------------------------------------
+// Types
+// --------------------------------------------------------------------------
+
+export type LayoutRound = "slot" | "R32" | "R16" | "QF" | "SF" | "F";
 
 export type RadialRoundKey =
   | "r32"
@@ -34,202 +111,291 @@ export type RadialRoundKey =
 
 export type RadialTeamSide = "home" | "away";
 
-export type RadialTeamSlot = {
-  matchNumber: number;
-  side: RadialTeamSide;
-  slot: BracketSlotData;
-  x: number;
-  y: number;
-  visible: boolean;
-};
-
-export type RadialBracketNode = {
-  matchNumber: number;
-  roundKey: RadialRoundKey;
-  slot: BracketSlotData;
-  x: number;
-  y: number;
-  depth: number;
-};
-
-export type RadialMergeConnector = {
+type LayoutNode = {
   id: string;
-  parentMatch: number;
-  pathA: string;
-  pathB: string;
+  round: LayoutRound;
+  isSlot: boolean;
+  label: string | null;
+  matchId: string | null;
+  children: string[];
+  angle: number;
+  radius: number;
+  x: number;
+  y: number;
 };
 
-export type RadialLeafConnector = {
-  matchNumber: number;
-  path: string;
+export type RadialLayoutNode = LayoutNode & {
+  matchNumber: number | null;
+  side: RadialTeamSide | null;
+  slot: BracketSlotData;
+  roundKey: RadialRoundKey;
+};
+
+export type RadialEdge = {
+  from: string;
+  to: string;
+  pathElbow: string;
+  key: string;
 };
 
 export type RadialWheelLayout = {
-  teamSlots: RadialTeamSlot[];
-  matchNodes: RadialBracketNode[];
-  connectors: RadialMergeConnector[];
-  leafConnectors: RadialLeafConnector[];
-  nodeByMatch: Map<number, RadialBracketNode>;
-  teamSlotsByMatch: Map<number, [RadialTeamSlot, RadialTeamSlot]>;
+  nodes: Map<string, RadialLayoutNode>;
+  edges: RadialEdge[];
+  teamOrder: string[];
+  leftHalf: string[];
+  rightHalf: string[];
+  thirdPlace: RadialLayoutNode | null;
 };
 
-export const LEFT_R32_MATCHES = collectLeafMatchNumbers(SIDE_TREE_SPEC.left);
-export const RIGHT_R32_MATCHES = collectLeafMatchNumbers(SIDE_TREE_SPEC.right);
+// --------------------------------------------------------------------------
+// Static geometry engine
+// --------------------------------------------------------------------------
 
-const DEPTH_ROUND: RadialRoundKey[] = ["r32", "r16", "qf", "sf"];
-
-type BuiltNode = {
-  matchNumber: number;
-  roundKey: RadialRoundKey;
-  slot: BracketSlotData;
-  fraction: number;
-  depth: number;
-  children?: [BuiltNode, BuiltNode];
-};
-
-function deg2rad(d: number): number {
-  return (d * Math.PI) / 180;
+function polar(r: number, angDeg: number): { x: number; y: number } {
+  const a = (angDeg * Math.PI) / 180;
+  return { x: CX + r * Math.sin(a), y: CY - r * Math.cos(a) };
 }
 
-/** Posição polar no estilo worldcup.observer (0° = direita, 90° = topo). */
-function placeAtAngle(angleDeg: number, radius: number): { x: number; y: number } {
-  const a = deg2rad(angleDeg);
-  return {
-    x: RADIAL_CENTER + radius * Math.cos(a),
-    y: RADIAL_CENTER - radius * Math.sin(a),
-  };
-}
+function buildNodes(): Map<string, LayoutNode> {
+  const nodes = new Map<string, LayoutNode>();
 
-function teamAngleDeg(half: "left" | "right", slotInHalf: number): number {
-  if (half === "left") {
-    return TOP_AXIS + LEAF_ANGLE_STEP / 2 + LEAF_ANGLE_STEP * slotInHalf;
+  for (const [mid, feeders] of Object.entries(FEED)) {
+    nodes.set(mid, {
+      id: mid,
+      round: ROUND_OF[mid],
+      isSlot: false,
+      label: null,
+      matchId: null,
+      children: [...feeders],
+      angle: 0,
+      radius: 0,
+      x: 0,
+      y: 0,
+    });
   }
-  return TOP_AXIS - LEAF_ANGLE_STEP / 2 - LEAF_ANGLE_STEP * slotInHalf;
+
+  for (const [mid, [top, bot]] of Object.entries(R32_SLOTS)) {
+    const sa = `${mid}.A`;
+    const sb = `${mid}.B`;
+    nodes.set(mid, {
+      id: mid,
+      round: "R32",
+      isSlot: false,
+      label: null,
+      matchId: null,
+      children: [sa, sb],
+      angle: 0,
+      radius: 0,
+      x: 0,
+      y: 0,
+    });
+    nodes.set(sa, {
+      id: sa,
+      round: "slot",
+      isSlot: true,
+      label: top,
+      matchId: mid,
+      children: [],
+      angle: 0,
+      radius: 0,
+      x: 0,
+      y: 0,
+    });
+    nodes.set(sb, {
+      id: sb,
+      round: "slot",
+      isSlot: true,
+      label: bot,
+      matchId: mid,
+      children: [],
+      angle: 0,
+      radius: 0,
+      x: 0,
+      y: 0,
+    });
+  }
+
+  return nodes;
 }
 
-function fractionFromAngle(angleDeg: number): number {
-  const a = deg2rad(angleDeg);
-  const x = Math.cos(a);
-  const y = -Math.sin(a);
-  const angle = Math.atan2(y, x);
-  return (angle + Math.PI / 2) / (Math.PI * 2);
+function inorderSlots(nodes: Map<string, LayoutNode>, nid: string): string[] {
+  const node = nodes.get(nid);
+  if (!node) return [];
+  if (node.isSlot) return [nid];
+  const out: string[] = [];
+  for (const c of node.children) {
+    out.push(...inorderSlots(nodes, c));
+  }
+  return out;
 }
 
-function collectLeafMatchNumbers(spec: BracketNodeSpec): number[] {
-  if (!spec.children) return [spec.match];
+function assignGeometry(nodes: Map<string, LayoutNode>): string[] {
+  const leaves = inorderSlots(nodes, ROOT);
+  const n = leaves.length;
+  const half = n / 2;
+  const halfArc = 180 - HALF_GAP_DEG;
+  const step = halfArc / half;
+
+  for (let i = 0; i < leaves.length; i++) {
+    const sid = leaves[i];
+    const nd = nodes.get(sid)!;
+    const side = i < half ? 0 : 1;
+    const k = side === 0 ? i : i - half;
+    const base = HALF_GAP_DEG / 2 + (k + 0.5) * step;
+    const pairCentre = HALF_GAP_DEG / 2 + (Math.floor(k / 2) * 2 + 1) * step;
+    let ang = base + (pairCentre - base) * PAIR_TIGHTEN;
+    if (side === 1) ang += 180;
+    nd.angle = ang;
+    nd.radius = RADIUS.slot;
+    const pos = polar(nd.radius, ang);
+    nd.x = pos.x;
+    nd.y = pos.y;
+  }
+
+  const order: LayoutRound[] = ["R32", "R16", "QF", "SF", "F"];
+  for (const rnd of order) {
+    for (const nd of nodes.values()) {
+      if (nd.round !== rnd || nd.isSlot) continue;
+      const ch = nd.children.map((c) => nodes.get(c)!);
+      nd.angle = ch.reduce((s, c) => s + c.angle, 0) / ch.length;
+      nd.radius = RADIUS[rnd === "F" ? "F" : rnd];
+      if (nd.radius === 0) {
+        nd.x = CX;
+        nd.y = CY;
+      } else {
+        const pos = polar(nd.radius, nd.angle);
+        nd.x = pos.x;
+        nd.y = pos.y;
+      }
+    }
+  }
+
+  return leaves;
+}
+
+const STATIC_NODES = buildNodes();
+export const TEAM_ORDER = assignGeometry(STATIC_NODES);
+export const LEFT_HALF = TEAM_ORDER.slice(TEAM_ORDER.length / 2);
+export const RIGHT_HALF = TEAM_ORDER.slice(0, TEAM_ORDER.length / 2);
+
+function shortCw(aFrom: number, aTo: number): boolean {
+  return (aTo - aFrom + 360) % 360 < 180;
+}
+
+export function connectorPathElbow(aId: string, bId: string): string {
+  const A = STATIC_NODES.get(aId)!;
+  const B = STATIC_NODES.get(bId)!;
+  const outer = A.radius >= B.radius ? A : B;
+  const inner = A.radius >= B.radius ? B : A;
+  const { x: ox, y: oy } = outer;
+  const { x: ix, y: iy } = inner;
+
+  if (inner.radius === 0) {
+    return `M ${ox.toFixed(2)} ${oy.toFixed(2)} L ${ix.toFixed(2)} ${iy.toFixed(2)}`;
+  }
+
+  const joint = polar(inner.radius, outer.angle);
+  const sweep = shortCw(outer.angle, inner.angle) ? 1 : 0;
+  const r = inner.radius;
   return [
-    ...collectLeafMatchNumbers(spec.children[0]),
-    ...collectLeafMatchNumbers(spec.children[1]),
-  ];
-}
-
-function isFinishedWinner(
-  slot: BracketSlotData,
-  side: RadialTeamSide
-): boolean {
-  const match = slot.match;
-  if (!match || match.status !== "finished") return false;
-  const home = match.home_score ?? 0;
-  const away = match.away_score ?? 0;
-  if (home === away) return false;
-  const homeWon = home > away;
-  return side === "home" ? homeWon : !homeWon;
-}
-
-export function outerTeamVisible(
-  slot: BracketSlotData,
-  side: RadialTeamSide
-): boolean {
-  return !isFinishedWinner(slot, side);
-}
-
-function buildHalfNode(
-  treeNode: BracketTreeNode,
-  spec: BracketNodeSpec,
-  side: "left" | "right"
-): BuiltNode {
-  const matchNumber = spec.match;
-
-  if (!spec.children || !treeNode.left || !treeNode.right) {
-    const leafOrder = collectLeafMatchNumbers(SIDE_TREE_SPEC[side]);
-    const leafIndex = leafOrder.indexOf(matchNumber);
-    const fraction = fractionFromAngle(
-      teamAngleDeg(side, (leafIndex >= 0 ? leafIndex : 0) * 2)
-    );
-    return {
-      matchNumber,
-      roundKey: "r32",
-      slot: treeNode.slot,
-      fraction,
-      depth: 0,
-    };
-  }
-
-  const left = buildHalfNode(treeNode.left, spec.children[0], side);
-  const right = buildHalfNode(treeNode.right, spec.children[1], side);
-  const nodeDepth = left.depth + 1;
-
-  return {
-    matchNumber,
-    roundKey: DEPTH_ROUND[nodeDepth] ?? "sf",
-    slot: treeNode.slot,
-    fraction: (left.fraction + right.fraction) / 2,
-    depth: nodeDepth,
-    children: [left, right],
-  };
-}
-
-function flattenHalf(
-  node: BuiltNode,
-  out: BuiltNode[],
-  parentEdges: { parent: number; child: number }[]
-): void {
-  out.push(node);
-  if (!node.children) return;
-  for (const child of node.children) {
-    parentEdges.push({ parent: node.matchNumber, child: child.matchNumber });
-    flattenHalf(child, out, parentEdges);
-  }
-}
-
-function polarPoint(angle: number, radius: number): { x: number; y: number } {
-  return {
-    x: RADIAL_CENTER + radius * Math.cos(angle),
-    y: RADIAL_CENTER - radius * Math.sin(angle),
-  };
-}
-
-/** Caminho em arco radial (modelo worldcup.observer). */
-export function connectorPath(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  centerBend = false
-): string {
-  const startAngle = Math.atan2(RADIAL_CENTER - y1, x1 - RADIAL_CENTER);
-  const endAngle = Math.atan2(RADIAL_CENTER - y2, x2 - RADIAL_CENTER);
-  const startRadius = Math.hypot(x1 - RADIAL_CENTER, y1 - RADIAL_CENTER);
-  const endRadius = Math.hypot(x2 - RADIAL_CENTER, y2 - RADIAL_CENTER);
-
-  if (endRadius < 1) {
-    const control = polarPoint(startAngle, startRadius * 0.42);
-    return `M ${x1} ${y1} Q ${control.x} ${control.y} ${x2} ${y2}`;
-  }
-
-  const bendRadius = centerBend ? endRadius : (startRadius + endRadius) / 2;
-  const startBend = polarPoint(startAngle, bendRadius);
-  const endBend = polarPoint(endAngle, bendRadius);
-  const rawDelta = endAngle - startAngle;
-  const delta = Math.atan2(Math.sin(rawDelta), Math.cos(rawDelta));
-  const sweep = delta < 0 ? 1 : 0;
-
-  return [
-    `M ${x1} ${y1}`,
-    `L ${startBend.x} ${startBend.y}`,
-    `A ${bendRadius} ${bendRadius} 0 0 ${sweep} ${endBend.x} ${endBend.y}`,
-    `L ${x2} ${y2}`,
+    `M ${ox.toFixed(2)} ${oy.toFixed(2)}`,
+    `L ${joint.x.toFixed(2)} ${joint.y.toFixed(2)}`,
+    `A ${r.toFixed(2)} ${r.toFixed(2)} 0 0 ${sweep} ${ix.toFixed(2)} ${iy.toFixed(2)}`,
   ].join(" ");
+}
+
+function buildStaticEdges(): RadialEdge[] {
+  const out: RadialEdge[] = [];
+  for (const nd of STATIC_NODES.values()) {
+    if (nd.isSlot) continue;
+    for (const c of nd.children) {
+      out.push({
+        from: c,
+        to: nd.id,
+        pathElbow: connectorPathElbow(c, nd.id),
+        key: `${c}->${nd.id}`,
+      });
+    }
+  }
+  return out;
+}
+
+const STATIC_EDGES = buildStaticEdges();
+
+function buildParentMap(): Map<string, string> {
+  const p = new Map<string, string>();
+  for (const nd of STATIC_NODES.values()) {
+    for (const c of nd.children) {
+      p.set(c, nd.id);
+    }
+  }
+  return p;
+}
+
+const PARENT_OF = buildParentMap();
+
+export function pathToRoot(nodeId: string): string[] {
+  const chain = [nodeId];
+  let cur = nodeId;
+  while (PARENT_OF.has(cur)) {
+    cur = PARENT_OF.get(cur)!;
+    chain.push(cur);
+  }
+  return chain;
+}
+
+export function pathEdges(nodeId: string): RadialEdge[] {
+  const chain = pathToRoot(nodeId);
+  const edges: RadialEdge[] = [];
+  for (let i = 0; i < chain.length - 1; i++) {
+    const from = chain[i];
+    const to = chain[i + 1];
+    const edge = STATIC_EDGES.find((e) => e.from === from && e.to === to);
+    if (edge) edges.push(edge);
+  }
+  return edges;
+}
+
+export function getActiveEdgeKeys(nodeId: string | null): Set<string> {
+  if (!nodeId) return new Set();
+  return new Set(pathEdges(nodeId).map((e) => e.key));
+}
+
+export function getActiveNodeIds(nodeId: string | null): Set<string> {
+  if (!nodeId) return new Set();
+  return new Set(pathToRoot(nodeId));
+}
+
+// --------------------------------------------------------------------------
+// Data mapping
+// --------------------------------------------------------------------------
+
+export function matchNumberFromNodeId(id: string): number | null {
+  const m = id.match(/^M(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+export function slotSideFromId(id: string): RadialTeamSide | null {
+  if (id.endsWith(".A")) return "home";
+  if (id.endsWith(".B")) return "away";
+  return null;
+}
+
+function layoutRoundToKey(round: LayoutRound): RadialRoundKey {
+  switch (round) {
+    case "R32":
+      return "r32";
+    case "R16":
+      return "r16";
+    case "QF":
+      return "qf";
+    case "SF":
+      return "sf";
+    case "F":
+      return "final";
+    default:
+      return "r32";
+  }
 }
 
 function getSlotData(
@@ -254,287 +420,61 @@ function getSlotData(
   return {};
 }
 
-function buildTeamSlots(
+function enrichNode(
+  node: LayoutNode,
   columns: KnockoutRoundColumn[],
   preview: boolean
-): { slots: RadialTeamSlot[]; byMatch: Map<number, [RadialTeamSlot, RadialTeamSlot]> } {
-  const slots: RadialTeamSlot[] = [];
-  const byMatch = new Map<number, [RadialTeamSlot, RadialTeamSlot]>();
+): RadialLayoutNode {
+  const matchNumber = matchNumberFromNodeId(node.id);
+  const side = slotSideFromId(node.id);
+  const slot =
+    matchNumber != null ? getSlotData(columns, matchNumber, preview) : {};
 
-  const halves: { half: "left" | "right"; matches: number[] }[] = [
-    { half: "left", matches: [...LEFT_R32_MATCHES] },
-    { half: "right", matches: [...RIGHT_R32_MATCHES] },
-  ];
-
-  for (const { half, matches } of halves) {
-    let slotInHalf = 0;
-    for (const matchNumber of matches) {
-      const slot = getSlotData(columns, matchNumber, preview);
-      const homePos = placeAtAngle(
-        teamAngleDeg(half, slotInHalf),
-        RADIAL_R_TEAMS
-      );
-      const awayPos = placeAtAngle(
-        teamAngleDeg(half, slotInHalf + 1),
-        RADIAL_R_TEAMS
-      );
-
-      const home: RadialTeamSlot = {
-        matchNumber,
-        side: "home",
-        slot,
-        ...homePos,
-        visible: outerTeamVisible(slot, "home"),
-      };
-      const away: RadialTeamSlot = {
-        matchNumber,
-        side: "away",
-        slot,
-        ...awayPos,
-        visible: outerTeamVisible(slot, "away"),
-      };
-      slots.push(home, away);
-      byMatch.set(matchNumber, [home, away]);
-      slotInHalf += 2;
-    }
-  }
-
-  return { slots, byMatch };
-}
-
-function childAnchor(
-  child: BuiltNode,
-  layout: {
-    teamSlotsByMatch: Map<number, [RadialTeamSlot, RadialTeamSlot]>;
-    nodeByMatch: Map<number, RadialBracketNode>;
-  }
-): { x: number; y: number } {
-  if (child.depth === 0) {
-    const pair = layout.teamSlotsByMatch.get(child.matchNumber);
-    if (!pair) {
-      return placeAtAngle(TOP_AXIS, RADIAL_R_TEAMS);
-    }
-    const visible = [pair[0], pair[1]].filter((t) => t.visible);
-    if (visible.length === 1) return visible[0];
-    if (visible.length === 2) {
-      return {
-        x: (visible[0].x + visible[1].x) / 2,
-        y: (visible[0].y + visible[1].y) / 2,
-      };
-    }
-    return {
-      x: (pair[0].x + pair[1].x) / 2,
-      y: (pair[0].y + pair[1].y) / 2,
-    };
-  }
-
-  const node = layout.nodeByMatch.get(child.matchNumber);
-  if (node) return node;
-  const radius = RADIUS_BY_DEPTH[child.depth] ?? RADIAL_R_SF;
-  const angleDeg = child.fraction * 360 - 90;
-  return placeAtAngle(angleDeg, radius);
-}
-
-function buildLeafConnectors(
-  roots: BuiltNode[],
-  layout: {
-    teamSlotsByMatch: Map<number, [RadialTeamSlot, RadialTeamSlot]>;
-    nodeByMatch: Map<number, RadialBracketNode>;
-  }
-): RadialLeafConnector[] {
-  const paths: RadialLeafConnector[] = [];
-
-  function walk(node: BuiltNode): void {
-    if (!node.children) return;
-    const parent = layout.nodeByMatch.get(node.matchNumber);
-    if (!parent) return;
-
-    for (const child of node.children) {
-      if (child.depth !== 0) continue;
-      const pair = layout.teamSlotsByMatch.get(child.matchNumber);
-      if (!pair) continue;
-      for (const team of pair) {
-        if (!team.visible) continue;
-        paths.push({
-          matchNumber: child.matchNumber,
-          path: connectorPath(team.x, team.y, parent.x, parent.y),
-        });
-      }
-    }
-
-    walk(node.children[0]);
-    walk(node.children[1]);
-  }
-
-  for (const root of roots) {
-    walk(root);
-  }
-
-  return paths;
-}
-
-function buildConnectors(
-  roots: BuiltNode[],
-  layout: {
-    teamSlotsByMatch: Map<number, [RadialTeamSlot, RadialTeamSlot]>;
-    nodeByMatch: Map<number, RadialBracketNode>;
-  }
-): RadialMergeConnector[] {
-  const connectors: RadialMergeConnector[] = [];
-
-  function walk(node: BuiltNode): void {
-    if (!node.children) return;
-    const parent = layout.nodeByMatch.get(node.matchNumber);
-    if (!parent) return;
-
-    const fromA = childAnchor(node.children[0], layout);
-    const fromB = childAnchor(node.children[1], layout);
-    const centerBend = node.matchNumber === 104;
-
-    connectors.push({
-      id: `${node.children[0].matchNumber}+${node.children[1].matchNumber}->${node.matchNumber}`,
-      parentMatch: node.matchNumber,
-      pathA: connectorPath(fromA.x, fromA.y, parent.x, parent.y, centerBend),
-      pathB: connectorPath(fromB.x, fromB.y, parent.x, parent.y, centerBend),
-    });
-
-    walk(node.children[0]);
-    walk(node.children[1]);
-  }
-
-  for (const root of roots) {
-    walk(root);
-  }
-
-  const final = layout.nodeByMatch.get(104);
-  const sf101 = layout.nodeByMatch.get(101);
-  const sf102 = layout.nodeByMatch.get(102);
-  if (final && sf101 && sf102) {
-    connectors.push({
-      id: "101+102->104",
-      parentMatch: 104,
-      pathA: connectorPath(sf101.x, sf101.y, final.x, final.y, true),
-      pathB: connectorPath(sf102.x, sf102.y, final.x, final.y, true),
-    });
-  }
-
-  return connectors;
-}
-
-function fractionToPosition(fraction: number, radius: number): { x: number; y: number } {
-  const angleDeg = fraction * 360 - 90;
-  return placeAtAngle(angleDeg, radius);
+  return {
+    ...node,
+    matchNumber,
+    side,
+    slot,
+    roundKey: node.isSlot ? "r32" : layoutRoundToKey(node.round),
+  };
 }
 
 export function buildRadialBracketLayout(
   columns: KnockoutRoundColumn[],
   preview: boolean
 ): RadialWheelLayout {
-  const leftTree = buildSideTree(columns, "left", preview);
-  const rightTree = buildSideTree(columns, "right", preview);
+  const nodes = new Map<string, RadialLayoutNode>();
+  for (const [id, node] of STATIC_NODES) {
+    nodes.set(id, enrichNode(node, columns, preview));
+  }
+
   const center = getCenterSlots(columns, preview);
-
-  const builtLeft = buildHalfNode(leftTree, SIDE_TREE_SPEC.left, "left");
-  const builtRight = buildHalfNode(rightTree, SIDE_TREE_SPEC.right, "right");
-
-  const flat: BuiltNode[] = [];
-  const parentEdges: { parent: number; child: number }[] = [];
-  flattenHalf(builtLeft, flat, parentEdges);
-  flattenHalf(builtRight, flat, parentEdges);
-
-  const { slots: teamSlots, byMatch: teamSlotsByMatch } = buildTeamSlots(
-    columns,
-    preview
-  );
-
-  const matchNodes: RadialBracketNode[] = flat
-    .filter((node) => node.depth > 0)
-    .map((node) => {
-      const radius = RADIUS_BY_DEPTH[node.depth] ?? RADIAL_R_SF;
-      const { x, y } = fractionToPosition(node.fraction, radius);
-      return {
-        matchNumber: node.matchNumber,
-        roundKey: node.roundKey,
-        slot: node.slot,
-        x,
-        y,
-        depth: node.depth,
-      };
-    });
-
-  matchNodes.push({
-    matchNumber: 104,
-    roundKey: "final",
-    slot: center.final,
-    x: RADIAL_CENTER,
-    y: RADIAL_CENTER,
-    depth: 4,
-  });
-
-  const thirdPos = placeAtAngle(270, RADIAL_R_THIRD);
-  matchNodes.push({
-    matchNumber: 103,
-    roundKey: "third",
-    slot: center.third,
+  const thirdPos = polar(180, RADIAL_R_THIRD);
+  const thirdPlace: RadialLayoutNode = {
+    id: "M103",
+    round: "F",
+    isSlot: false,
+    label: null,
+    matchId: "M103",
+    children: [],
+    angle: 180,
+    radius: RADIAL_R_THIRD,
     x: thirdPos.x,
     y: thirdPos.y,
-    depth: 4,
-  });
-
-  const nodeByMatch = new Map(matchNodes.map((n) => [n.matchNumber, n]));
-
-  const layoutCtx = { teamSlotsByMatch, nodeByMatch };
-  const connectors = buildConnectors([builtLeft, builtRight], layoutCtx);
-  const leafConnectors = buildLeafConnectors([builtLeft, builtRight], layoutCtx);
+    matchNumber: 103,
+    side: null,
+    slot: center.third,
+    roundKey: "third",
+  };
 
   return {
-    teamSlots,
-    matchNodes,
-    connectors,
-    leafConnectors,
-    nodeByMatch,
-    teamSlotsByMatch,
+    nodes,
+    edges: STATIC_EDGES,
+    teamOrder: TEAM_ORDER,
+    leftHalf: LEFT_HALF,
+    rightHalf: RIGHT_HALF,
+    thirdPlace,
   };
-}
-
-export function getActiveConnectorIds(
-  layout: RadialWheelLayout,
-  hoveredMatch: number | null
-): Set<string> {
-  if (hoveredMatch == null) return new Set();
-
-  const parentOf = buildParentMap(layout);
-  const chainMatches = new Set<number>([hoveredMatch]);
-  let current: number = hoveredMatch;
-  while (parentOf.has(current)) {
-    const parent = parentOf.get(current)!;
-    chainMatches.add(parent);
-    current = parent;
-  }
-
-  const active = new Set<string>();
-  for (const connector of layout.connectors) {
-    const [kids, parentStr] = connector.id.split("->");
-    const parent = Number(parentStr);
-    const children = kids.split("+").map(Number);
-    if (!chainMatches.has(parent)) continue;
-    if (children.some((child) => chainMatches.has(child))) {
-      active.add(connector.id);
-    }
-  }
-
-  return active;
-}
-
-export function buildParentMap(layout: RadialWheelLayout): Map<number, number> {
-  const parentOf = new Map<number, number>();
-  for (const connector of layout.connectors) {
-    const [left, right] = connector.id.split("->")[0].split("+");
-    const parent = connector.parentMatch;
-    parentOf.set(Number(left), parent);
-    parentOf.set(Number(right), parent);
-  }
-  return parentOf;
 }
 
 export function getWinnerTeamId(match: Match): number | null {
@@ -543,4 +483,12 @@ export function getWinnerTeamId(match: Match): number | null {
   const away = match.away_score ?? 0;
   if (home === away) return null;
   return home > away ? match.home_team_id : match.away_team_id;
+}
+
+/** @deprecated Outer ring always shows all 32 teams in the Python layout model. */
+export function outerTeamVisible(
+  _slot: BracketSlotData,
+  _side: RadialTeamSide
+): boolean {
+  return true;
 }

@@ -141,7 +141,7 @@ function shouldUseCompactDot(
   roundKey: RadialRoundKey
 ): boolean {
   if (roundKey === "r32" || roundKey === "final" || roundKey === "third") {
-    return false;
+    return true;
   }
 
   if (data.match) {

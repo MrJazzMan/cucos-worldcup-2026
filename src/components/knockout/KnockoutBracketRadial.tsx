@@ -10,20 +10,20 @@ import { useSettings } from "@/components/SettingsProvider";
 import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
 import type { KnockoutRoundColumn } from "@/lib/knockout-bracket";
 import {
+  BRACKET_COLORS,
   RADIAL_CENTER,
   RADIAL_R_QF,
   RADIAL_R_R16,
+  RADIAL_R_R32,
   RADIAL_R_SF,
   RADIAL_R_TEAMS,
   RADIAL_VIEW_SIZE,
   buildRadialBracketLayout,
-  getActiveConnectorIds,
-  type RadialMergeConnector,
+  getActiveEdgeKeys,
+  getActiveNodeIds,
+  type RadialLayoutNode,
   type RadialRoundKey,
 } from "@/lib/knockout-bracket-radial-layout";
-
-const LINE = "#4a4035";
-const LINE_ACTIVE = "#e8c872";
 
 type KnockoutBracketRadialProps = {
   columns: KnockoutRoundColumn[];
@@ -47,69 +47,39 @@ function matchFlagSize(roundKey: RadialRoundKey): number {
   }
 }
 
-function matchTitle(
-  matchNumber: number,
-  slot: {
-    match?: { home_team_name: string; away_team_name: string };
-    preview?: {
-      home: string;
-      away: string;
-      homeResolved?: { team_name?: string };
-      awayResolved?: { team_name?: string };
-    };
-  },
-  tbd: string
-): string {
-  if (slot.match) {
-    return `M${matchNumber} · ${slot.match.home_team_name} vs ${slot.match.away_team_name}`;
+function nodeTitle(node: RadialLayoutNode, tbd: string): string {
+  const matchNumber = node.matchNumber;
+  if (matchNumber == null) return tbd;
+
+  if (node.isSlot && node.side) {
+    const sideLabel =
+      node.side === "home"
+        ? node.slot.match?.home_team_name ??
+          node.slot.preview?.homeResolved?.team_name ??
+          formatBracketSlotLabel(node.slot.preview?.home ?? "") ??
+          node.label
+        : node.slot.match?.away_team_name ??
+          node.slot.preview?.awayResolved?.team_name ??
+          formatBracketSlotLabel(node.slot.preview?.away ?? "") ??
+          node.label;
+    return `M${matchNumber} · ${sideLabel ?? tbd}`;
   }
-  if (slot.preview) {
+
+  if (node.slot.match) {
+    return `M${matchNumber} · ${node.slot.match.home_team_name} vs ${node.slot.match.away_team_name}`;
+  }
+  if (node.slot.preview) {
     const home =
-      slot.preview.homeResolved?.team_name ??
-      formatBracketSlotLabel(slot.preview.home) ??
-      slot.preview.home;
+      node.slot.preview.homeResolved?.team_name ??
+      formatBracketSlotLabel(node.slot.preview.home) ??
+      node.slot.preview.home;
     const away =
-      slot.preview.awayResolved?.team_name ??
-      formatBracketSlotLabel(slot.preview.away) ??
-      slot.preview.away;
+      node.slot.preview.awayResolved?.team_name ??
+      formatBracketSlotLabel(node.slot.preview.away) ??
+      node.slot.preview.away;
     return `M${matchNumber} · ${home} vs ${away}`;
   }
   return `M${matchNumber} · ${tbd}`;
-}
-
-function MergePaths({
-  connector,
-  active,
-}: {
-  connector: RadialMergeConnector;
-  active: boolean;
-}) {
-  const stroke = active ? LINE_ACTIVE : LINE;
-  const width = active ? 3 : 1.4;
-  const opacity = active ? 1 : 0.38;
-
-  return (
-    <g>
-      <path
-        d={connector.pathA}
-        fill="none"
-        stroke={stroke}
-        strokeWidth={width}
-        strokeOpacity={opacity}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d={connector.pathB}
-        fill="none"
-        stroke={stroke}
-        strokeWidth={width}
-        strokeOpacity={opacity}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </g>
-  );
 }
 
 export function KnockoutBracketRadial({
@@ -124,59 +94,56 @@ export function KnockoutBracketRadial({
     [columns, preview]
   );
 
-  const [hoveredMatch, setHoveredMatch] = useState<number | null>(null);
-  const [pinnedMatch, setPinnedMatch] = useState<number | null>(null);
-  const activeMatch = pinnedMatch ?? hoveredMatch;
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [pinnedNode, setPinnedNode] = useState<string | null>(null);
+  const activeNodeId = pinnedNode ?? hoveredNode;
 
-  const activeConnectors = useMemo(
-    () => getActiveConnectorIds(layout, activeMatch),
-    [layout, activeMatch]
+  const activeEdgeKeys = useMemo(
+    () => getActiveEdgeKeys(activeNodeId),
+    [activeNodeId]
   );
 
-  const activeMatches = useMemo(() => {
-    if (activeMatch == null) return new Set<number>();
-    const matches = new Set<number>([activeMatch]);
-    for (const connector of layout.connectors) {
-      if (!activeConnectors.has(connector.id)) continue;
-      const children = connector.id.split("->")[0].split("+").map(Number);
-      children.forEach((n) => matches.add(n));
-      matches.add(connector.parentMatch);
-    }
-    return matches;
-  }, [activeConnectors, activeMatch, layout.connectors]);
+  const activeNodeIds = useMemo(
+    () => getActiveNodeIds(activeNodeId),
+    [activeNodeId]
+  );
 
   const activeLabel = useMemo(() => {
-    if (activeMatch == null) return t("knockouts.radialHint");
-    const node = layout.nodeByMatch.get(activeMatch);
-    if (node) return matchTitle(activeMatch, node.slot, tbd);
-    const pair = layout.teamSlotsByMatch.get(activeMatch);
-    if (pair) return matchTitle(activeMatch, pair[0].slot, tbd);
+    if (activeNodeId == null) return t("knockouts.radialHint");
+    const node = layout.nodes.get(activeNodeId);
+    if (node) return nodeTitle(node, tbd);
     return t("knockouts.radialHint");
-  }, [activeMatch, layout, t, tbd]);
+  }, [activeNodeId, layout.nodes, t, tbd]);
 
-  const toggleMatch = (matchNumber: number) => {
-    setPinnedMatch((current) =>
-      current === matchNumber ? null : matchNumber
-    );
+  const toggleNode = (nodeId: string) => {
+    setPinnedNode((current) => (current === nodeId ? null : nodeId));
   };
 
   const clearHover = () => {
-    if (pinnedMatch == null) setHoveredMatch(null);
+    if (pinnedNode == null) setHoveredNode(null);
   };
 
-  const bindMatch = (matchNumber: number) => ({
-    onMouseEnter: () => setHoveredMatch(matchNumber),
+  const bindNode = (nodeId: string) => ({
+    onMouseEnter: () => setHoveredNode(nodeId),
     onMouseLeave: clearHover,
-    onFocus: () => setHoveredMatch(matchNumber),
+    onFocus: () => setHoveredNode(nodeId),
     onBlur: clearHover,
-    onClick: () => toggleMatch(matchNumber),
+    onClick: () => toggleNode(nodeId),
     onKeyDown: (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        toggleMatch(matchNumber);
+        toggleNode(nodeId);
       }
     },
   });
+
+  const internalNodes = useMemo(
+    () =>
+      [...layout.nodes.values()].filter(
+        (n) => !n.isSlot && n.round !== "F"
+      ),
+    [layout.nodes]
+  );
 
   return (
     <div className="mx-auto w-full max-w-4xl">
@@ -216,7 +183,7 @@ export function KnockoutBracketRadial({
               fill="url(#wheel-bg)"
             />
 
-            {[RADIAL_R_TEAMS, RADIAL_R_R16, RADIAL_R_QF, RADIAL_R_SF].map(
+            {[RADIAL_R_R32, RADIAL_R_R16, RADIAL_R_QF, RADIAL_R_SF].map(
               (radius) => (
                 <circle
                   key={radius}
@@ -224,7 +191,7 @@ export function KnockoutBracketRadial({
                   cy={RADIAL_CENTER}
                   r={radius}
                   fill="none"
-                  stroke="rgba(74, 64, 53, 0.28)"
+                  stroke="rgba(255,255,255,0.04)"
                   strokeWidth={1}
                 />
               )
@@ -237,29 +204,33 @@ export function KnockoutBracketRadial({
               fill="url(#wheel-glow)"
             />
 
-            {layout.leafConnectors.map((leaf) => {
-              const active = activeMatches.has(leaf.matchNumber);
+            {layout.edges.map((edge) => {
+              const active = activeEdgeKeys.has(edge.key);
               return (
                 <path
-                  key={`leaf-${leaf.matchNumber}-${leaf.path.slice(0, 12)}`}
-                  d={leaf.path}
+                  key={edge.key}
+                  d={edge.pathElbow}
                   fill="none"
-                  stroke={active ? LINE_ACTIVE : LINE}
-                  strokeWidth={active ? 2.4 : 1.2}
-                  strokeOpacity={active ? 1 : 0.32}
+                  stroke={active ? BRACKET_COLORS.path : BRACKET_COLORS.line}
+                  strokeWidth={active ? 3.2 : 1.4}
+                  strokeOpacity={active ? 1 : 1}
                   strokeLinecap="round"
-                  strokeLinejoin="round"
                 />
               );
             })}
 
-            {layout.connectors.map((connector) => (
-              <MergePaths
-                key={connector.id}
-                connector={connector}
-                active={activeConnectors.has(connector.id)}
-              />
-            ))}
+            {internalNodes.map((node) => {
+              const active = activeNodeIds.has(node.id);
+              return (
+                <circle
+                  key={`dot-${node.id}`}
+                  cx={node.x}
+                  cy={node.y}
+                  r={active ? 5 : 3}
+                  fill={active ? BRACKET_COLORS.path : BRACKET_COLORS.node}
+                />
+              );
+            })}
           </svg>
 
           <div
@@ -269,42 +240,13 @@ export function KnockoutBracketRadial({
             <WCTrophy size={68} />
           </div>
 
-          {layout.teamSlots.map((team) => {
-            if (!team.visible) return null;
+          {layout.teamOrder.map((slotId) => {
+            const node = layout.nodes.get(slotId)!;
+            const side = node.side ?? "home";
 
             return (
               <div
-                key={`${team.matchNumber}-${team.side}`}
-                className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: `${(team.x / RADIAL_VIEW_SIZE) * 100}%`,
-                  top: `${(team.y / RADIAL_VIEW_SIZE) * 100}%`,
-                }}
-                tabIndex={0}
-                role="button"
-                {...bindMatch(team.matchNumber)}
-              >
-                <BracketRadialTeam
-                  slot={team.slot}
-                  side={team.side}
-                  size={34}
-                  tbd={tbd}
-                  active={activeMatches.has(team.matchNumber)}
-                />
-              </div>
-            );
-          })}
-
-          {layout.matchNodes.map((node) => {
-            if (node.roundKey === "final" || node.roundKey === "third") {
-              return null;
-            }
-
-            const size = matchFlagSize(node.roundKey);
-
-            return (
-              <div
-                key={node.matchNumber}
+                key={slotId}
                 className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
                 style={{
                   left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
@@ -312,44 +254,66 @@ export function KnockoutBracketRadial({
                 }}
                 tabIndex={0}
                 role="button"
-                {...bindMatch(node.matchNumber)}
+                {...bindNode(slotId)}
+              >
+                <BracketRadialTeam
+                  slot={node.slot}
+                  side={side}
+                  size={34}
+                  tbd={tbd}
+                  active={activeNodeIds.has(slotId)}
+                />
+              </div>
+            );
+          })}
+
+          {internalNodes.map((node) => {
+            const size = matchFlagSize(node.roundKey);
+
+            return (
+              <div
+                key={node.id}
+                className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
+                  top: `${(node.y / RADIAL_VIEW_SIZE) * 100}%`,
+                }}
+                tabIndex={0}
+                role="button"
+                {...bindNode(node.id)}
               >
                 <BracketRadialMatch
                   data={node.slot}
                   roundKey={node.roundKey}
                   size={size}
                   tbd={tbd}
-                  active={activeMatches.has(node.matchNumber)}
+                  active={activeNodeIds.has(node.id)}
                 />
               </div>
             );
           })}
 
-          {layout.matchNodes
-            .filter((node) => node.roundKey === "final" || node.roundKey === "third")
-            .map((node) => (
-              <div
-                key={node.matchNumber}
-                className={`absolute z-40 -translate-x-1/2 ${
-                  node.roundKey === "final" ? "translate-y-6" : "translate-y-16"
-                }`}
-                style={{
-                  left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
-                  top: `${(node.y / RADIAL_VIEW_SIZE) * 100}%`,
-                }}
-                tabIndex={0}
-                role="button"
-                {...bindMatch(node.matchNumber)}
-              >
-                <BracketRadialMatch
-                  data={node.slot}
-                  roundKey={node.roundKey}
-                  size={node.roundKey === "final" ? 34 : 28}
-                  tbd={tbd}
-                  active={activeMatches.has(node.matchNumber)}
-                />
-              </div>
-            ))}
+          {layout.thirdPlace && (
+            <div
+              key="M103"
+              className="absolute z-40 -translate-x-1/2 translate-y-16"
+              style={{
+                left: `${(layout.thirdPlace.x / RADIAL_VIEW_SIZE) * 100}%`,
+                top: `${(layout.thirdPlace.y / RADIAL_VIEW_SIZE) * 100}%`,
+              }}
+              tabIndex={0}
+              role="button"
+              {...bindNode("M103")}
+            >
+              <BracketRadialMatch
+                data={layout.thirdPlace.slot}
+                roundKey="third"
+                size={28}
+                tbd={tbd}
+                active={activeNodeIds.has("M103")}
+              />
+            </div>
+          )}
         </div>
       </div>
 

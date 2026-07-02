@@ -4,81 +4,82 @@ import assert from "node:assert/strict";
 import { buildKnockoutColumns } from "@/lib/knockout-bracket";
 import {
   buildRadialBracketLayout,
-  connectorPath,
-  LEFT_R32_MATCHES,
-  outerTeamVisible,
+  connectorPathElbow,
+  LEFT_HALF,
+  pathEdges,
+  pathToRoot,
   RADIAL_CENTER,
   RADIAL_R_TEAMS,
-  RIGHT_R32_MATCHES,
+  RIGHT_HALF,
+  TEAM_ORDER,
 } from "@/lib/knockout-bracket-radial-layout";
-import { FIFA_MATCH_NUMBERS } from "@/lib/knockout-fifa-order";
 
 const columns = buildKnockoutColumns([], []);
 const layout = buildRadialBracketLayout(columns, true);
 
-test("radial wheel: 32 slots de equipas no anel exterior", () => {
-  assert.equal(layout.teamSlots.length, 32);
+test("radial wheel: 32 slots no anel exterior (team_order)", () => {
+  assert.equal(layout.teamOrder.length, 32);
+  assert.equal(layout.teamOrder.filter((id) => id.endsWith(".A") || id.endsWith(".B")).length, 32);
 });
 
-test("radial wheel: 16 jogos R32 por metade FIFA", () => {
-  assert.equal(LEFT_R32_MATCHES.length, 8);
-  assert.equal(RIGHT_R32_MATCHES.length, 8);
-  assert.equal(layout.teamSlotsByMatch.size, 16);
+test("radial wheel: metades FIFA (16 slots cada)", () => {
+  assert.equal(LEFT_HALF.length, 16);
+  assert.equal(RIGHT_HALF.length, 16);
 });
 
-test("radial wheel: nós interiores R16→SF + final + 3.º", () => {
-  assert.equal(layout.matchNodes.length, 16);
-  assert.ok(layout.nodeByMatch.get(104));
-  assert.ok(layout.nodeByMatch.get(103));
+test("radial wheel: 63 nos estaticos + 3.º lugar", () => {
+  assert.equal(layout.nodes.size, 63);
+  assert.ok(layout.thirdPlace);
+  assert.equal(layout.thirdPlace.matchNumber, 103);
 });
 
-test("radial wheel: equipas no anel exterior", () => {
-  for (const slot of layout.teamSlots) {
-    const radius = Math.hypot(slot.x - RADIAL_CENTER, slot.y - RADIAL_CENTER);
+test("radial wheel: 62 arestas elbow (filho->pai)", () => {
+  assert.equal(layout.edges.length, 62);
+  for (const edge of layout.edges) {
+    assert.match(edge.pathElbow, /^M /);
+    assert.ok(edge.pathElbow.includes("A") || edge.pathElbow.includes("L"));
+  }
+});
+
+test("radial wheel: slots no raio exterior", () => {
+  for (const slotId of layout.teamOrder) {
+    const node = layout.nodes.get(slotId);
+    const radius = Math.hypot(node.x - RADIAL_CENTER, node.y - RADIAL_CENTER);
     assert.ok(
       Math.abs(radius - RADIAL_R_TEAMS) < 2,
-      `M${slot.matchNumber} ${slot.side} devia estar no anel exterior`
+      `${slotId} devia estar no anel exterior`
     );
   }
 });
 
 test("radial wheel: final no centro", () => {
-  const final = layout.nodeByMatch.get(104);
+  const final = layout.nodes.get("M104");
   assert.ok(final);
   assert.ok(Math.abs(final.x - RADIAL_CENTER) < 1);
   assert.ok(Math.abs(final.y - RADIAL_CENTER) < 1);
 });
 
-test("radial wheel: conectores em arco", () => {
-  assert.equal(layout.connectors.length, 15);
-  assert.ok(layout.connectors[0].pathA.startsWith("M "));
-  assert.ok(layout.leafConnectors.length > 0);
+test("radial wheel: topologia M89 <- M74, M77", () => {
+  const m89 = layout.nodes.get("M89");
+  assert.deepEqual(m89.children, ["M74", "M77"]);
 });
 
-test("radial wheel: caminho em arco válido", () => {
-  const path = connectorPath(100, 100, 500, 500);
-  assert.match(path, /^M /);
-  assert.ok(path.includes("A") || path.includes("Q"));
+test("radial wheel: caminho M74.B ate ao centro", () => {
+  const chain = pathToRoot("M74.B");
+  assert.deepEqual(chain, ["M74.B", "M74", "M89", "M97", "M101", "M104"]);
+  assert.equal(pathEdges("M74.B").length, 5);
 });
 
-test("radial wheel: todos os M73–M88 têm par de equipas", () => {
-  for (const num of FIFA_MATCH_NUMBERS.r32) {
-    assert.ok(layout.teamSlotsByMatch.has(num), `falta par M${num}`);
+test("radial wheel: connector elbow M74->M89", () => {
+  const d = connectorPathElbow("M74", "M89");
+  assert.match(d, /^M /);
+  assert.ok(d.includes("A"));
+});
+
+test("radial wheel: todos os slots têm dados de jogo", () => {
+  for (const slotId of layout.teamOrder) {
+    const node = layout.nodes.get(slotId);
+    assert.ok(node.matchNumber >= 73 && node.matchNumber <= 88, slotId);
+    assert.ok(node.side === "home" || node.side === "away", slotId);
   }
-});
-
-test("outerTeamVisible: vencedor sai do anel exterior", () => {
-  const slot = {
-    match: {
-      status: "finished",
-      home_score: 1,
-      away_score: 0,
-      home_team_id: 1,
-      away_team_id: 2,
-      home_team_name: "A",
-      away_team_name: "B",
-    } as never,
-  };
-  assert.equal(outerTeamVisible(slot, "home"), false);
-  assert.equal(outerTeamVisible(slot, "away"), true);
 });
