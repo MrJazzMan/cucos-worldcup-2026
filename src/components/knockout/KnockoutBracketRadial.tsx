@@ -1,67 +1,25 @@
 "use client";
 
 import { useMemo, useState, type KeyboardEvent } from "react";
-import {
-  BracketRadialMatch,
-  BracketRadialTeam,
-} from "@/components/knockout/BracketRadialSlot";
+import { BracketRadialTeam } from "@/components/knockout/BracketRadialSlot";
 import { WCTrophy } from "@/components/knockout/WCTrophy";
 import { useSettings } from "@/components/SettingsProvider";
 import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
 import type { KnockoutRoundColumn } from "@/lib/knockout-bracket";
-import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
 import {
   BRACKET_COLORS,
   RADIAL_VIEW_SIZE,
   buildRadialBracketLayout,
   getActiveEdgeKeys,
   getActiveNodeIds,
+  outerSlotEliminated,
   type RadialLayoutNode,
-  type RadialRoundKey,
 } from "@/lib/knockout-bracket-radial-layout";
 
 type KnockoutBracketRadialProps = {
   columns: KnockoutRoundColumn[];
   preview?: boolean;
 };
-
-function matchFlagSize(roundKey: RadialRoundKey): number {
-  switch (roundKey) {
-    case "r32":
-      return 30;
-    case "r16":
-      return 34;
-    case "qf":
-      return 38;
-    case "sf":
-      return 42;
-    case "final":
-      return 0;
-    case "third":
-      return 28;
-    default:
-      return 30;
-  }
-}
-
-function innerNodeShowsFlag(node: RadialLayoutNode): boolean {
-  const data: BracketSlotData = node.slot;
-
-  if (node.roundKey === "r32") {
-    const match = data.match;
-    return match?.status === "finished" || match?.status === "live";
-  }
-
-  if (node.roundKey === "r16") {
-    return !!data.match;
-  }
-
-  if (node.roundKey === "qf" || node.roundKey === "sf") {
-    return !!data.match;
-  }
-
-  return false;
-}
 
 function nodeTitle(node: RadialLayoutNode, tbd: string): string {
   const matchNumber = node.matchNumber;
@@ -153,22 +111,13 @@ export function KnockoutBracketRadial({
     },
   });
 
+  /** Nós internos (R32→SF): apenas pontos, como no preview Python. */
   const internalNodes = useMemo(
     () =>
       [...layout.nodes.values()].filter(
         (n) => !n.isSlot && n.round !== "F"
       ),
     [layout.nodes]
-  );
-
-  const matchNodes = useMemo(
-    () => internalNodes.filter(innerNodeShowsFlag),
-    [internalNodes]
-  );
-
-  const dotNodes = useMemo(
-    () => internalNodes.filter((n) => !innerNodeShowsFlag(n)),
-    [internalNodes]
   );
 
   return (
@@ -195,21 +144,8 @@ export function KnockoutBracketRadial({
                 d={edge.pathElbow}
                 fill="none"
                 stroke={active ? BRACKET_COLORS.path : BRACKET_COLORS.line}
-                strokeWidth={active ? 3 : 1.35}
+                strokeWidth={active ? 3.2 : 1.4}
                 strokeLinecap="round"
-              />
-            );
-          })}
-
-          {dotNodes.map((node) => {
-            const active = activeNodeIds.has(node.id);
-            return (
-              <circle
-                key={`dot-${node.id}`}
-                cx={node.x}
-                cy={node.y}
-                r={active ? 5 : 3}
-                fill={active ? BRACKET_COLORS.path : BRACKET_COLORS.node}
               />
             );
           })}
@@ -236,6 +172,7 @@ export function KnockoutBracketRadial({
               }}
               tabIndex={0}
               role="button"
+              aria-label={nodeTitle(node, tbd)}
               {...bindNode(slotId)}
             >
               <BracketRadialTeam
@@ -244,58 +181,36 @@ export function KnockoutBracketRadial({
                 size={34}
                 tbd={tbd}
                 active={activeNodeIds.has(slotId)}
+                eliminated={outerSlotEliminated(node.slot, side)}
               />
             </div>
           );
         })}
 
-        {matchNodes.map((node) => {
-          const size = matchFlagSize(node.roundKey);
-
+        {internalNodes.map((node) => {
+          const active = activeNodeIds.has(node.id);
           return (
-            <div
+            <button
               key={node.id}
-              className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+              type="button"
+              className="absolute z-10 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-0 bg-transparent p-0"
               style={{
                 left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
                 top: `${(node.y / RADIAL_VIEW_SIZE) * 100}%`,
               }}
-              tabIndex={0}
-              role="button"
+              aria-label={nodeTitle(node, tbd)}
               {...bindNode(node.id)}
             >
-              <BracketRadialMatch
-                data={node.slot}
-                roundKey={node.roundKey}
-                size={size}
-                tbd={tbd}
-                active={activeNodeIds.has(node.id)}
+              <span
+                className={`block rounded-full transition-colors ${
+                  active
+                    ? "h-2.5 w-2.5 bg-[#e8c872] shadow-[0_0_8px_rgba(232,200,114,0.55)]"
+                    : "h-1.5 w-1.5 bg-[var(--bracket-node)]"
+                }`}
               />
-            </div>
+            </button>
           );
         })}
-
-        {layout.thirdPlace && (
-          <div
-            key="M103"
-            className="absolute z-40 -translate-x-1/2 translate-y-16"
-            style={{
-              left: `${(layout.thirdPlace.x / RADIAL_VIEW_SIZE) * 100}%`,
-              top: `${(layout.thirdPlace.y / RADIAL_VIEW_SIZE) * 100}%`,
-            }}
-            tabIndex={0}
-            role="button"
-            {...bindNode("M103")}
-          >
-            <BracketRadialMatch
-              data={layout.thirdPlace.slot}
-              roundKey="third"
-              size={28}
-              tbd={tbd}
-              active={activeNodeIds.has("M103")}
-            />
-          </div>
-        )}
       </div>
 
       <p className="mt-3 text-center text-[10px] text-muted">{activeLabel}</p>

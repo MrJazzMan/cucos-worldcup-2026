@@ -530,6 +530,19 @@ export function getWinnerTeamId(match: Match): number | null {
   return home > away ? match.home_team_id : match.away_team_id;
 }
 
+export function outerSlotEliminated(
+  slot: BracketSlotData,
+  side: RadialTeamSide
+): boolean {
+  const match = slot.match;
+  if (!match || match.status !== "finished") return false;
+  const home = match.home_score ?? 0;
+  const away = match.away_score ?? 0;
+  if (home === away) return false;
+  const homeWon = home > away;
+  return side === "home" ? !homeWon : homeWon;
+}
+
 /** @deprecated Outer ring always shows all 32 teams in the Python layout model. */
 export function outerTeamVisible(
   _slot: BracketSlotData,

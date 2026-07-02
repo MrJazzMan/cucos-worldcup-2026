@@ -17,6 +17,7 @@ type BracketRadialTeamProps = {
   size: number;
   tbd: string;
   active?: boolean;
+  eliminated?: boolean;
 };
 
 function isKnownTeam(side?: ResolvedSlotSide): boolean {
@@ -69,6 +70,7 @@ export function BracketRadialTeam({
   size,
   tbd,
   active = false,
+  eliminated = false,
 }: BracketRadialTeamProps) {
   const team = resolveSide(slot, side);
   if (!team || !isKnownTeam(team)) {
@@ -78,7 +80,9 @@ export function BracketRadialTeam({
         : tbd;
     return (
       <div
-        className="flex items-center justify-center rounded-full border border-[#5c4d38]/70 bg-[#1a1510] text-[8px] font-bold text-[#c9a86c]"
+        className={`flex items-center justify-center rounded-full border border-[#5c4d38]/70 bg-[#1a1510] text-[8px] font-bold text-[#c9a86c] ${
+          eliminated ? "opacity-35" : ""
+        }`}
         style={{ width: size, height: size }}
         title={label}
       >
@@ -88,12 +92,16 @@ export function BracketRadialTeam({
   }
 
   return (
-    <span className={`inline-flex rounded-full ${flagRingClass(team.team_id, active)}`}>
+    <span
+      className={`inline-flex rounded-full ${flagRingClass(team.team_id, active)} ${
+        eliminated ? "opacity-35 grayscale" : ""
+      }`}
+    >
       <TeamFlag
         name={team.team_name!}
         teamId={team.team_id}
         size={size}
-        className="shadow-[0_0_12px_rgba(0,0,0,0.45)]"
+        className={eliminated ? "" : "shadow-[0_0_12px_rgba(0,0,0,0.45)]"}
       />
     </span>
   );
