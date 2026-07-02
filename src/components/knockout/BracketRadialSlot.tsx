@@ -1,39 +1,83 @@
 "use client";
 
-import { KickoffTime, MatchCompactDate, TeamName } from "@/components/Display";
 import { TeamFlag } from "@/components/TeamFlag";
-import { useSettings } from "@/components/SettingsProvider";
 import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
 import type { ResolvedSlotSide } from "@/lib/knockout-qualification";
 import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
-import type { KnockoutSlotPreview } from "@/lib/knockout-bracket";
-import type { RadialRoundKey } from "@/lib/knockout-bracket-radial-layout";
+import type {
+  RadialRoundKey,
+  RadialTeamSide,
+} from "@/lib/knockout-bracket-radial-layout";
 
-type BracketRadialSlotProps = {
-  data: BracketSlotData;
-  roundKey: RadialRoundKey;
-  matchNumber: number;
+type BracketRadialTeamProps = {
+  slot: BracketSlotData;
+  side: RadialTeamSide;
+  size: number;
   tbd: string;
-  highlighted?: boolean;
 };
 
-function flagSize(roundKey: RadialRoundKey): number {
-  if (roundKey === "final" || roundKey === "third") return 22;
-  if (roundKey === "r32") return 16;
-  return 18;
+function resolveSide(
+  slot: BracketSlotData,
+  side: RadialTeamSide
+): ResolvedSlotSide | null {
+  if (slot.match) {
+    if (side === "home") {
+      return {
+        code: slot.match.home_team_name,
+        team_id: slot.match.home_team_id,
+        team_name: slot.match.home_team_name,
+        confirmed: true,
+      };
+    }
+    return {
+      code: slot.match.away_team_name,
+      team_id: slot.match.away_team_id,
+      team_name: slot.match.away_team_name,
+      confirmed: true,
+    };
+  }
+
+  if (!slot.preview) return null;
+  if (side === "home") {
+    return (
+      slot.preview.homeResolved ?? { code: slot.preview.home }
+    );
+  }
+  return slot.preview.awayResolved ?? { code: slot.preview.away };
 }
 
-function PreviewFlag({ side, size }: { side: ResolvedSlotSide; size: number }) {
-  if (side.team_name && side.team_id) {
+export function BracketRadialTeam({
+  slot,
+  side,
+  size,
+  tbd,
+}: BracketRadialTeamProps) {
+  const team = resolveSide(slot, side);
+  if (!team) {
     return (
-      <TeamFlag name={side.team_name} teamId={side.team_id} size={size} />
+      <div
+        className="rounded-full border border-[#5c4d38]/60 bg-[#1a1510]"
+        style={{ width: size, height: size }}
+        title={tbd}
+      />
     );
   }
 
-  const label = formatBracketSlotLabel(side.code) ?? side.code;
+  if (team.team_name && team.team_id) {
+    return (
+      <TeamFlag
+        name={team.team_name}
+        teamId={team.team_id}
+        size={size}
+        className="shadow-[0_0_12px_rgba(0,0,0,0.45)]"
+      />
+    );
+  }
+
+  const label = formatBracketSlotLabel(team.code) ?? team.code;
   return (
     <div
-      className="flex shrink-0 items-center justify-center rounded-full border border-border-base bg-surface-2 text-[7px] font-bold text-muted"
+      className="flex items-center justify-center rounded-full border border-[#5c4d38]/70 bg-[#1a1510] text-[8px] font-bold text-[#c9a86c]"
       style={{ width: size, height: size }}
       title={label}
     >
@@ -42,168 +86,99 @@ function PreviewFlag({ side, size }: { side: ResolvedSlotSide; size: number }) {
   );
 }
 
-function PreviewRadial({
-  preview,
-  roundKey,
-}: {
-  preview: KnockoutSlotPreview;
+type BracketRadialMatchProps = {
+  data: BracketSlotData;
   roundKey: RadialRoundKey;
-}) {
-  const size = flagSize(roundKey);
-  const home = preview.homeResolved ?? { code: preview.home };
-  const away = preview.awayResolved ?? { code: preview.away };
+  size: number;
+  tbd: string;
+  active?: boolean;
+};
 
-  if (roundKey === "r32") {
-    return (
-      <div className="flex flex-col items-center gap-0.5">
-        <PreviewFlag side={home} size={size} />
-        <PreviewFlag side={away} size={size} />
-      </div>
-    );
-  }
-
-  const resolved = home.team_id ? home : away.team_id ? away : home;
-  return <PreviewFlag side={resolved} size={size} />;
-}
-
-function MatchRadial({
-  match,
-  roundKey,
-}: {
-  match: NonNullable<BracketSlotData["match"]>;
-  roundKey: RadialRoundKey;
-}) {
-  const size = flagSize(roundKey);
-  const isLive = match.status === "live";
-  const isFinished = match.status === "finished";
-  const showScore = isLive || isFinished;
-
-  if (roundKey === "r32" || !isFinished) {
-    return (
-      <div className="flex flex-col items-center gap-0.5">
-        <div className="flex items-center gap-0.5">
-          <TeamFlag
-            name={match.home_team_name}
-            teamId={match.home_team_id}
-            size={size}
-          />
-          {showScore && (
-            <span className="text-[9px] font-bold tabular-nums text-foreground">
-              {match.home_score ?? 0}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-0.5">
-          <TeamFlag
-            name={match.away_team_name}
-            teamId={match.away_team_id}
-            size={size}
-          />
-          {showScore && (
-            <span className="text-[9px] font-bold tabular-nums text-foreground">
-              {match.away_score ?? 0}
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  const homeWon = (match.home_score ?? 0) > (match.away_score ?? 0);
-  const winner = homeWon
+function winnerFromMatch(data: BracketSlotData) {
+  const match = data.match;
+  if (!match || match.status !== "finished") return null;
+  const home = match.home_score ?? 0;
+  const away = match.away_score ?? 0;
+  if (home === away) return null;
+  return home > away
     ? { name: match.home_team_name, id: match.home_team_id }
     : { name: match.away_team_name, id: match.away_team_id };
-
-  return <TeamFlag name={winner.name} teamId={winner.id} size={size + 2} />;
 }
 
-function slotTitle(data: BracketSlotData, tbd: string): string {
-  if (data.match) {
-    return `${data.match.home_team_name} vs ${data.match.away_team_name}`;
-  }
-  if (data.preview) {
-    const home = data.preview.homeResolved?.team_name ?? data.preview.home;
-    const away = data.preview.awayResolved?.team_name ?? data.preview.away;
-    return `${home} vs ${away}`;
-  }
-  return tbd;
-}
-
-export function BracketRadialSlot({
+export function BracketRadialMatch({
   data,
   roundKey,
-  matchNumber,
+  size,
   tbd,
-  highlighted = false,
-}: BracketRadialSlotProps) {
-  const { t } = useSettings();
-  const isCenter = roundKey === "final" || roundKey === "third";
-  const title = slotTitle(data, tbd);
+  active = false,
+}: BracketRadialMatchProps) {
+  const winner = winnerFromMatch(data);
+
+  if (winner) {
+    return (
+      <TeamFlag
+        name={winner.name}
+        teamId={winner.id}
+        size={size}
+        className={`shadow-[0_0_16px_rgba(0,0,0,0.5)] ${
+          active ? "ring-2 ring-[#e8c872]" : ""
+        }`}
+      />
+    );
+  }
+
+  if (data.match) {
+    const home = data.match.home_team_name;
+    const away = data.match.away_team_name;
+    const isLive = data.match.status === "live";
+    return (
+      <div
+        className={`flex flex-col items-center gap-0.5 ${
+          isLive ? "animate-pulse" : ""
+        }`}
+        title={`${home} vs ${away}`}
+      >
+        <TeamFlag
+          name={home}
+          teamId={data.match.home_team_id}
+          size={size - 4}
+        />
+        <TeamFlag
+          name={away}
+          teamId={data.match.away_team_id}
+          size={size - 4}
+        />
+      </div>
+    );
+  }
+
+  if (data.preview) {
+    const home = data.preview.homeResolved ?? { code: data.preview.home };
+    const away = data.preview.awayResolved ?? { code: data.preview.away };
+    const known = home.team_id ? home : away.team_id ? away : null;
+    if (known?.team_name && known.team_id) {
+      return (
+        <TeamFlag
+          name={known.team_name}
+          teamId={known.team_id}
+          size={size}
+          className="opacity-90"
+        />
+      );
+    }
+  }
+
+  if (roundKey === "final") {
+    return null;
+  }
 
   return (
     <div
-      className={`group relative flex flex-col items-center ${
-        isCenter ? "min-w-[4.5rem]" : ""
+      className={`rounded-full border border-[#6b5a42] bg-[#16120e] ${
+        active ? "bg-[#c9a86c]" : ""
       }`}
-      title={title}
-      aria-label={`M${matchNumber}: ${title}`}
-    >
-      <div
-        className={`flex items-center justify-center rounded-full border bg-surface/95 p-1 shadow-sm backdrop-blur-sm transition-shadow ${
-          highlighted
-            ? "border-accent ring-2 ring-accent/40"
-            : "border-border-base"
-        } ${isCenter ? "px-2 py-1.5" : ""} ${
-          data.match?.status === "live"
-            ? "border-red-500/50 ring-1 ring-red-500/30"
-            : ""
-        }`}
-      >
-        {!data.match && data.preview && (
-          <PreviewRadial preview={data.preview} roundKey={roundKey} />
-        )}
-        {!data.match && !data.preview && (
-          <span className="px-1 text-[8px] font-semibold uppercase text-muted">
-            {tbd}
-          </span>
-        )}
-        {data.match && (
-          <MatchRadial match={data.match} roundKey={roundKey} />
-        )}
-      </div>
-
-      {isCenter && data.match && (
-        <div className="mt-1 max-w-[5.5rem] text-center">
-          <p className="truncate text-[8px] font-bold uppercase tracking-wide text-muted">
-            {roundKey === "final"
-              ? t("knockouts.round.final")
-              : t("knockouts.round.third")}
-          </p>
-          <p className="text-[8px] tabular-nums text-muted">
-            <MatchCompactDate utc={data.match.kickoff_utc} />
-            <span aria-hidden> · </span>
-            <KickoffTime utc={data.match.kickoff_utc} />
-          </p>
-          {roundKey === "final" && (
-            <div className="mt-0.5 space-y-0.5 text-[9px] font-semibold">
-              <p className="truncate">
-                <TeamName name={data.match.home_team_name} />
-              </p>
-              <p className="truncate">
-                <TeamName name={data.match.away_team_name} />
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {isCenter && !data.match && data.preview && (
-        <p className="mt-1 text-[8px] font-bold uppercase tracking-wide text-muted">
-          {roundKey === "final"
-            ? t("knockouts.round.final")
-            : t("knockouts.round.third")}
-        </p>
-      )}
-    </div>
+      style={{ width: Math.max(8, size / 4), height: Math.max(8, size / 4) }}
+      title={tbd}
+    />
   );
 }
