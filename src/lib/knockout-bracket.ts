@@ -1,4 +1,4 @@
-import { orderMatchesInFifaSlots } from "@/lib/knockout-fifa-order";
+import { FIFA_MATCH_NUMBERS, orderMatchesInFifaSlots } from "@/lib/knockout-fifa-order";
 import {
   buildBracketContext,
   enrichSlotPreview,
@@ -198,7 +198,8 @@ export function buildKnockoutColumns(
     const matches = orderMatchesInFifaSlots(
       data?.matches ?? [],
       previews,
-      def.slotCount
+      def.slotCount,
+      FIFA_MATCH_NUMBERS[def.key]
     );
 
     return {

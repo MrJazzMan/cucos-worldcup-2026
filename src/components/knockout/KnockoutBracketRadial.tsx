@@ -9,13 +9,9 @@ import { WCTrophy } from "@/components/knockout/WCTrophy";
 import { useSettings } from "@/components/SettingsProvider";
 import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
 import type { KnockoutRoundColumn } from "@/lib/knockout-bracket";
+import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
 import {
   BRACKET_COLORS,
-  RADIAL_CENTER,
-  RADIAL_R_QF,
-  RADIAL_R_R16,
-  RADIAL_R_R32,
-  RADIAL_R_SF,
   RADIAL_VIEW_SIZE,
   buildRadialBracketLayout,
   getActiveEdgeKeys,
@@ -31,6 +27,8 @@ type KnockoutBracketRadialProps = {
 
 function matchFlagSize(roundKey: RadialRoundKey): number {
   switch (roundKey) {
+    case "r32":
+      return 30;
     case "r16":
       return 34;
     case "qf":
@@ -44,6 +42,25 @@ function matchFlagSize(roundKey: RadialRoundKey): number {
     default:
       return 30;
   }
+}
+
+function innerNodeShowsFlag(node: RadialLayoutNode): boolean {
+  const data: BracketSlotData = node.slot;
+
+  if (node.roundKey === "r32") {
+    const match = data.match;
+    return match?.status === "finished" || match?.status === "live";
+  }
+
+  if (node.roundKey === "r16") {
+    return !!data.match;
+  }
+
+  if (node.roundKey === "qf" || node.roundKey === "sf") {
+    return !!data.match;
+  }
+
+  return false;
 }
 
 function nodeTitle(node: RadialLayoutNode, tbd: string): string {
@@ -144,158 +161,141 @@ export function KnockoutBracketRadial({
     [layout.nodes]
   );
 
-  const dotNodes = useMemo(
-    () => internalNodes.filter((n) => n.roundKey === "r32"),
+  const matchNodes = useMemo(
+    () => internalNodes.filter(innerNodeShowsFlag),
     [internalNodes]
   );
 
-  const matchNodes = useMemo(
-    () => internalNodes.filter((n) => n.roundKey !== "r32"),
+  const dotNodes = useMemo(
+    () => internalNodes.filter((n) => !innerNodeShowsFlag(n)),
     [internalNodes]
   );
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <div className="overflow-hidden rounded-2xl bg-background p-3 sm:p-5">
-        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.35em] text-muted sm:text-xs">
-          World Cup 2026
-        </p>
+      <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.35em] text-muted sm:text-xs">
+        World Cup 2026
+      </p>
+
+      <div
+        className="relative mx-auto aspect-square w-full max-w-3xl touch-pan-x touch-pan-y"
+        onMouseLeave={clearHover}
+      >
+        <svg
+          viewBox={`0 0 ${RADIAL_VIEW_SIZE} ${RADIAL_VIEW_SIZE}`}
+          className="absolute inset-0 h-full w-full"
+          role="img"
+          aria-label={t("knockouts.title")}
+        >
+          {layout.edges.map((edge) => {
+            const active = activeEdgeKeys.has(edge.key);
+            return (
+              <path
+                key={edge.key}
+                d={edge.pathElbow}
+                fill="none"
+                stroke={active ? BRACKET_COLORS.path : BRACKET_COLORS.line}
+                strokeWidth={active ? 3 : 1.35}
+                strokeLinecap="round"
+              />
+            );
+          })}
+
+          {dotNodes.map((node) => {
+            const active = activeNodeIds.has(node.id);
+            return (
+              <circle
+                key={`dot-${node.id}`}
+                cx={node.x}
+                cy={node.y}
+                r={active ? 5 : 3}
+                fill={active ? BRACKET_COLORS.path : BRACKET_COLORS.node}
+              />
+            );
+          })}
+        </svg>
 
         <div
-          className="relative mx-auto aspect-square w-full max-w-3xl touch-pan-x touch-pan-y"
-          onMouseLeave={clearHover}
+          className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
+          aria-hidden
         >
-          <svg
-            viewBox={`0 0 ${RADIAL_VIEW_SIZE} ${RADIAL_VIEW_SIZE}`}
-            className="absolute inset-0 h-full w-full"
-            role="img"
-            aria-label={t("knockouts.title")}
-          >
-            {[RADIAL_R_R32, RADIAL_R_R16, RADIAL_R_QF, RADIAL_R_SF].map(
-              (radius) => (
-                <circle
-                  key={radius}
-                  cx={RADIAL_CENTER}
-                  cy={RADIAL_CENTER}
-                  r={radius}
-                  fill="none"
-                  className="stroke-border-base"
-                  strokeOpacity={0.35}
-                  strokeWidth={1}
-                />
-              )
-            )}
+          <WCTrophy size={76} />
+        </div>
 
-            {layout.edges.map((edge) => {
-              const active = activeEdgeKeys.has(edge.key);
-              return (
-                <path
-                  key={edge.key}
-                  d={edge.pathElbow}
-                  fill="none"
-                  stroke={active ? BRACKET_COLORS.path : BRACKET_COLORS.line}
-                  strokeWidth={active ? 3 : 1.35}
-                  strokeLinecap="round"
-                />
-              );
-            })}
+        {layout.teamOrder.map((slotId) => {
+          const node = layout.nodes.get(slotId)!;
+          const side = node.side ?? "home";
 
-            {dotNodes.map((node) => {
-              const active = activeNodeIds.has(node.id);
-              return (
-                <circle
-                  key={`dot-${node.id}`}
-                  cx={node.x}
-                  cy={node.y}
-                  r={active ? 5 : 3}
-                  fill={active ? BRACKET_COLORS.path : BRACKET_COLORS.node}
-                />
-              );
-            })}
-          </svg>
-
-          <div
-            className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
-            aria-hidden
-          >
-            <WCTrophy size={68} />
-          </div>
-
-          {layout.teamOrder.map((slotId) => {
-            const node = layout.nodes.get(slotId)!;
-            const side = node.side ?? "home";
-
-            return (
-              <div
-                key={slotId}
-                className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
-                  top: `${(node.y / RADIAL_VIEW_SIZE) * 100}%`,
-                }}
-                tabIndex={0}
-                role="button"
-                {...bindNode(slotId)}
-              >
-                <BracketRadialTeam
-                  slot={node.slot}
-                  side={side}
-                  size={34}
-                  tbd={tbd}
-                  active={activeNodeIds.has(slotId)}
-                />
-              </div>
-            );
-          })}
-
-          {matchNodes.map((node) => {
-            const size = matchFlagSize(node.roundKey);
-
-            return (
-              <div
-                key={node.id}
-                className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
-                  top: `${(node.y / RADIAL_VIEW_SIZE) * 100}%`,
-                }}
-                tabIndex={0}
-                role="button"
-                {...bindNode(node.id)}
-              >
-                <BracketRadialMatch
-                  data={node.slot}
-                  roundKey={node.roundKey}
-                  size={size}
-                  tbd={tbd}
-                  active={activeNodeIds.has(node.id)}
-                />
-              </div>
-            );
-          })}
-
-          {layout.thirdPlace && (
+          return (
             <div
-              key="M103"
-              className="absolute z-40 -translate-x-1/2 translate-y-16"
+              key={slotId}
+              className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
               style={{
-                left: `${(layout.thirdPlace.x / RADIAL_VIEW_SIZE) * 100}%`,
-                top: `${(layout.thirdPlace.y / RADIAL_VIEW_SIZE) * 100}%`,
+                left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
+                top: `${(node.y / RADIAL_VIEW_SIZE) * 100}%`,
               }}
               tabIndex={0}
               role="button"
-              {...bindNode("M103")}
+              {...bindNode(slotId)}
             >
-              <BracketRadialMatch
-                data={layout.thirdPlace.slot}
-                roundKey="third"
-                size={28}
+              <BracketRadialTeam
+                slot={node.slot}
+                side={side}
+                size={34}
                 tbd={tbd}
-                active={activeNodeIds.has("M103")}
+                active={activeNodeIds.has(slotId)}
               />
             </div>
-          )}
-        </div>
+          );
+        })}
+
+        {matchNodes.map((node) => {
+          const size = matchFlagSize(node.roundKey);
+
+          return (
+            <div
+              key={node.id}
+              className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+              style={{
+                left: `${(node.x / RADIAL_VIEW_SIZE) * 100}%`,
+                top: `${(node.y / RADIAL_VIEW_SIZE) * 100}%`,
+              }}
+              tabIndex={0}
+              role="button"
+              {...bindNode(node.id)}
+            >
+              <BracketRadialMatch
+                data={node.slot}
+                roundKey={node.roundKey}
+                size={size}
+                tbd={tbd}
+                active={activeNodeIds.has(node.id)}
+              />
+            </div>
+          );
+        })}
+
+        {layout.thirdPlace && (
+          <div
+            key="M103"
+            className="absolute z-40 -translate-x-1/2 translate-y-16"
+            style={{
+              left: `${(layout.thirdPlace.x / RADIAL_VIEW_SIZE) * 100}%`,
+              top: `${(layout.thirdPlace.y / RADIAL_VIEW_SIZE) * 100}%`,
+            }}
+            tabIndex={0}
+            role="button"
+            {...bindNode("M103")}
+          >
+            <BracketRadialMatch
+              data={layout.thirdPlace.slot}
+              roundKey="third"
+              size={28}
+              tbd={tbd}
+              active={activeNodeIds.has("M103")}
+            />
+          </div>
+        )}
       </div>
 
       <p className="mt-3 text-center text-[10px] text-muted">{activeLabel}</p>

@@ -140,7 +140,15 @@ function shouldUseCompactDot(
   data: BracketSlotData,
   roundKey: RadialRoundKey
 ): boolean {
-  if (roundKey === "r32" || roundKey === "final" || roundKey === "third") {
+  if (roundKey === "final" || roundKey === "third") {
+    return true;
+  }
+
+  if (roundKey === "r32") {
+    const match = data.match;
+    if (match && (match.status === "finished" || match.status === "live")) {
+      return false;
+    }
     return true;
   }
 

@@ -1,4 +1,5 @@
 import type { KnockoutRoundColumn, KnockoutSlotPreview } from "@/lib/knockout-bracket";
+import { syntheticFixtureId } from "@/lib/feeder-teams";
 import type { Match } from "@/types";
 
 /** Número FIFA do jogo (73–104) por índice na coluna da ronda. */
@@ -179,9 +180,16 @@ export function resolveFifaSlotData(
     return { match, preview };
   }
 
-  // R16+: o skeleton usa códigos de alimentação (V74, D101…) sem team_id —
-  // o índice FIFA é a fonte de verdade, não a correspondência por equipas.
-  const match = atIndex ?? findMatchForFifaPreview(column.matches, preview);
+  const fifaNums = FIFA_MATCH_NUMBERS[column.key as FifaRoundKey];
+  const fifa = fifaNums?.[fifaIndex];
+  let match =
+    fifa != null
+      ? column.matches.find((m) => m?.fixture_id === syntheticFixtureId(fifa))
+      : undefined;
+  if (!match) match = atIndex;
+  if (!match) {
+    match = findMatchForFifaPreview(column.matches, preview);
+  }
   return { match, preview };
 }
 
@@ -189,13 +197,18 @@ export function resolveFifaSlotData(
 export function orderMatchesInFifaSlots(
   matches: Match[],
   previews: KnockoutSlotPreview[],
-  slotCount: number
+  slotCount: number,
+  fifaNumbers?: readonly number[]
 ): Match[] {
   const slots: (Match | undefined)[] = new Array(slotCount);
   const unmatched = [...matches];
 
   for (let i = 0; i < Math.min(previews.length, slotCount); i++) {
-    const idx = unmatched.findIndex((m) => teamsMatchSlotLoose(m, previews[i]!));
+    const fifa = fifaNumbers?.[i];
+    let idx = unmatched.findIndex((m) => teamsMatchSlotLoose(m, previews[i]!));
+    if (idx === -1 && fifa != null) {
+      idx = unmatched.findIndex((m) => m.fixture_id === syntheticFixtureId(fifa));
+    }
     if (idx === -1) continue;
     slots[i] = unmatched[idx];
     unmatched.splice(idx, 1);

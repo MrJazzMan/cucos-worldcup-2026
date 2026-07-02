@@ -149,3 +149,20 @@ test("resolveFifaSlotData: R16 usa índice FIFA mesmo com skeleton V74/V77", () 
   assert.equal(slot.match?.home_team_name, "Canada");
   assert.equal(slot.preview?.home, "V74");
 });
+
+test("orderMatchesInFifaSlots: casa por fixture_id sintético FIFA", () => {
+  const previews = [{ home: "V73", away: "V75" }, { home: "V74", away: "V77" }];
+  const m90 = makeMatch({
+    fixture_id: 900_000_090,
+    home_team_id: 1,
+    away_team_id: 2,
+    kickoff_utc: "2026-07-05T00:00:00.000Z",
+  });
+  const result = orderMatchesInFifaSlots(
+    [m90],
+    previews,
+    2,
+    FIFA_MATCH_NUMBERS.r16.slice(0, 2)
+  );
+  assert.equal(result[1]?.fixture_id, 900_000_090);
+});
