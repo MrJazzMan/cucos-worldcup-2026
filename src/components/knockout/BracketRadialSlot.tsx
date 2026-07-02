@@ -193,6 +193,32 @@ export function BracketRadialMatch({
     const awayKnown = !isSyntheticFixture(data.match.away_team_id);
     const isLive = data.match.status === "live";
 
+    if (homeKnown && !awayKnown) {
+      return (
+        <span className={`inline-flex rounded-full ${flagRingClass(data.match.home_team_id, active)}`}>
+          <TeamFlag
+            name={data.match.home_team_name}
+            teamId={data.match.home_team_id}
+            size={size}
+            className={isLive ? "animate-pulse" : ""}
+          />
+        </span>
+      );
+    }
+
+    if (awayKnown && !homeKnown) {
+      return (
+        <span className={`inline-flex rounded-full ${flagRingClass(data.match.away_team_id, active)}`}>
+          <TeamFlag
+            name={data.match.away_team_name}
+            teamId={data.match.away_team_id}
+            size={size}
+            className={isLive ? "animate-pulse" : ""}
+          />
+        </span>
+      );
+    }
+
     if (homeKnown || awayKnown) {
       return (
         <div

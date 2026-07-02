@@ -10,6 +10,7 @@ import {
   SIDE_TREE_SPEC,
   type BracketNodeSpec,
 } from "@/lib/knockout-fifa-order";
+import type { Match } from "@/types";
 
 export const RADIAL_VIEW_SIZE = 1000;
 export const RADIAL_CENTER = RADIAL_VIEW_SIZE / 2;
@@ -20,6 +21,8 @@ export const RADIAL_R_SF = 188;
 export const RADIAL_R_THIRD = 108;
 
 const RADIUS_BY_DEPTH = [RADIAL_R_TEAMS, RADIAL_R_R16, RADIAL_R_QF, RADIAL_R_SF, 0] as const;
+const LEAF_ANGLE_STEP = 360 / 32;
+const TOP_AXIS = 90;
 
 export type RadialRoundKey =
   | "r32"
@@ -37,6 +40,7 @@ export type RadialTeamSlot = {
   slot: BracketSlotData;
   x: number;
   y: number;
+  visible: boolean;
 };
 
 export type RadialBracketNode = {
@@ -51,24 +55,26 @@ export type RadialBracketNode = {
 export type RadialMergeConnector = {
   id: string;
   parentMatch: number;
-  junction: { x: number; y: number };
-  fromA: { x: number; y: number };
-  fromB: { x: number; y: number };
-  to: { x: number; y: number };
+  pathA: string;
+  pathB: string;
+};
+
+export type RadialLeafConnector = {
+  matchNumber: number;
+  path: string;
 };
 
 export type RadialWheelLayout = {
   teamSlots: RadialTeamSlot[];
   matchNodes: RadialBracketNode[];
   connectors: RadialMergeConnector[];
+  leafConnectors: RadialLeafConnector[];
   nodeByMatch: Map<number, RadialBracketNode>;
   teamSlotsByMatch: Map<number, [RadialTeamSlot, RadialTeamSlot]>;
 };
 
-export const RADIAL_MATCH_ORDER = [
-  ...collectLeafMatchNumbers(SIDE_TREE_SPEC.left),
-  ...collectLeafMatchNumbers(SIDE_TREE_SPEC.right),
-] as const;
+export const LEFT_R32_MATCHES = collectLeafMatchNumbers(SIDE_TREE_SPEC.left);
+export const RIGHT_R32_MATCHES = collectLeafMatchNumbers(SIDE_TREE_SPEC.right);
 
 const DEPTH_ROUND: RadialRoundKey[] = ["r32", "r16", "qf", "sf"];
 
@@ -81,12 +87,32 @@ type BuiltNode = {
   children?: [BuiltNode, BuiltNode];
 };
 
-function fractionToPosition(fraction: number, radius: number): { x: number; y: number } {
-  const angle = fraction * Math.PI * 2 - Math.PI / 2;
+function deg2rad(d: number): number {
+  return (d * Math.PI) / 180;
+}
+
+/** Posição polar no estilo worldcup.observer (0° = direita, 90° = topo). */
+function placeAtAngle(angleDeg: number, radius: number): { x: number; y: number } {
+  const a = deg2rad(angleDeg);
   return {
-    x: RADIAL_CENTER + radius * Math.cos(angle),
-    y: RADIAL_CENTER + radius * Math.sin(angle),
+    x: RADIAL_CENTER + radius * Math.cos(a),
+    y: RADIAL_CENTER - radius * Math.sin(a),
   };
+}
+
+function teamAngleDeg(half: "left" | "right", slotInHalf: number): number {
+  if (half === "left") {
+    return TOP_AXIS + LEAF_ANGLE_STEP / 2 + LEAF_ANGLE_STEP * slotInHalf;
+  }
+  return TOP_AXIS - LEAF_ANGLE_STEP / 2 - LEAF_ANGLE_STEP * slotInHalf;
+}
+
+function fractionFromAngle(angleDeg: number): number {
+  const a = deg2rad(angleDeg);
+  const x = Math.cos(a);
+  const y = -Math.sin(a);
+  const angle = Math.atan2(y, x);
+  return (angle + Math.PI / 2) / (Math.PI * 2);
 }
 
 function collectLeafMatchNumbers(spec: BracketNodeSpec): number[] {
@@ -97,12 +123,24 @@ function collectLeafMatchNumbers(spec: BracketNodeSpec): number[] {
   ];
 }
 
-function leafFraction(side: "left" | "right", leafIndex: number): number {
-  const count = 8;
-  if (side === "left") {
-    return 0.5 + (leafIndex + 0.5) / count / 2;
-  }
-  return (leafIndex + 0.5) / count / 2;
+function isFinishedWinner(
+  slot: BracketSlotData,
+  side: RadialTeamSide
+): boolean {
+  const match = slot.match;
+  if (!match || match.status !== "finished") return false;
+  const home = match.home_score ?? 0;
+  const away = match.away_score ?? 0;
+  if (home === away) return false;
+  const homeWon = home > away;
+  return side === "home" ? homeWon : !homeWon;
+}
+
+export function outerTeamVisible(
+  slot: BracketSlotData,
+  side: RadialTeamSide
+): boolean {
+  return !isFinishedWinner(slot, side);
 }
 
 function buildHalfNode(
@@ -115,7 +153,9 @@ function buildHalfNode(
   if (!spec.children || !treeNode.left || !treeNode.right) {
     const leafOrder = collectLeafMatchNumbers(SIDE_TREE_SPEC[side]);
     const leafIndex = leafOrder.indexOf(matchNumber);
-    const fraction = leafFraction(side, leafIndex >= 0 ? leafIndex : 0);
+    const fraction = fractionFromAngle(
+      teamAngleDeg(side, (leafIndex >= 0 ? leafIndex : 0) * 2)
+    );
     return {
       matchNumber,
       roundKey: "r32",
@@ -152,22 +192,44 @@ function flattenHalf(
   }
 }
 
-function junctionPoint(
-  a: { x: number; y: number },
-  b: { x: number; y: number },
-  parent: { x: number; y: number }
-): { x: number; y: number } {
-  const ra = Math.hypot(a.x - RADIAL_CENTER, a.y - RADIAL_CENTER);
-  const rb = Math.hypot(b.x - RADIAL_CENTER, b.y - RADIAL_CENTER);
-  const rp = Math.hypot(parent.x - RADIAL_CENTER, parent.y - RADIAL_CENTER);
-  const junctionR = (ra + rb) * 0.46 + rp * 0.08;
-  const angleA = Math.atan2(a.y - RADIAL_CENTER, a.x - RADIAL_CENTER);
-  const angleB = Math.atan2(b.y - RADIAL_CENTER, b.x - RADIAL_CENTER);
-  const angle = (angleA + angleB) / 2;
+function polarPoint(angle: number, radius: number): { x: number; y: number } {
   return {
-    x: RADIAL_CENTER + junctionR * Math.cos(angle),
-    y: RADIAL_CENTER + junctionR * Math.sin(angle),
+    x: RADIAL_CENTER + radius * Math.cos(angle),
+    y: RADIAL_CENTER - radius * Math.sin(angle),
   };
+}
+
+/** Caminho em arco radial (modelo worldcup.observer). */
+export function connectorPath(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  centerBend = false
+): string {
+  const startAngle = Math.atan2(RADIAL_CENTER - y1, x1 - RADIAL_CENTER);
+  const endAngle = Math.atan2(RADIAL_CENTER - y2, x2 - RADIAL_CENTER);
+  const startRadius = Math.hypot(x1 - RADIAL_CENTER, y1 - RADIAL_CENTER);
+  const endRadius = Math.hypot(x2 - RADIAL_CENTER, y2 - RADIAL_CENTER);
+
+  if (endRadius < 1) {
+    const control = polarPoint(startAngle, startRadius * 0.42);
+    return `M ${x1} ${y1} Q ${control.x} ${control.y} ${x2} ${y2}`;
+  }
+
+  const bendRadius = centerBend ? endRadius : (startRadius + endRadius) / 2;
+  const startBend = polarPoint(startAngle, bendRadius);
+  const endBend = polarPoint(endAngle, bendRadius);
+  const rawDelta = endAngle - startAngle;
+  const delta = Math.atan2(Math.sin(rawDelta), Math.cos(rawDelta));
+  const sweep = delta < 0 ? 1 : 0;
+
+  return [
+    `M ${x1} ${y1}`,
+    `L ${startBend.x} ${startBend.y}`,
+    `A ${bendRadius} ${bendRadius} 0 0 ${sweep} ${endBend.x} ${endBend.y}`,
+    `L ${x2} ${y2}`,
+  ].join(" ");
 }
 
 function getSlotData(
@@ -199,28 +261,43 @@ function buildTeamSlots(
   const slots: RadialTeamSlot[] = [];
   const byMatch = new Map<number, [RadialTeamSlot, RadialTeamSlot]>();
 
-  RADIAL_MATCH_ORDER.forEach((matchNumber, index) => {
-    const slot = getSlotData(columns, matchNumber, preview);
-    const homeFraction = (index * 2 + 0.5) / 32;
-    const awayFraction = (index * 2 + 1.5) / 32;
-    const homePos = fractionToPosition(homeFraction, RADIAL_R_TEAMS);
-    const awayPos = fractionToPosition(awayFraction, RADIAL_R_TEAMS);
+  const halves: { half: "left" | "right"; matches: number[] }[] = [
+    { half: "left", matches: [...LEFT_R32_MATCHES] },
+    { half: "right", matches: [...RIGHT_R32_MATCHES] },
+  ];
 
-    const home: RadialTeamSlot = {
-      matchNumber,
-      side: "home",
-      slot,
-      ...homePos,
-    };
-    const away: RadialTeamSlot = {
-      matchNumber,
-      side: "away",
-      slot,
-      ...awayPos,
-    };
-    slots.push(home, away);
-    byMatch.set(matchNumber, [home, away]);
-  });
+  for (const { half, matches } of halves) {
+    let slotInHalf = 0;
+    for (const matchNumber of matches) {
+      const slot = getSlotData(columns, matchNumber, preview);
+      const homePos = placeAtAngle(
+        teamAngleDeg(half, slotInHalf),
+        RADIAL_R_TEAMS
+      );
+      const awayPos = placeAtAngle(
+        teamAngleDeg(half, slotInHalf + 1),
+        RADIAL_R_TEAMS
+      );
+
+      const home: RadialTeamSlot = {
+        matchNumber,
+        side: "home",
+        slot,
+        ...homePos,
+        visible: outerTeamVisible(slot, "home"),
+      };
+      const away: RadialTeamSlot = {
+        matchNumber,
+        side: "away",
+        slot,
+        ...awayPos,
+        visible: outerTeamVisible(slot, "away"),
+      };
+      slots.push(home, away);
+      byMatch.set(matchNumber, [home, away]);
+      slotInHalf += 2;
+    }
+  }
 
   return { slots, byMatch };
 }
@@ -235,7 +312,15 @@ function childAnchor(
   if (child.depth === 0) {
     const pair = layout.teamSlotsByMatch.get(child.matchNumber);
     if (!pair) {
-      return fractionToPosition(child.fraction, RADIAL_R_TEAMS);
+      return placeAtAngle(TOP_AXIS, RADIAL_R_TEAMS);
+    }
+    const visible = [pair[0], pair[1]].filter((t) => t.visible);
+    if (visible.length === 1) return visible[0];
+    if (visible.length === 2) {
+      return {
+        x: (visible[0].x + visible[1].x) / 2,
+        y: (visible[0].y + visible[1].y) / 2,
+      };
     }
     return {
       x: (pair[0].x + pair[1].x) / 2,
@@ -246,7 +331,46 @@ function childAnchor(
   const node = layout.nodeByMatch.get(child.matchNumber);
   if (node) return node;
   const radius = RADIUS_BY_DEPTH[child.depth] ?? RADIAL_R_SF;
-  return fractionToPosition(child.fraction, radius);
+  const angleDeg = child.fraction * 360 - 90;
+  return placeAtAngle(angleDeg, radius);
+}
+
+function buildLeafConnectors(
+  roots: BuiltNode[],
+  layout: {
+    teamSlotsByMatch: Map<number, [RadialTeamSlot, RadialTeamSlot]>;
+    nodeByMatch: Map<number, RadialBracketNode>;
+  }
+): RadialLeafConnector[] {
+  const paths: RadialLeafConnector[] = [];
+
+  function walk(node: BuiltNode): void {
+    if (!node.children) return;
+    const parent = layout.nodeByMatch.get(node.matchNumber);
+    if (!parent) return;
+
+    for (const child of node.children) {
+      if (child.depth !== 0) continue;
+      const pair = layout.teamSlotsByMatch.get(child.matchNumber);
+      if (!pair) continue;
+      for (const team of pair) {
+        if (!team.visible) continue;
+        paths.push({
+          matchNumber: child.matchNumber,
+          path: connectorPath(team.x, team.y, parent.x, parent.y),
+        });
+      }
+    }
+
+    walk(node.children[0]);
+    walk(node.children[1]);
+  }
+
+  for (const root of roots) {
+    walk(root);
+  }
+
+  return paths;
 }
 
 function buildConnectors(
@@ -265,15 +389,13 @@ function buildConnectors(
 
     const fromA = childAnchor(node.children[0], layout);
     const fromB = childAnchor(node.children[1], layout);
-    const junction = junctionPoint(fromA, fromB, parent);
+    const centerBend = node.matchNumber === 104;
 
     connectors.push({
       id: `${node.children[0].matchNumber}+${node.children[1].matchNumber}->${node.matchNumber}`,
       parentMatch: node.matchNumber,
-      junction,
-      fromA,
-      fromB,
-      to: parent,
+      pathA: connectorPath(fromA.x, fromA.y, parent.x, parent.y, centerBend),
+      pathB: connectorPath(fromB.x, fromB.y, parent.x, parent.y, centerBend),
     });
 
     walk(node.children[0]);
@@ -291,14 +413,17 @@ function buildConnectors(
     connectors.push({
       id: "101+102->104",
       parentMatch: 104,
-      junction: junctionPoint(sf101, sf102, final),
-      fromA: sf101,
-      fromB: sf102,
-      to: final,
+      pathA: connectorPath(sf101.x, sf101.y, final.x, final.y, true),
+      pathB: connectorPath(sf102.x, sf102.y, final.x, final.y, true),
     });
   }
 
   return connectors;
+}
+
+function fractionToPosition(fraction: number, radius: number): { x: number; y: number } {
+  const angleDeg = fraction * 360 - 90;
+  return placeAtAngle(angleDeg, radius);
 }
 
 export function buildRadialBracketLayout(
@@ -346,7 +471,7 @@ export function buildRadialBracketLayout(
     depth: 4,
   });
 
-  const thirdPos = fractionToPosition(0.5, RADIAL_R_THIRD);
+  const thirdPos = placeAtAngle(270, RADIAL_R_THIRD);
   matchNodes.push({
     matchNumber: 103,
     roundKey: "third",
@@ -360,28 +485,16 @@ export function buildRadialBracketLayout(
 
   const layoutCtx = { teamSlotsByMatch, nodeByMatch };
   const connectors = buildConnectors([builtLeft, builtRight], layoutCtx);
+  const leafConnectors = buildLeafConnectors([builtLeft, builtRight], layoutCtx);
 
   return {
     teamSlots,
     matchNodes,
     connectors,
+    leafConnectors,
     nodeByMatch,
     teamSlotsByMatch,
   };
-}
-
-function traceEdgesToRoot(
-  start: number,
-  parentOf: Map<number, number>
-): Set<string> {
-  const edges = new Set<string>();
-  let current: number | undefined = start;
-  while (current != null && parentOf.has(current)) {
-    const parent: number = parentOf.get(current)!;
-    edges.add(`${current}->${parent}`);
-    current = parent;
-  }
-  return edges;
 }
 
 export function getActiveConnectorIds(
@@ -424,4 +537,10 @@ export function buildParentMap(layout: RadialWheelLayout): Map<number, number> {
   return parentOf;
 }
 
-export { traceEdgesToRoot };
+export function getWinnerTeamId(match: Match): number | null {
+  if (match.status !== "finished") return null;
+  const home = match.home_score ?? 0;
+  const away = match.away_score ?? 0;
+  if (home === away) return null;
+  return home > away ? match.home_team_id : match.away_team_id;
+}
