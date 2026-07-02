@@ -148,14 +148,16 @@ function shouldUseCompactDot(
     if (data.match.status === "finished") return false;
     const homeKnown = !isSyntheticFixture(data.match.home_team_id);
     const awayKnown = !isSyntheticFixture(data.match.away_team_id);
-    return !homeKnown && !awayKnown;
+    if (homeKnown || awayKnown) return false;
+    return true;
   }
 
   if (!data.preview) return true;
 
   const home = data.preview.homeResolved;
   const away = data.preview.awayResolved;
-  return !isKnownTeam(home) && !isKnownTeam(away);
+  if (isKnownTeam(home) || isKnownTeam(away)) return false;
+  return true;
 }
 
 export function BracketRadialMatch({

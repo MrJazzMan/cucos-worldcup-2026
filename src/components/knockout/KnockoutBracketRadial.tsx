@@ -144,6 +144,11 @@ export function KnockoutBracketRadial({
     [layout.nodes]
   );
 
+  const dotNodes = useMemo(
+    () => internalNodes.filter((n) => n.roundKey === "r32"),
+    [internalNodes]
+  );
+
   const matchNodes = useMemo(
     () => internalNodes.filter((n) => n.roundKey !== "r32"),
     [internalNodes]
@@ -151,7 +156,7 @@ export function KnockoutBracketRadial({
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <div className="overflow-hidden rounded-2xl border border-border-base bg-background p-3 shadow-sm sm:p-5">
+      <div className="overflow-hidden rounded-2xl bg-background p-3 sm:p-5">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.35em] text-muted sm:text-xs">
           World Cup 2026
         </p>
@@ -195,7 +200,7 @@ export function KnockoutBracketRadial({
               );
             })}
 
-            {internalNodes.map((node) => {
+            {dotNodes.map((node) => {
               const active = activeNodeIds.has(node.id);
               return (
                 <circle

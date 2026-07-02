@@ -5,8 +5,10 @@ import {
   FIFA_MATCH_NUMBERS,
   R32_TREE_LEAF_ORDER,
   orderMatchesInFifaSlots,
+  resolveFifaSlotData,
   teamsMatchSlotLoose,
 } from "@/lib/knockout-fifa-order";
+import { buildKnockoutColumns } from "@/lib/knockout-bracket";
 import { makeMatch } from "./helpers.mjs";
 
 function range(from, to) {
@@ -127,4 +129,23 @@ test("fallback kickoff não ocupa slots com equipas já resolvidas no skeleton",
   const result = orderMatchesInFifaSlots([orphan], previews, 2);
   assert.equal(result[0], undefined);
   assert.equal(result[1], undefined);
+});
+
+test("resolveFifaSlotData: R16 usa índice FIFA mesmo com skeleton V74/V77", () => {
+  const r16Match = makeMatch({
+    fixture_id: 900_000_089,
+    home_team_id: 1,
+    away_team_id: 2,
+    home_team_name: "Canada",
+    away_team_name: "Morocco",
+    round: "Round of 16",
+  });
+  const columns = buildKnockoutColumns([
+    { round: "Round of 16", matches: [r16Match] },
+  ]);
+  const r16 = columns.find((c) => c.key === "r16");
+  const idx = FIFA_MATCH_NUMBERS.r16.indexOf(89);
+  const slot = resolveFifaSlotData(r16, idx);
+  assert.equal(slot.match?.home_team_name, "Canada");
+  assert.equal(slot.preview?.home, "V74");
 });

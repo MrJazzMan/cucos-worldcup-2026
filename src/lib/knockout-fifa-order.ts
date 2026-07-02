@@ -169,12 +169,19 @@ export function resolveFifaSlotData(
   if (!preview) return {};
 
   const atIndex = column.matches[fifaIndex];
-  let match =
-    atIndex && teamsMatchSlotLoose(atIndex, preview) ? atIndex : undefined;
-  if (!match) {
-    match = findMatchForFifaPreview(column.matches, preview);
+
+  if (column.key === "r32") {
+    let match =
+      atIndex && teamsMatchSlotLoose(atIndex, preview) ? atIndex : undefined;
+    if (!match) {
+      match = findMatchForFifaPreview(column.matches, preview);
+    }
+    return { match, preview };
   }
 
+  // R16+: o skeleton usa códigos de alimentação (V74, D101…) sem team_id —
+  // o índice FIFA é a fonte de verdade, não a correspondência por equipas.
+  const match = atIndex ?? findMatchForFifaPreview(column.matches, preview);
   return { match, preview };
 }
 
