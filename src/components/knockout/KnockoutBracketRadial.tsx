@@ -7,6 +7,7 @@ import {
 } from "@/components/knockout/BracketRadialSlot";
 import { WCTrophy } from "@/components/knockout/WCTrophy";
 import { useSettings } from "@/components/SettingsProvider";
+import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
 import type { KnockoutRoundColumn } from "@/lib/knockout-bracket";
 import {
   RADIAL_CENTER,
@@ -45,6 +46,28 @@ function matchFlagSize(roundKey: RadialRoundKey): number {
     default:
       return 30;
   }
+}
+
+function matchTitle(
+  matchNumber: number,
+  slot: { match?: { home_team_name: string; away_team_name: string }; preview?: { home: string; away: string; homeResolved?: { team_name?: string }; awayResolved?: { team_name?: string } } },
+  tbd: string
+): string {
+  if (slot.match) {
+    return `M${matchNumber} · ${slot.match.home_team_name} vs ${slot.match.away_team_name}`;
+  }
+  if (slot.preview) {
+    const home =
+      slot.preview.homeResolved?.team_name ??
+      formatBracketSlotLabel(slot.preview.home) ??
+      slot.preview.home;
+    const away =
+      slot.preview.awayResolved?.team_name ??
+      formatBracketSlotLabel(slot.preview.away) ??
+      slot.preview.away;
+    return `M${matchNumber} · ${home} vs ${away}`;
+  }
+  return `M${matchNumber} · ${tbd}`;
 }
 
 function MergePaths({
@@ -112,13 +135,6 @@ function TeamSpokes({
         return (
           <g key={`pair-${matchNumber}`}>
             <path
-              d={`M ${home.x} ${home.y} L ${mid.x} ${mid.y} L ${away.x} ${away.y}`}
-              fill="none"
-              stroke={stroke}
-              strokeWidth={active ? 1.4 : 1}
-              strokeOpacity={active ? 0.9 : 0.55}
-            />
-            <path
               d={`M ${home.x} ${home.y} L ${mid.x} ${mid.y}`}
               fill="none"
               stroke={stroke}
@@ -152,15 +168,17 @@ export function KnockoutBracketRadial({
   );
 
   const [hoveredMatch, setHoveredMatch] = useState<number | null>(null);
+  const [pinnedMatch, setPinnedMatch] = useState<number | null>(null);
+  const activeMatch = pinnedMatch ?? hoveredMatch;
 
   const activeConnectors = useMemo(
-    () => getActiveConnectorIds(layout, hoveredMatch),
-    [layout, hoveredMatch]
+    () => getActiveConnectorIds(layout, activeMatch),
+    [layout, activeMatch]
   );
 
   const activeMatches = useMemo(() => {
-    if (hoveredMatch == null) return new Set<number>();
-    const matches = new Set<number>([hoveredMatch]);
+    if (activeMatch == null) return new Set<number>();
+    const matches = new Set<number>([activeMatch]);
     for (const connector of layout.connectors) {
       if (!activeConnectors.has(connector.id)) continue;
       const children = connector.id.split("->")[0].split("+").map(Number);
@@ -168,23 +186,33 @@ export function KnockoutBracketRadial({
       matches.add(connector.parentMatch);
     }
     return matches;
-  }, [activeConnectors, hoveredMatch, layout.connectors]);
+  }, [activeConnectors, activeMatch, layout.connectors]);
+
+  const activeLabel = useMemo(() => {
+    if (activeMatch == null) return t("knockouts.radialHint");
+    const node = layout.nodeByMatch.get(activeMatch);
+    if (node) return matchTitle(activeMatch, node.slot, tbd);
+    const pair = layout.teamSlotsByMatch.get(activeMatch);
+    if (pair) return matchTitle(activeMatch, pair[0].slot, tbd);
+    return t("knockouts.radialHint");
+  }, [activeMatch, layout, t, tbd]);
+
+  const toggleMatch = (matchNumber: number) => {
+    setPinnedMatch((current) =>
+      current === matchNumber ? null : matchNumber
+    );
+  };
 
   const bindMatch = (matchNumber: number) => ({
     onMouseEnter: () => setHoveredMatch(matchNumber),
     onMouseLeave: () => setHoveredMatch(null),
     onFocus: () => setHoveredMatch(matchNumber),
     onBlur: () => setHoveredMatch(null),
-    onClick: () =>
-      setHoveredMatch((current) =>
-        current === matchNumber ? null : matchNumber
-      ),
+    onClick: () => toggleMatch(matchNumber),
     onKeyDown: (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        setHoveredMatch((current) =>
-          current === matchNumber ? null : matchNumber
-        );
+        toggleMatch(matchNumber);
       }
     },
   });
@@ -280,15 +308,17 @@ export function KnockoutBracketRadial({
                 side={team.side}
                 size={36}
                 tbd={tbd}
+                active={activeMatches.has(team.matchNumber)}
               />
             </div>
           ))}
 
           {layout.matchNodes.map((node) => {
-            if (node.roundKey === "final") return null;
+            if (node.roundKey === "final" || node.roundKey === "third") {
+              return null;
+            }
 
             const size = matchFlagSize(node.roundKey);
-            const active = activeMatches.has(node.matchNumber);
 
             return (
               <div
@@ -307,7 +337,7 @@ export function KnockoutBracketRadial({
                   roundKey={node.roundKey}
                   size={size}
                   tbd={tbd}
-                  active={active}
+                  active={activeMatches.has(node.matchNumber)}
                 />
               </div>
             );
@@ -341,9 +371,7 @@ export function KnockoutBracketRadial({
         </div>
       </div>
 
-      <p className="mt-3 text-center text-[10px] text-muted">
-        {t("knockouts.radialHint")}
-      </p>
+      <p className="mt-3 text-center text-[10px] text-muted">{activeLabel}</p>
     </div>
   );
 }
