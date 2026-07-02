@@ -29,15 +29,12 @@ function getColumn(
 function slotAt(
   column: KnockoutRoundColumn,
   index: number,
-  preview: boolean
+  _preview: boolean
 ): BracketSlotData {
   const match = column.matches[index];
   return {
     match,
-    preview:
-      preview && !match && column.previews[index]
-        ? column.previews[index]
-        : undefined,
+    preview: column.previews[index],
   };
 }
 
@@ -80,17 +77,11 @@ export function getCenterSlots(
   return {
     final: {
       match: finalCol.matches[0],
-      preview:
-        preview && !finalCol.matches[0]
-          ? finalCol.previews[0]
-          : undefined,
+      preview: finalCol.previews[0],
     },
     third: {
       match: thirdCol.matches[0],
-      preview:
-        preview && !thirdCol.matches[0]
-          ? thirdCol.previews[0]
-          : undefined,
+      preview: thirdCol.previews[0],
     },
   };
 }

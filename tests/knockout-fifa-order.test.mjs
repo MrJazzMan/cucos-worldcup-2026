@@ -5,6 +5,7 @@ import {
   FIFA_MATCH_NUMBERS,
   R32_TREE_LEAF_ORDER,
   orderMatchesInFifaSlots,
+  teamsMatchSlotLoose,
 } from "@/lib/knockout-fifa-order";
 import { makeMatch } from "./helpers.mjs";
 
@@ -94,4 +95,36 @@ test("não excede slotCount", () => {
   const result = orderMatchesInFifaSlots(extra, previews, 1);
   assert.ok(result.length <= 1);
   assert.equal(result[0]?.fixture_id, 1);
+});
+
+test("teamsMatchSlotLoose: casa com uma equipa conhecida no skeleton", () => {
+  const preview = {
+    home: "1D",
+    away: "3º",
+    homeResolved: { code: "1D", team_id: 100, team_name: "USA" },
+  };
+  const match = makeMatch({
+    fixture_id: 1,
+    home_team_id: 100,
+    away_team_id: 200,
+    home_team_name: "USA",
+    away_team_name: "Bosnia",
+  });
+  assert.equal(teamsMatchSlotLoose(match, preview), true);
+});
+
+test("fallback kickoff não ocupa slots com equipas já resolvidas no skeleton", () => {
+  const previews = [
+    previewWithTeams(10, 20),
+    previewWithTeams(30, 40),
+  ];
+  const orphan = makeMatch({
+    fixture_id: 99,
+    home_team_id: 99,
+    away_team_id: 98,
+    kickoff_utc: "2026-07-01T18:00:00.000Z",
+  });
+  const result = orderMatchesInFifaSlots([orphan], previews, 2);
+  assert.equal(result[0], undefined);
+  assert.equal(result[1], undefined);
 });

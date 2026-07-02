@@ -1,7 +1,10 @@
 import type { KnockoutRoundColumn } from "@/lib/knockout-bracket";
 import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
 import { getCenterSlots } from "@/lib/knockout-bracket-tree";
-import { FIFA_MATCH_NUMBERS } from "@/lib/knockout-fifa-order";
+import {
+  fifaSlotLocation,
+  resolveFifaSlotData,
+} from "@/lib/knockout-fifa-order";
 import type { Match } from "@/types";
 
 // --------------------------------------------------------------------------
@@ -452,21 +455,12 @@ function layoutRoundToKey(round: LayoutRound): RadialRoundKey {
 function getSlotData(
   columns: KnockoutRoundColumn[],
   matchNumber: number,
-  preview: boolean
+  _preview: boolean
 ): BracketSlotData {
-  for (const key of Object.keys(FIFA_MATCH_NUMBERS) as (keyof typeof FIFA_MATCH_NUMBERS)[]) {
-    const index = (FIFA_MATCH_NUMBERS[key] as readonly number[]).indexOf(matchNumber);
-    if (index === -1) continue;
-    const column = columns.find((c) => c.key === key);
-    if (!column) continue;
-    const match = column.matches[index];
-    const skeleton = column.previews[index];
-    return {
-      match,
-      preview: skeleton,
-    };
-  }
-  return {};
+  const { key, index } = fifaSlotLocation(matchNumber);
+  const column = columns.find((c) => c.key === key);
+  if (!column) return {};
+  return resolveFifaSlotData(column, index);
 }
 
 function enrichNode(

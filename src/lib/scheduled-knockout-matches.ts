@@ -2,7 +2,7 @@ import {
   feederPlaceholderName,
   syntheticFixtureId,
 } from "@/lib/feeder-teams";
-import { knockoutRoundKey } from "@/lib/knockout-bracket";
+import { buildKnockoutColumns, knockoutRoundKey } from "@/lib/knockout-bracket";
 import { FIFA_MATCH_NUMBERS } from "@/lib/knockout-fifa-order";
 import { formatMatchDate } from "@/lib/timezone";
 import type { Match } from "@/types";
@@ -85,16 +85,23 @@ const OFFICIAL_R16: ScheduledKnockout[] = [
 ];
 
 function buildFifaR32Map(matches: Match[]): Map<number, Match> {
-  const r32 = matches
-    .filter((m) => knockoutRoundKey(m.round) === "r32")
-    .sort(
-      (a, b) =>
-        new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime()
-    );
+  const r32Matches = matches.filter(
+    (m) => knockoutRoundKey(m.round) === "r32"
+  );
+  if (!r32Matches.length) return new Map();
+
+  const columns = buildKnockoutColumns([
+    { round: "Round of 32", matches: r32Matches },
+  ]);
+  const r32Col = columns.find((c) => c.key === "r32");
+  if (!r32Col) return new Map();
 
   const map = new Map<number, Match>();
-  for (let i = 0; i < r32.length && i < FIFA_MATCH_NUMBERS.r32.length; i++) {
-    map.set(FIFA_MATCH_NUMBERS.r32[i]!, r32[i]!);
+  for (let i = 0; i < FIFA_MATCH_NUMBERS.r32.length; i++) {
+    const match = r32Col.matches[i];
+    if (match) {
+      map.set(FIFA_MATCH_NUMBERS.r32[i]!, match);
+    }
   }
   return map;
 }

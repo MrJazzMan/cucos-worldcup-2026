@@ -1,4 +1,4 @@
-import type { KnockoutSlotPreview } from "@/lib/knockout-bracket";
+import type { KnockoutRoundColumn, KnockoutSlotPreview } from "@/lib/knockout-bracket";
 import type { Match } from "@/types";
 
 /** Número FIFA do jogo (73–104) por índice na coluna da ronda. */
@@ -106,6 +106,78 @@ function teamsMatchSlot(
   return (mh === sh && ma === sa) || (mh === sa && ma === sh);
 }
 
+function previewResolvableTeams(preview: KnockoutSlotPreview): boolean {
+  return !!(
+    preview.homeResolved?.team_id ||
+    preview.awayResolved?.team_id ||
+    preview.homeResolved?.team_name ||
+    preview.awayResolved?.team_name
+  );
+}
+
+/** Casa o jogo real no slot FIFA quando pelo menos uma equipa do skeleton coincide. */
+export function teamsMatchSlotLoose(
+  match: Match,
+  preview: KnockoutSlotPreview
+): boolean {
+  if (teamsMatchSlot(match, preview)) return true;
+
+  const ids = new Set<number>();
+  const names = new Set<string>();
+  if (preview.homeResolved?.team_id) ids.add(preview.homeResolved.team_id);
+  if (preview.awayResolved?.team_id) ids.add(preview.awayResolved.team_id);
+  if (preview.homeResolved?.team_name) names.add(preview.homeResolved.team_name);
+  if (preview.awayResolved?.team_name) names.add(preview.awayResolved.team_name);
+
+  if (!ids.size && !names.size) return false;
+
+  const mIds = [match.home_team_id, match.away_team_id];
+  const mNames = [match.home_team_name, match.away_team_name];
+
+  if (ids.size >= 2) {
+    return mIds.every((id) => ids.has(id));
+  }
+
+  if (ids.size === 1) {
+    const id = [...ids][0]!;
+    return mIds.includes(id);
+  }
+
+  if (names.size >= 2) {
+    return mNames.every((n) => names.has(n));
+  }
+
+  const name = [...names][0]!;
+  return mNames.includes(name);
+}
+
+export function findMatchForFifaPreview(
+  matches: (Match | undefined)[],
+  preview: KnockoutSlotPreview
+): Match | undefined {
+  return matches.find(
+    (m): m is Match => m != null && teamsMatchSlotLoose(m, preview)
+  );
+}
+
+/** Resolve o jogo real para um índice FIFA dentro de uma coluna. */
+export function resolveFifaSlotData(
+  column: KnockoutRoundColumn,
+  fifaIndex: number
+): { match?: Match; preview?: KnockoutSlotPreview } {
+  const preview = column.previews[fifaIndex];
+  if (!preview) return {};
+
+  const atIndex = column.matches[fifaIndex];
+  let match =
+    atIndex && teamsMatchSlotLoose(atIndex, preview) ? atIndex : undefined;
+  if (!match) {
+    match = findMatchForFifaPreview(column.matches, preview);
+  }
+
+  return { match, preview };
+}
+
 /** Coloca jogos reais nos índices FIFA correctos (fallback: ordem de kickoff). */
 export function orderMatchesInFifaSlots(
   matches: Match[],
@@ -116,7 +188,7 @@ export function orderMatchesInFifaSlots(
   const unmatched = [...matches];
 
   for (let i = 0; i < Math.min(previews.length, slotCount); i++) {
-    const idx = unmatched.findIndex((m) => teamsMatchSlot(m, previews[i]));
+    const idx = unmatched.findIndex((m) => teamsMatchSlotLoose(m, previews[i]!));
     if (idx === -1) continue;
     slots[i] = unmatched[idx];
     unmatched.splice(idx, 1);
@@ -128,7 +200,9 @@ export function orderMatchesInFifaSlots(
   );
 
   for (const match of remaining) {
-    const hole = slots.findIndex((s) => s === undefined);
+    const hole = slots.findIndex(
+      (s, i) => s === undefined && !previewResolvableTeams(previews[i]!)
+    );
     if (hole === -1) break;
     slots[hole] = match;
   }

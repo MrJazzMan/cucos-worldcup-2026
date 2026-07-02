@@ -151,7 +151,7 @@ export function KnockoutBracketRadial({
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <div className="overflow-hidden rounded-2xl border border-border-base bg-surface p-3 shadow-sm sm:p-5">
+      <div className="overflow-hidden rounded-2xl border border-border-base bg-background p-3 shadow-sm sm:p-5">
         <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.35em] text-muted sm:text-xs">
           World Cup 2026
         </p>
