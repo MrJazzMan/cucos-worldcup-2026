@@ -16,7 +16,6 @@ import {
   RADIAL_R_R16,
   RADIAL_R_R32,
   RADIAL_R_SF,
-  RADIAL_R_TEAMS,
   RADIAL_VIEW_SIZE,
   buildRadialBracketLayout,
   getActiveEdgeKeys,
@@ -145,10 +144,15 @@ export function KnockoutBracketRadial({
     [layout.nodes]
   );
 
+  const matchNodes = useMemo(
+    () => internalNodes.filter((n) => n.roundKey !== "r32"),
+    [internalNodes]
+  );
+
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <div className="overflow-hidden rounded-[2rem] border border-[#2a2218] bg-[#080808] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:p-5">
-        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.35em] text-[#c9a86c] sm:text-xs">
+      <div className="overflow-hidden rounded-2xl border border-border-base bg-surface p-3 shadow-sm sm:p-5">
+        <p className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.35em] text-muted sm:text-xs">
           World Cup 2026
         </p>
 
@@ -162,27 +166,6 @@ export function KnockoutBracketRadial({
             role="img"
             aria-label={t("knockouts.title")}
           >
-            <defs>
-              <radialGradient id="wheel-bg" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#1a1410" stopOpacity="0.95" />
-                <stop offset="55%" stopColor="#0d0b09" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#080808" stopOpacity="0" />
-              </radialGradient>
-              <radialGradient id="wheel-glow" cx="50%" cy="50%" r="42%">
-                <stop offset="0%" stopColor="#d4af37" stopOpacity="0.22" />
-                <stop offset="70%" stopColor="#d4af37" stopOpacity="0.05" />
-                <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-
-            <rect
-              x={0}
-              y={0}
-              width={RADIAL_VIEW_SIZE}
-              height={RADIAL_VIEW_SIZE}
-              fill="url(#wheel-bg)"
-            />
-
             {[RADIAL_R_R32, RADIAL_R_R16, RADIAL_R_QF, RADIAL_R_SF].map(
               (radius) => (
                 <circle
@@ -191,18 +174,12 @@ export function KnockoutBracketRadial({
                   cy={RADIAL_CENTER}
                   r={radius}
                   fill="none"
-                  stroke="rgba(255,255,255,0.04)"
+                  className="stroke-border-base"
+                  strokeOpacity={0.35}
                   strokeWidth={1}
                 />
               )
             )}
-
-            <circle
-              cx={RADIAL_CENTER}
-              cy={RADIAL_CENTER}
-              r={RADIAL_CENTER * 0.34}
-              fill="url(#wheel-glow)"
-            />
 
             {layout.edges.map((edge) => {
               const active = activeEdgeKeys.has(edge.key);
@@ -212,8 +189,7 @@ export function KnockoutBracketRadial({
                   d={edge.pathElbow}
                   fill="none"
                   stroke={active ? BRACKET_COLORS.path : BRACKET_COLORS.line}
-                  strokeWidth={active ? 3.2 : 1.4}
-                  strokeOpacity={active ? 1 : 1}
+                  strokeWidth={active ? 3 : 1.35}
                   strokeLinecap="round"
                 />
               );
@@ -267,7 +243,7 @@ export function KnockoutBracketRadial({
             );
           })}
 
-          {internalNodes.map((node) => {
+          {matchNodes.map((node) => {
             const size = matchFlagSize(node.roundKey);
 
             return (

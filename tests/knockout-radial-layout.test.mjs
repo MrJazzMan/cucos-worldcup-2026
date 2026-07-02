@@ -11,6 +11,7 @@ import {
   RADIAL_CENTER,
   RADIAL_R_TEAMS,
   RIGHT_HALF,
+  teamSideForSlotId,
   TEAM_ORDER,
 } from "@/lib/knockout-bracket-radial-layout";
 
@@ -82,4 +83,23 @@ test("radial wheel: todos os slots têm dados de jogo", () => {
     assert.ok(node.matchNumber >= 73 && node.matchNumber <= 88, slotId);
     assert.ok(node.side === "home" || node.side === "away", slotId);
   }
+});
+
+test("teamSideForSlotId: troca home/away quando API inverte ordem FIFA", () => {
+  const slot = {
+    match: {
+      home_team_id: 20,
+      away_team_id: 10,
+      home_team_name: "B",
+      away_team_name: "A",
+    },
+    preview: {
+      home: "1E",
+      away: "3º",
+      homeResolved: { team_id: 10, team_name: "A" },
+      awayResolved: { team_id: 20, team_name: "B" },
+    },
+  };
+  assert.equal(teamSideForSlotId("M74.A", slot), "away");
+  assert.equal(teamSideForSlotId("M74.B", slot), "home");
 });

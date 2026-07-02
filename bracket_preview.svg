@@ -1,0 +1,165 @@
+<svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+<rect width="1000" height="1000" fill="#0b0b0d"/>
+<circle cx="500.0" cy="500.0" r="365.0" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+<circle cx="500.0" cy="500.0" r="290.0" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+<circle cx="500.0" cy="500.0" r="210.0" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+<circle cx="500.0" cy="500.0" r="130.0" fill="none" stroke="#ffffff" stroke-opacity="0.04"/>
+<path d="M 603.67 150.03 L 582.36 221.94 A 290.00 290.00 0 0 1 631.66 241.61" fill="none" stroke="#E9B949" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M 722.20 210.43 L 676.54 269.93 A 290.00 290.00 0 0 0 631.66 241.61" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 811.21 309.29 L 747.27 348.48 A 290.00 290.00 0 0 1 770.74 396.07" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 858.89 433.48 L 785.14 447.15 A 290.00 290.00 0 0 0 770.74 396.07" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 396.33 849.97 L 417.64 778.06 A 290.00 290.00 0 0 1 368.34 758.39" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 277.80 789.57 L 323.46 730.07 A 290.00 290.00 0 0 0 368.34 758.39" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 188.79 690.71 L 252.73 651.52 A 290.00 290.00 0 0 1 229.26 603.93" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 141.11 566.52 L 214.86 552.85 A 290.00 290.00 0 0 0 229.26 603.93" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 858.89 566.52 L 785.14 552.85 A 290.00 290.00 0 0 1 770.74 603.93" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 811.21 690.71 L 747.27 651.52 A 290.00 290.00 0 0 0 770.74 603.93" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 722.20 789.57 L 676.54 730.07 A 290.00 290.00 0 0 1 631.66 758.39" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 603.67 849.97 L 582.36 778.06 A 290.00 290.00 0 0 0 631.66 758.39" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 141.11 433.48 L 214.86 447.15 A 290.00 290.00 0 0 1 229.26 396.07" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 188.79 309.29 L 252.73 348.48 A 290.00 290.00 0 0 0 229.26 396.07" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 277.80 210.43 L 323.46 269.93 A 290.00 290.00 0 0 1 368.34 241.61" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 396.33 150.03 L 417.64 221.94 A 290.00 290.00 0 0 0 368.34 241.61" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 631.66 241.61 L 595.34 312.89 A 210.00 210.00 0 0 1 656.06 359.48" fill="none" stroke="#E9B949" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M 770.74 396.07 L 696.05 424.74 A 210.00 210.00 0 0 0 656.06 359.48" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 770.74 603.93 L 696.05 575.26 A 210.00 210.00 0 0 1 656.06 640.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 631.66 758.39 L 595.34 687.11 A 210.00 210.00 0 0 0 656.06 640.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 368.34 758.39 L 404.66 687.11 A 210.00 210.00 0 0 1 343.94 640.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 229.26 603.93 L 303.95 575.26 A 210.00 210.00 0 0 0 343.94 640.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 229.26 396.07 L 303.95 424.74 A 210.00 210.00 0 0 1 343.94 359.48" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 368.34 241.61 L 404.66 312.89 A 210.00 210.00 0 0 0 343.94 359.48" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 656.06 359.48 L 596.61 413.01 A 130.00 130.00 0 0 1 630.00 500.00" fill="none" stroke="#E9B949" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M 656.06 640.52 L 596.61 586.99 A 130.00 130.00 0 0 0 630.00 500.00" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 343.94 640.52 L 403.39 586.99 A 130.00 130.00 0 0 1 370.00 500.00" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 343.94 359.48 L 403.39 413.01 A 130.00 130.00 0 0 0 370.00 500.00" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 630.00 500.00 L 500.00 500.00" fill="none" stroke="#E9B949" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M 370.00 500.00 L 500.00 500.00" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 858.30 253.33 L 800.64 293.03 A 365.00 365.00 0 0 1 811.21 309.29" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 882.45 292.74 L 820.90 326.09 A 365.00 365.00 0 0 0 811.21 309.29" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 601.22 76.94 L 584.93 145.02 A 365.00 365.00 0 0 1 603.67 150.03" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 645.53 90.07 L 622.11 156.03 A 365.00 365.00 0 0 0 603.67 150.03" fill="none" stroke="#E9B949" stroke-width="3.2" stroke-linecap="round"/>
+<path d="M 922.90 398.12 L 854.85 414.51 A 365.00 365.00 0 0 1 858.89 433.48" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 931.32 443.56 L 861.91 452.64 A 365.00 365.00 0 0 0 858.89 433.48" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 398.78 923.06 L 415.07 854.98 A 365.00 365.00 0 0 1 396.33 849.97" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 354.47 909.93 L 377.89 843.97 A 365.00 365.00 0 0 0 396.33 849.97" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 746.11 141.31 L 706.50 199.03 A 365.00 365.00 0 0 1 722.20 210.43" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 782.77 169.45 L 737.27 222.64 A 365.00 365.00 0 0 0 722.20 210.43" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 253.89 858.69 L 293.50 800.97 A 365.00 365.00 0 0 1 277.80 789.57" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 217.23 830.55 L 262.73 777.36 A 365.00 365.00 0 0 0 277.80 789.57" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 141.70 746.67 L 199.36 706.97 A 365.00 365.00 0 0 1 188.79 690.71" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 117.55 707.26 L 179.10 673.91 A 365.00 365.00 0 0 0 188.79 690.71" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 77.10 601.88 L 145.15 585.49 A 365.00 365.00 0 0 1 141.11 566.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 68.68 556.44 L 138.09 547.36 A 365.00 365.00 0 0 0 141.11 566.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 782.77 830.55 L 737.27 777.36 A 365.00 365.00 0 0 1 722.20 789.57" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 746.11 858.69 L 706.50 800.97 A 365.00 365.00 0 0 0 722.20 789.57" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 645.53 909.93 L 622.11 843.97 A 365.00 365.00 0 0 1 603.67 849.97" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 601.22 923.06 L 584.93 854.98 A 365.00 365.00 0 0 0 603.67 849.97" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 931.32 556.44 L 861.91 547.36 A 365.00 365.00 0 0 1 858.89 566.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 922.90 601.88 L 854.85 585.49 A 365.00 365.00 0 0 0 858.89 566.52" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 882.45 707.26 L 820.90 673.91 A 365.00 365.00 0 0 1 811.21 690.71" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 858.30 746.67 L 800.64 706.97 A 365.00 365.00 0 0 0 811.21 690.71" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 217.23 169.45 L 262.73 222.64 A 365.00 365.00 0 0 1 277.80 210.43" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 253.89 141.31 L 293.50 199.03 A 365.00 365.00 0 0 0 277.80 210.43" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 68.68 443.56 L 138.09 452.64 A 365.00 365.00 0 0 1 141.11 433.48" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 77.10 398.12 L 145.15 414.51 A 365.00 365.00 0 0 0 141.11 433.48" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 354.47 90.07 L 377.89 156.03 A 365.00 365.00 0 0 1 396.33 150.03" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 398.78 76.94 L 415.07 145.02 A 365.00 365.00 0 0 0 396.33 150.03" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 117.55 292.74 L 179.10 326.09 A 365.00 365.00 0 0 1 188.79 309.29" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<path d="M 141.70 253.33 L 199.36 293.03 A 365.00 365.00 0 0 0 188.79 309.29" fill="none" stroke="#33333a" stroke-width="1.4" stroke-linecap="round"/>
+<circle cx="631.7" cy="241.6" r="5" fill="#E9B949"/>
+<circle cx="770.7" cy="396.1" r="3" fill="#4a4a52"/>
+<circle cx="368.3" cy="758.4" r="3" fill="#4a4a52"/>
+<circle cx="229.3" cy="603.9" r="3" fill="#4a4a52"/>
+<circle cx="770.7" cy="603.9" r="3" fill="#4a4a52"/>
+<circle cx="631.7" cy="758.4" r="3" fill="#4a4a52"/>
+<circle cx="229.3" cy="396.1" r="3" fill="#4a4a52"/>
+<circle cx="368.3" cy="241.6" r="3" fill="#4a4a52"/>
+<circle cx="656.1" cy="359.5" r="5" fill="#E9B949"/>
+<circle cx="656.1" cy="640.5" r="3" fill="#4a4a52"/>
+<circle cx="343.9" cy="640.5" r="3" fill="#4a4a52"/>
+<circle cx="343.9" cy="359.5" r="3" fill="#4a4a52"/>
+<circle cx="630.0" cy="500.0" r="5" fill="#E9B949"/>
+<circle cx="370.0" cy="500.0" r="3" fill="#4a4a52"/>
+<circle cx="811.2" cy="309.3" r="3" fill="#4a4a52"/>
+<circle cx="603.7" cy="150.0" r="5" fill="#E9B949"/>
+<circle cx="858.9" cy="433.5" r="3" fill="#4a4a52"/>
+<circle cx="396.3" cy="850.0" r="3" fill="#4a4a52"/>
+<circle cx="722.2" cy="210.4" r="3" fill="#4a4a52"/>
+<circle cx="277.8" cy="789.6" r="3" fill="#4a4a52"/>
+<circle cx="188.8" cy="690.7" r="3" fill="#4a4a52"/>
+<circle cx="141.1" cy="566.5" r="3" fill="#4a4a52"/>
+<circle cx="722.2" cy="789.6" r="3" fill="#4a4a52"/>
+<circle cx="603.7" cy="850.0" r="3" fill="#4a4a52"/>
+<circle cx="858.9" cy="566.5" r="3" fill="#4a4a52"/>
+<circle cx="811.2" cy="690.7" r="3" fill="#4a4a52"/>
+<circle cx="277.8" cy="210.4" r="3" fill="#4a4a52"/>
+<circle cx="141.1" cy="433.5" r="3" fill="#4a4a52"/>
+<circle cx="396.3" cy="150.0" r="3" fill="#4a4a52"/>
+<circle cx="188.8" cy="309.3" r="3" fill="#4a4a52"/>
+<circle cx="601.2" cy="76.9" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="601.2" y="76.9" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">GER</text>
+<circle cx="645.5" cy="90.1" r="26" fill="#141418" stroke="#E9B949" stroke-width="3"/>
+<text x="645.5" y="90.1" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#E9B949">PAR</text>
+<circle cx="746.1" cy="141.3" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="746.1" y="141.3" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">FRA</text>
+<circle cx="782.8" cy="169.4" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="782.8" y="169.4" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">SWE</text>
+<circle cx="858.3" cy="253.3" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="858.3" y="253.3" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">RSA</text>
+<circle cx="882.4" cy="292.7" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="882.4" y="292.7" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">CAN</text>
+<circle cx="922.9" cy="398.1" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="922.9" y="398.1" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">NED</text>
+<circle cx="931.3" cy="443.6" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="931.3" y="443.6" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">MAR</text>
+<circle cx="931.3" cy="556.4" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="931.3" y="556.4" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">ARG</text>
+<circle cx="922.9" cy="601.9" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="922.9" y="601.9" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">CPV</text>
+<circle cx="882.4" cy="707.3" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="882.4" y="707.3" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">AUS</text>
+<circle cx="858.3" cy="746.7" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="858.3" y="746.7" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">EGY</text>
+<circle cx="782.8" cy="830.6" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="782.8" y="830.6" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">USA</text>
+<circle cx="746.1" cy="858.7" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="746.1" y="858.7" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">BIH</text>
+<circle cx="645.5" cy="909.9" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="645.5" y="909.9" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">BEL</text>
+<circle cx="601.2" cy="923.1" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="601.2" y="923.1" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">SEN</text>
+<circle cx="398.8" cy="923.1" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="398.8" y="923.1" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">BRA</text>
+<circle cx="354.5" cy="909.9" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="354.5" y="909.9" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">JPN</text>
+<circle cx="253.9" cy="858.7" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="253.9" y="858.7" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">CIV</text>
+<circle cx="217.2" cy="830.6" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="217.2" y="830.6" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">NOR</text>
+<circle cx="141.7" cy="746.7" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="141.7" y="746.7" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">MEX</text>
+<circle cx="117.6" cy="707.3" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="117.6" y="707.3" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">ECU</text>
+<circle cx="77.1" cy="601.9" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="77.1" y="601.9" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">ENG</text>
+<circle cx="68.7" cy="556.4" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="68.7" y="556.4" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">COD</text>
+<circle cx="68.7" cy="443.6" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="68.7" y="443.6" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">COL</text>
+<circle cx="77.1" cy="398.1" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="77.1" y="398.1" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">GHA</text>
+<circle cx="117.6" cy="292.7" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="117.6" y="292.7" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">CRO</text>
+<circle cx="141.7" cy="253.3" r="26" fill="#141418" stroke="#b98f2e" stroke-width="2"/>
+<text x="141.7" y="253.3" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#E9B949">POR</text>
+<circle cx="217.2" cy="169.4" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="217.2" y="169.4" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">SUI</text>
+<circle cx="253.9" cy="141.3" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="253.9" y="141.3" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">ALG</text>
+<circle cx="354.5" cy="90.1" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="354.5" y="90.1" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">AUT</text>
+<circle cx="398.8" cy="76.9" r="26" fill="#141418" stroke="#3a3a42" stroke-width="1"/>
+<text x="398.8" y="76.9" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="600" font-family="Arial, sans-serif" fill="#c9c9cf">ESP</text>
+<circle cx="500.0" cy="500.0" r="34" fill="#F4C95D" fill-opacity="0.15"/>
+<text x="500.0" y="500.0" text-anchor="middle" dominant-baseline="central" font-size="30" fill="#F4C95D">&#9733;</text>
+</svg>

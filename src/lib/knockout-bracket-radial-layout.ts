@@ -33,11 +33,11 @@ const CX = RADIAL_CENTER;
 const CY = RADIAL_CENTER;
 
 export const BRACKET_COLORS = {
-  bg: "#0b0b0d",
-  line: "#33333a",
-  lineDim: "#232329",
-  node: "#4a4a52",
-  path: "#E9B949",
+  bg: "transparent",
+  line: "var(--bracket-line)",
+  lineDim: "var(--bracket-line)",
+  node: "var(--bracket-node)",
+  path: "var(--bracket-path)",
   advanced: "#f0ead6",
   eliminated: "#5a5a60",
   trophy: "#F4C95D",
@@ -229,6 +229,19 @@ function inorderSlots(nodes: Map<string, LayoutNode>, nid: string): string[] {
   return out;
 }
 
+function meanAngleDeg(angles: number[]): number {
+  if (angles.length === 0) return 0;
+  let sx = 0;
+  let sy = 0;
+  for (const deg of angles) {
+    const rad = (deg * Math.PI) / 180;
+    sx += Math.sin(rad);
+    sy -= Math.cos(rad);
+  }
+  const out = (Math.atan2(sx, -sy) * 180) / Math.PI;
+  return out < 0 ? out + 360 : out;
+}
+
 function assignGeometry(nodes: Map<string, LayoutNode>): string[] {
   const leaves = inorderSlots(nodes, ROOT);
   const n = leaves.length;
@@ -257,7 +270,7 @@ function assignGeometry(nodes: Map<string, LayoutNode>): string[] {
     for (const nd of nodes.values()) {
       if (nd.round !== rnd || nd.isSlot) continue;
       const ch = nd.children.map((c) => nodes.get(c)!);
-      nd.angle = ch.reduce((s, c) => s + c.angle, 0) / ch.length;
+      nd.angle = meanAngleDeg(ch.map((c) => c.angle));
       nd.radius = RADIUS[rnd === "F" ? "F" : rnd];
       if (nd.radius === 0) {
         nd.x = CX;
@@ -381,6 +394,44 @@ export function slotSideFromId(id: string): RadialTeamSide | null {
   return null;
 }
 
+/** Mapeia Mxx.A / Mxx.B para home/away real, respeitando a ordem do quadro FIFA. */
+export function teamSideForSlotId(
+  slotId: string,
+  slot: BracketSlotData
+): RadialTeamSide {
+  const wantsHome = slotId.endsWith(".A");
+
+  if (!slot.match) {
+    return wantsHome ? "home" : "away";
+  }
+
+  const preview = slot.preview;
+  if (!preview) {
+    return wantsHome ? "home" : "away";
+  }
+
+  const ph = preview.homeResolved?.team_id;
+  const pa = preview.awayResolved?.team_id;
+  const mh = slot.match.home_team_id;
+  const ma = slot.match.away_team_id;
+
+  if (ph != null && mh === ph) return wantsHome ? "home" : "away";
+  if (ph != null && mh === pa) return wantsHome ? "away" : "home";
+  if (pa != null && mh === pa) return wantsHome ? "away" : "home";
+  if (pa != null && mh === ma && ph == null) return wantsHome ? "home" : "away";
+
+  const pHomeName = preview.homeResolved?.team_name;
+  const pAwayName = preview.awayResolved?.team_name;
+  if (pHomeName && slot.match.home_team_name === pHomeName) {
+    return wantsHome ? "home" : "away";
+  }
+  if (pHomeName && slot.match.home_team_name === pAwayName) {
+    return wantsHome ? "away" : "home";
+  }
+
+  return wantsHome ? "home" : "away";
+}
+
 function layoutRoundToKey(round: LayoutRound): RadialRoundKey {
   switch (round) {
     case "R32":
@@ -409,12 +460,10 @@ function getSlotData(
     const column = columns.find((c) => c.key === key);
     if (!column) continue;
     const match = column.matches[index];
+    const skeleton = column.previews[index];
     return {
       match,
-      preview:
-        preview && !match && column.previews[index]
-          ? column.previews[index]
-          : undefined,
+      preview: skeleton,
     };
   }
   return {};
@@ -426,9 +475,11 @@ function enrichNode(
   preview: boolean
 ): RadialLayoutNode {
   const matchNumber = matchNumberFromNodeId(node.id);
-  const side = slotSideFromId(node.id);
   const slot =
     matchNumber != null ? getSlotData(columns, matchNumber, preview) : {};
+  const side = node.isSlot
+    ? teamSideForSlotId(node.id, slot)
+    : slotSideFromId(node.id);
 
   return {
     ...node,

@@ -24,6 +24,9 @@
   --accent: #E0451F;
   --accent-soft: rgba(224, 69, 31, 0.12);
   --glow: rgba(224, 69, 31, 0.18);
+  --bracket-line: #c9bfb0;
+  --bracket-node: #a89888;
+  --bracket-path: #c9a227;
 }
 
 /* ---- Tema escuro ---- */
@@ -38,6 +41,9 @@
   --accent: #E0451F;
   --accent-soft: rgba(224, 69, 31, 0.14);
   --glow: rgba(224, 69, 31, 0.22);
+  --bracket-line: #3a3530;
+  --bracket-node: #5a5248;
+  --bracket-path: #e8c872;
 }
 
 /* ---- Cyberpunk ---- */
