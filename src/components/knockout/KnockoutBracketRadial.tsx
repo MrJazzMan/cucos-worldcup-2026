@@ -178,9 +178,6 @@ export function KnockoutBracketRadial({
     },
   });
 
-  const connectorActive = (id: string, matchNumber: number) =>
-    activeConnectors.has(id) || activeMatches.has(matchNumber);
-
   return (
     <div className="mx-auto w-full max-w-4xl">
       <div className="overflow-hidden rounded-[2rem] border border-[#2a2218] bg-[#080808] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.55)] sm:p-5">
