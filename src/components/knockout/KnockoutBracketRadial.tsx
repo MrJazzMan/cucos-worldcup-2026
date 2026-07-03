@@ -178,7 +178,7 @@ export function KnockoutBracketRadial({
               <BracketRadialTeam
                 slot={node.slot}
                 side={side}
-                size={34}
+                size={30}
                 tbd={tbd}
                 active={activeNodeIds.has(slotId)}
                 eliminated={outerSlotEliminated(node.slot, side)}

@@ -80,8 +80,8 @@ export function BracketRadialTeam({
         : tbd;
     return (
       <div
-        className={`flex items-center justify-center rounded-full border border-[#5c4d38]/70 bg-[#1a1510] text-[8px] font-bold text-[#c9a86c] ${
-          eliminated ? "opacity-35" : ""
+        className={`flex items-center justify-center rounded-full border border-border-base bg-surface-2 text-[8px] font-bold text-muted ${
+          eliminated ? "opacity-40" : ""
         }`}
         style={{ width: size, height: size }}
         title={label}
@@ -93,16 +93,12 @@ export function BracketRadialTeam({
 
   return (
     <span
-      className={`inline-flex rounded-full ${flagRingClass(team.team_id, active)} ${
-        eliminated ? "opacity-35 grayscale" : ""
-      }`}
+      className={`inline-flex rounded-full ring-1 ring-black/10 ${flagRingClass(
+        team.team_id,
+        active
+      )} ${eliminated ? "opacity-40 grayscale" : ""}`}
     >
-      <TeamFlag
-        name={team.team_name!}
-        teamId={team.team_id}
-        size={size}
-        className={eliminated ? "" : "shadow-[0_0_12px_rgba(0,0,0,0.45)]"}
-      />
+      <TeamFlag name={team.team_name!} teamId={team.team_id} size={size} />
     </span>
   );
 }
