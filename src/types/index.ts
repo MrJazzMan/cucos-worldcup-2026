@@ -15,6 +15,8 @@ export interface Match {
   away_team_logo: string | null;
   home_score: number | null;
   away_score: number | null;
+  home_pen?: number | null;
+  away_pen?: number | null;
   status: MatchStatus;
   minute: number | null;
   round: string | null;

@@ -522,25 +522,21 @@ export function buildRadialBracketLayout(
   };
 }
 
-export function getWinnerTeamId(match: Match): number | null {
+function matchHomeWon(match: Match): boolean | null {
   if (match.status !== "finished") return null;
   const home = match.home_score ?? 0;
   const away = match.away_score ?? 0;
-  if (home === away) return null;
-  return home > away ? match.home_team_id : match.away_team_id;
+  if (home !== away) return home > away;
+  const homePen = match.home_pen ?? null;
+  const awayPen = match.away_pen ?? null;
+  if (homePen == null || awayPen == null || homePen === awayPen) return null;
+  return homePen > awayPen;
 }
 
-export function outerSlotEliminated(
-  slot: BracketSlotData,
-  side: RadialTeamSide
-): boolean {
-  const match = slot.match;
-  if (!match || match.status !== "finished") return false;
-  const home = match.home_score ?? 0;
-  const away = match.away_score ?? 0;
-  if (home === away) return false;
-  const homeWon = home > away;
-  return side === "home" ? !homeWon : homeWon;
+export function getWinnerTeamId(match: Match): number | null {
+  const homeWon = matchHomeWon(match);
+  if (homeWon == null) return null;
+  return homeWon ? match.home_team_id : match.away_team_id;
 }
 
 /** @deprecated Outer ring always shows all 32 teams in the Python layout model. */

@@ -112,21 +112,28 @@ function knockoutWinner(
   if (match.status !== "finished") return null;
   const home = match.home_score ?? 0;
   const away = match.away_score ?? 0;
-  if (home > away) {
-    return {
-      team_id: match.home_team_id,
-      team_name: match.home_team_name,
-      team_logo: match.home_team_logo,
-    };
+
+  let homeWon: boolean;
+  if (home !== away) {
+    homeWon = home > away;
+  } else {
+    const homePen = match.home_pen ?? null;
+    const awayPen = match.away_pen ?? null;
+    if (homePen == null || awayPen == null || homePen === awayPen) return null;
+    homeWon = homePen > awayPen;
   }
-  if (away > home) {
-    return {
-      team_id: match.away_team_id,
-      team_name: match.away_team_name,
-      team_logo: match.away_team_logo,
-    };
-  }
-  return null;
+
+  return homeWon
+    ? {
+        team_id: match.home_team_id,
+        team_name: match.home_team_name,
+        team_logo: match.home_team_logo,
+      }
+    : {
+        team_id: match.away_team_id,
+        team_name: match.away_team_name,
+        team_logo: match.away_team_logo,
+      };
 }
 
 type FeederSide = {

@@ -41,6 +41,12 @@ interface ApiFixture {
     home: number | null;
     away: number | null;
   };
+  score?: {
+    penalty?: {
+      home: number | null;
+      away: number | null;
+    } | null;
+  } | null;
   events?: ApiFixtureEvent[];
 }
 
@@ -142,6 +148,8 @@ export function mapFixtureToMatch(fixture: ApiFixture) {
     away_team_logo: fixture.teams.away.logo,
     home_score: fixture.goals.home,
     away_score: fixture.goals.away,
+    home_pen: fixture.score?.penalty?.home ?? null,
+    away_pen: fixture.score?.penalty?.away ?? null,
     status,
     minute:
       status === "live" || status === "finished" ? elapsed : null,

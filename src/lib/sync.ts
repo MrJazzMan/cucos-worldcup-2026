@@ -96,9 +96,22 @@ export async function syncMatches(mode: "full" | "live" = "full") {
     }
 
     const rows = fixtures.map(mapFixtureToMatch);
-    const { error } = await admin.from("matches").upsert(rows, {
+    let { error } = await admin.from("matches").upsert(rows, {
       onConflict: "fixture_id",
     });
+
+    // Fallback: se a migração dos penáltis (021) ainda não foi aplicada,
+    // a coluna home_pen/away_pen não existe — repete sem esses campos.
+    if (error && /home_pen|away_pen/.test(error.message ?? "")) {
+      const rowsNoPen = rows.map(({ home_pen, away_pen, ...rest }) => {
+        void home_pen;
+        void away_pen;
+        return rest;
+      });
+      ({ error } = await admin.from("matches").upsert(rowsNoPen, {
+        onConflict: "fixture_id",
+      }));
+    }
 
     if (error) throw error;
 

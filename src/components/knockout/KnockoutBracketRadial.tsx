@@ -16,7 +16,6 @@ import {
   buildRadialBracketLayout,
   getActiveEdgeKeys,
   getActiveNodeIds,
-  outerSlotEliminated,
   type RadialLayoutNode,
   type RadialRoundKey,
 } from "@/lib/knockout-bracket-radial-layout";
@@ -201,7 +200,6 @@ export function KnockoutBracketRadial({
                 size={30}
                 tbd={tbd}
                 active={activeNodeIds.has(slotId)}
-                eliminated={outerSlotEliminated(node.slot, side)}
               />
             </div>
           );

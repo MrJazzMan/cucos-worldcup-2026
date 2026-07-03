@@ -17,7 +17,6 @@ type BracketRadialTeamProps = {
   size: number;
   tbd: string;
   active?: boolean;
-  eliminated?: boolean;
 };
 
 function isKnownTeam(side?: ResolvedSlotSide): boolean {
@@ -70,7 +69,6 @@ export function BracketRadialTeam({
   size,
   tbd,
   active = false,
-  eliminated = false,
 }: BracketRadialTeamProps) {
   const team = resolveSide(slot, side);
   if (!team || !isKnownTeam(team)) {
@@ -80,9 +78,7 @@ export function BracketRadialTeam({
         : tbd;
     return (
       <div
-        className={`flex items-center justify-center rounded-full border border-border-base bg-surface-2 text-[8px] font-bold text-muted ${
-          eliminated ? "opacity-40" : ""
-        }`}
+        className="flex items-center justify-center rounded-full border border-border-base bg-surface-2 text-[8px] font-bold text-muted"
         style={{ width: size, height: size }}
         title={label}
       >
@@ -96,7 +92,7 @@ export function BracketRadialTeam({
       className={`inline-flex rounded-full ring-1 ring-black/10 ${flagRingClass(
         team.team_id,
         active
-      )} ${eliminated ? "opacity-40 grayscale" : ""}`}
+      )}`}
     >
       <TeamFlag name={team.team_name!} teamId={team.team_id} size={size} />
     </span>
@@ -116,8 +112,17 @@ export function winnerFromMatch(data: BracketSlotData) {
   if (!match || match.status !== "finished") return null;
   const home = match.home_score ?? 0;
   const away = match.away_score ?? 0;
-  if (home === away) return null;
-  const homeWon = home > away;
+
+  let homeWon: boolean;
+  if (home !== away) {
+    homeWon = home > away;
+  } else {
+    const homePen = match.home_pen ?? null;
+    const awayPen = match.away_pen ?? null;
+    if (homePen == null || awayPen == null || homePen === awayPen) return null;
+    homeWon = homePen > awayPen;
+  }
+
   const teamId = homeWon ? match.home_team_id : match.away_team_id;
   if (isSyntheticFixture(teamId)) return null;
   return {
