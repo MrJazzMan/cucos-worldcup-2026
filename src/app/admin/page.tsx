@@ -20,6 +20,8 @@ export default function AdminPage() {
   const [matches, setMatches] = useState<AdminMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<number | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -75,6 +77,42 @@ export default function AdminPage() {
     saveBroadcast(fixtureId, next);
   }
 
+  async function runSync(mode: "full" | "live" = "full") {
+    setSyncing(true);
+    setError(null);
+    setSyncMessage(null);
+    try {
+      const res = await fetch(`/api/sync?mode=${mode}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) {
+        setError(
+          res.status === 401 || res.status === 403
+            ? "Sessão expirada — inicia sessão outra vez."
+            : data?.error ?? "Erro ao sincronizar."
+        );
+        return;
+      }
+
+      setSyncMessage(
+        mode === "full"
+          ? `Sync completo concluído (${data.synced ?? 0} jogos).`
+          : `Sync live concluído (${data.synced ?? 0} jogos).`
+      );
+
+      setLoading(true);
+      const refreshed = await fetch("/api/admin/broadcasts");
+      const refreshedData = await refreshed.json().catch(() => []);
+      if (Array.isArray(refreshedData)) {
+        setMatches(refreshedData);
+      }
+      setLoading(false);
+    } catch {
+      setError("Erro de rede ao sincronizar.");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-3">
@@ -95,6 +133,24 @@ export default function AdminPage() {
             por região — ficam guardados mesmo após o próximo sync. Só aparecem jogos
             por jogar, ao vivo, ou terminados ontem/hoje.
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => runSync("full")}
+              disabled={syncing}
+              className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {syncing ? "A sincronizar..." : "Sincronizar agora"}
+            </button>
+            <button
+              type="button"
+              onClick={() => runSync("live")}
+              disabled={syncing}
+              className="rounded-xl bg-surface-2 px-4 py-2 text-sm font-medium text-muted transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Sync live
+            </button>
+          </div>
           {!loading && matches.length > 0 && (
             <p className="mt-2 text-xs text-muted">
               {matches.length} {matches.length === 1 ? "jogo" : "jogos"}
@@ -107,6 +163,11 @@ export default function AdminPage() {
       {error && (
         <p className="rounded-lg bg-red-600/20 px-3 py-2 text-sm text-red-400">
           {error}
+        </p>
+      )}
+      {syncMessage && (
+        <p className="rounded-lg bg-emerald-600/15 px-3 py-2 text-sm text-emerald-500">
+          {syncMessage}
         </p>
       )}
 

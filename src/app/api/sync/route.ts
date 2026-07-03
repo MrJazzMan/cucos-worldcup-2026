@@ -1,21 +1,13 @@
 import { NextResponse } from "next/server";
+import { requireAdminOrCron } from "@/lib/admin-auth";
 import { scheduleLiveSyncJobs } from "@/lib/live-sync-schedule";
 import { syncMatches } from "@/lib/sync";
-import { verifyCronAuth } from "@/lib/cron-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  if (!process.env.CRON_SECRET) {
-    return NextResponse.json(
-      { error: "CRON_SECRET não configurado" },
-      { status: 500 }
-    );
-  }
-
-  if (!verifyCronAuth(request)) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
+  const authError = await requireAdminOrCron(request);
+  if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
   const mode = searchParams.get("mode") === "live" ? "live" : "full";

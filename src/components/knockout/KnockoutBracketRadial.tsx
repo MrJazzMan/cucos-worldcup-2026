@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type KeyboardEvent } from "react";
 import {
+  BracketRadialMatch,
   BracketRadialTeam,
   BracketRadialWinner,
   winnerFromMatch,
@@ -23,15 +24,15 @@ import {
 function winnerFlagSize(roundKey: RadialRoundKey): number {
   switch (roundKey) {
     case "r32":
-      return 26;
-    case "r16":
-      return 30;
-    case "qf":
-      return 34;
-    case "sf":
-      return 40;
-    default:
       return 28;
+    case "r16":
+      return 32;
+    case "qf":
+      return 36;
+    case "sf":
+      return 42;
+    default:
+      return 30;
   }
 }
 
@@ -174,7 +175,7 @@ export function KnockoutBracketRadial({
           className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2"
           aria-hidden
         >
-          <WCTrophy size={76} />
+          <WCTrophy size={90} />
         </div>
 
         {layout.teamOrder.map((slotId) => {
@@ -197,7 +198,7 @@ export function KnockoutBracketRadial({
               <BracketRadialTeam
                 slot={node.slot}
                 side={side}
-                size={30}
+                size={32}
                 tbd={tbd}
                 active={activeNodeIds.has(slotId)}
               />
@@ -239,6 +240,28 @@ export function KnockoutBracketRadial({
             </button>
           );
         })}
+
+        {layout.thirdPlace && (
+          <div
+            className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              left: `${(layout.thirdPlace.x / RADIAL_VIEW_SIZE) * 100}%`,
+              top: `${(layout.thirdPlace.y / RADIAL_VIEW_SIZE) * 100}%`,
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={nodeTitle(layout.thirdPlace, tbd)}
+            {...bindNode("M103")}
+          >
+            <BracketRadialMatch
+              data={layout.thirdPlace.slot}
+              roundKey="third"
+              size={24}
+              tbd={tbd}
+              active={activeNodeIds.has("M103")}
+            />
+          </div>
+        )}
       </div>
 
       <p className="mt-3 text-center text-[10px] text-muted">{activeLabel}</p>
