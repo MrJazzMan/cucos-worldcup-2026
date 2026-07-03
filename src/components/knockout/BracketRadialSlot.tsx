@@ -111,7 +111,7 @@ type BracketRadialMatchProps = {
   active?: boolean;
 };
 
-function winnerFromMatch(data: BracketSlotData) {
+export function winnerFromMatch(data: BracketSlotData) {
   const match = data.match;
   if (!match || match.status !== "finished") return null;
   const home = match.home_score ?? 0;
@@ -124,6 +124,33 @@ function winnerFromMatch(data: BracketSlotData) {
     name: homeWon ? match.home_team_name : match.away_team_name,
     id: teamId,
   };
+}
+
+type BracketRadialWinnerProps = {
+  slot: BracketSlotData;
+  size: number;
+  active?: boolean;
+};
+
+/** Bandeira única do vencedor que avança para dentro; null se ainda indecidido. */
+export function BracketRadialWinner({
+  slot,
+  size,
+  active = false,
+}: BracketRadialWinnerProps) {
+  const winner = winnerFromMatch(slot);
+  if (!winner) return null;
+
+  return (
+    <span
+      className={`inline-flex rounded-full ring-1 ring-black/10 ${flagRingClass(
+        winner.id,
+        active
+      )}`}
+    >
+      <TeamFlag name={winner.name} teamId={winner.id} size={size} />
+    </span>
+  );
 }
 
 function CompactDot({ active, title }: { active?: boolean; title: string }) {

@@ -1,7 +1,11 @@
 "use client";
 
 import { useMemo, useState, type KeyboardEvent } from "react";
-import { BracketRadialTeam } from "@/components/knockout/BracketRadialSlot";
+import {
+  BracketRadialTeam,
+  BracketRadialWinner,
+  winnerFromMatch,
+} from "@/components/knockout/BracketRadialSlot";
 import { WCTrophy } from "@/components/knockout/WCTrophy";
 import { useSettings } from "@/components/SettingsProvider";
 import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
@@ -14,7 +18,23 @@ import {
   getActiveNodeIds,
   outerSlotEliminated,
   type RadialLayoutNode,
+  type RadialRoundKey,
 } from "@/lib/knockout-bracket-radial-layout";
+
+function winnerFlagSize(roundKey: RadialRoundKey): number {
+  switch (roundKey) {
+    case "r32":
+      return 26;
+    case "r16":
+      return 30;
+    case "qf":
+      return 34;
+    case "sf":
+      return 40;
+    default:
+      return 28;
+  }
+}
 
 type KnockoutBracketRadialProps = {
   columns: KnockoutRoundColumn[];
@@ -189,6 +209,8 @@ export function KnockoutBracketRadial({
 
         {internalNodes.map((node) => {
           const active = activeNodeIds.has(node.id);
+          const hasWinner = winnerFromMatch(node.slot) != null;
+
           return (
             <button
               key={node.id}
@@ -201,13 +223,21 @@ export function KnockoutBracketRadial({
               aria-label={nodeTitle(node, tbd)}
               {...bindNode(node.id)}
             >
-              <span
-                className={`block rounded-full transition-colors ${
-                  active
-                    ? "h-2.5 w-2.5 bg-[#e8c872] shadow-[0_0_8px_rgba(232,200,114,0.55)]"
-                    : "h-1.5 w-1.5 bg-[var(--bracket-node)]"
-                }`}
-              />
+              {hasWinner ? (
+                <BracketRadialWinner
+                  slot={node.slot}
+                  size={winnerFlagSize(node.roundKey)}
+                  active={active}
+                />
+              ) : (
+                <span
+                  className={`block rounded-full transition-colors ${
+                    active
+                      ? "h-2.5 w-2.5 bg-[#e8c872] shadow-[0_0_8px_rgba(232,200,114,0.55)]"
+                      : "h-1.5 w-1.5 bg-[var(--bracket-node)]"
+                  }`}
+                />
+              )}
             </button>
           );
         })}
