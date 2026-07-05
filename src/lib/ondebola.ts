@@ -4,6 +4,7 @@
  */
 
 import * as cheerio from "cheerio";
+import { canonicalTeamKey } from "@/lib/team-names";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { TIMEZONE } from "@/lib/timezone";
 
@@ -41,24 +42,14 @@ function semAcentos(texto: string): string {
   return texto.normalize("NFD").replace(/\p{M}/gu, "");
 }
 
-function normalizarEquipa(nome: string): string {
-  let n = semAcentos(nome).toLowerCase().trim();
-  for (const prefixo of ["fc ", "sl ", "cp ", "sc "]) {
-    if (n.startsWith(prefixo)) n = n.slice(prefixo.length);
-  }
-  return n.trim();
-}
-
 function tokensEquipa(nome: string): Set<string> {
-  const n = normalizarEquipa(nome);
-  return new Set(
-    n.split(/[\s.]+/).filter((t) => t.length >= 3)
-  );
+  const n = canonicalTeamKey(nome);
+  return new Set(n.split(/[\s.]+/).filter((t) => t.length >= 3));
 }
 
 export function equipasCoincidem(a: string, b: string): boolean {
-  const na = normalizarEquipa(a);
-  const nb = normalizarEquipa(b);
+  const na = canonicalTeamKey(a);
+  const nb = canonicalTeamKey(b);
   if (!na || !nb) return false;
   if (na === nb || na.includes(nb) || nb.includes(na)) return true;
 
