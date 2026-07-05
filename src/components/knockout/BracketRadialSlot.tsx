@@ -7,6 +7,7 @@ import type { ResolvedSlotSide } from "@/lib/knockout-qualification";
 import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
 import type {
   RadialRoundKey,
+  RadialTeamBadge,
   RadialTeamSide,
 } from "@/lib/knockout-bracket-radial-layout";
 import { PORTUGAL_TEAM_ID } from "@/lib/world-cup";
@@ -105,7 +106,39 @@ type BracketRadialMatchProps = {
   size: number;
   tbd: string;
   active?: boolean;
+  /** Ordem topo→base alinhada com feeders no anel (ignora home/away da API). */
+  stackedTeams?: [RadialTeamBadge, RadialTeamBadge];
 };
+
+function StackedFlags({
+  teams,
+  size,
+  active,
+  isLive,
+}: {
+  teams: [RadialTeamBadge, RadialTeamBadge];
+  size: number;
+  active?: boolean;
+  isLive?: boolean;
+}) {
+  return (
+    <div
+      className={`flex flex-col items-center gap-0.5 ${
+        isLive ? "animate-pulse" : ""
+      }`}
+      title={`${teams[0].name} vs ${teams[1].name}`}
+    >
+      {teams.map((team) => (
+        <span
+          key={team.id}
+          className={`inline-flex rounded-full ${flagRingClass(team.id, active)}`}
+        >
+          <TeamFlag name={team.name} teamId={team.id} size={size - 4} />
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export function winnerFromMatch(data: BracketSlotData) {
   const match = data.match;
@@ -210,8 +243,9 @@ export function BracketRadialMatch({
   size,
   tbd,
   active = false,
+  stackedTeams,
 }: BracketRadialMatchProps) {
-  if (shouldUseCompactDot(data, roundKey)) {
+  if (shouldUseCompactDot(data, roundKey) && !stackedTeams) {
     return (
       <div className="flex h-10 w-10 items-center justify-center" title={tbd}>
         <CompactDot active={active} title={tbd} />
@@ -231,6 +265,17 @@ export function BracketRadialMatch({
           className="shadow-[0_0_16px_rgba(0,0,0,0.5)]"
         />
       </span>
+    );
+  }
+
+  if (stackedTeams) {
+    return (
+      <StackedFlags
+        teams={stackedTeams}
+        size={size}
+        active={active}
+        isLive={data.match?.status === "live"}
+      />
     );
   }
 

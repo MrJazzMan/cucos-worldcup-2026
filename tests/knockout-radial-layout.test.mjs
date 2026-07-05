@@ -6,6 +6,7 @@ import {
   buildRadialBracketLayout,
   connectorPathElbow,
   LEFT_HALF,
+  orderTeamsByFeederGeometry,
   pathEdges,
   pathToRoot,
   RADIAL_CENTER,
@@ -102,4 +103,51 @@ test("teamSideForSlotId: troca home/away quando API inverte ordem FIFA", () => {
   };
   assert.equal(teamSideForSlotId("M74.A", slot), "away");
   assert.equal(teamSideForSlotId("M74.B", slot), "home");
+});
+
+test("orderTeamsByFeederGeometry: quartos alinham bandeiras com feeders (M97)", () => {
+  const layout = buildRadialBracketLayout(buildKnockoutColumns([], []), true);
+  const nodes = layout.nodes;
+
+  nodes.get("M89").slot = {
+    match: {
+      status: "finished",
+      home_score: 2,
+      away_score: 1,
+      home_team_id: 10,
+      home_team_name: "France",
+      away_team_id: 11,
+      away_team_name: "Germany",
+      home_pen: null,
+      away_pen: null,
+    },
+  };
+  nodes.get("M90").slot = {
+    match: {
+      status: "finished",
+      home_score: 1,
+      away_score: 1,
+      home_team_id: 12,
+      home_team_name: "Netherlands",
+      away_team_id: 13,
+      away_team_name: "Morocco",
+      home_pen: 3,
+      away_pen: 4,
+    },
+  };
+
+  const qfSlot = {
+    match: {
+      status: "upcoming",
+      home_team_id: 10,
+      home_team_name: "France",
+      away_team_id: 13,
+      away_team_name: "Morocco",
+    },
+  };
+
+  const ordered = orderTeamsByFeederGeometry("M97", qfSlot, nodes);
+  assert.ok(ordered);
+  assert.equal(ordered[0].name, "Morocco");
+  assert.equal(ordered[1].name, "France");
 });

@@ -17,6 +17,7 @@ import {
   buildRadialBracketLayout,
   getActiveEdgeKeys,
   getActiveNodeIds,
+  orderTeamsByFeederGeometry,
   type RadialLayoutNode,
   type RadialRoundKey,
 } from "@/lib/knockout-bracket-radial-layout";
@@ -209,6 +210,10 @@ export function KnockoutBracketRadial({
         {internalNodes.map((node) => {
           const active = activeNodeIds.has(node.id);
           const hasWinner = winnerFromMatch(node.slot) != null;
+          const stackedTeams = hasWinner
+            ? undefined
+            : orderTeamsByFeederGeometry(node.id, node.slot, layout.nodes) ??
+              undefined;
 
           return (
             <button
@@ -227,6 +232,15 @@ export function KnockoutBracketRadial({
                   slot={node.slot}
                   size={winnerFlagSize(node.roundKey)}
                   active={active}
+                />
+              ) : stackedTeams ? (
+                <BracketRadialMatch
+                  data={node.slot}
+                  roundKey={node.roundKey}
+                  size={winnerFlagSize(node.roundKey)}
+                  tbd={tbd}
+                  active={active}
+                  stackedTeams={stackedTeams}
                 />
               ) : (
                 <span
