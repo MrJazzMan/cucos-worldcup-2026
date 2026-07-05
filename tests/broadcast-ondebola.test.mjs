@@ -56,3 +56,31 @@ test("fillChannelsFromOndeBola skips feeder placeholders", async () => {
   const filled = await fillChannelsFromOndeBola(matches);
   assert.deepEqual(filled[0].channels, []);
 });
+
+test("fillChannelsFromOndeBola resolves Egito/Egipto spelling from OndeBola", async () => {
+  const matches = [
+    {
+      fixture_id: 900_000_095,
+      kickoff_utc: "2026-07-07T16:00:00.000Z",
+      match_date: "2026-07-07",
+      home_team_name: "Argentina",
+      away_team_name: "Egypt",
+      home_team_id: 1,
+      away_team_id: 2,
+      home_team_logo: null,
+      away_team_logo: null,
+      home_score: null,
+      away_score: null,
+      status: "upcoming",
+      minute: null,
+      round: "Round of 16",
+      group_name: null,
+      venue: "Atlanta",
+      channels: [],
+    },
+  ];
+
+  const filled = await fillChannelsFromOndeBola(matches);
+  assert.ok(filled[0].channels.length > 0);
+  assert.ok(filled[0].channels.some((c) => /sport\.tv/i.test(c)));
+});

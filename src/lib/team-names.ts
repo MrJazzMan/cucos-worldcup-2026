@@ -111,6 +111,22 @@ const TEAM_NAMES_PT: Record<string, string> = {
   "Haiti": "Haiti",
 };
 
+function stripAccents(text: string): string {
+  return text.normalize("NFD").replace(/\p{M}/gu, "");
+}
+
+/** Variantes ortográficas para matching OndeBola ↔ pt-PT. */
+const TEAM_MATCH_ALIASES: Record<string, string> = {
+  egipto: "egito",
+};
+
+/** Chave canónica para comparar nomes de seleções (API, OndeBola, UI). */
+export function canonicalTeamKey(name: string | null | undefined): string {
+  if (!name) return "";
+  const translated = stripAccents(ptTeam(name)).toLowerCase().trim();
+  return TEAM_MATCH_ALIASES[translated] ?? translated;
+}
+
 /** Devolve o nome da equipa em Português de Portugal (ou o original se não houver tradução). */
 export function ptTeam(name: string | null | undefined): string {
   if (!name) return "";
