@@ -2,6 +2,7 @@ import {
   buildBroadcastMap,
   enrichMatchesWithBroadcasts,
 } from "@/lib/broadcast-resolve";
+import { fillChannelsFromOndeBola } from "@/lib/broadcast-ondebola";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { DayOffset, GroupStanding, Match, TeamOption } from "@/types";
@@ -86,19 +87,21 @@ export async function getAllMatches(
 
   const broadcastMap = buildBroadcastMap(broadcasts ?? []);
 
-  return enrichMatchesWithBroadcasts(
-    appendScheduledKnockoutMatches(
-      wcMatches.map((m) =>
-        enrichMatchVenue({
-          ...m,
-          channels: broadcastMap.get(m.fixture_id) ?? [],
-          isFavourite:
-            favouriteTeamIds.includes(m.home_team_id) ||
-            favouriteTeamIds.includes(m.away_team_id),
-        })
-      )
-    ),
-    broadcastMap
+  return fillChannelsFromOndeBola(
+    enrichMatchesWithBroadcasts(
+      appendScheduledKnockoutMatches(
+        wcMatches.map((m) =>
+          enrichMatchVenue({
+            ...m,
+            channels: broadcastMap.get(m.fixture_id) ?? [],
+            isFavourite:
+              favouriteTeamIds.includes(m.home_team_id) ||
+              favouriteTeamIds.includes(m.away_team_id),
+          })
+        )
+      ),
+      broadcastMap
+    )
   );
 }
 
@@ -178,16 +181,18 @@ export async function getKnockoutRounds(): Promise<
         .select("fixture_id, channels")
         .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
       const broadcastMap = buildBroadcastMap(broadcasts ?? []);
-      const wcWithChannels = enrichMatchesWithBroadcasts(
-        appendScheduledKnockoutMatches(
-          wcMatches.map((m) =>
-            enrichMatchVenue({
-              ...m,
-              channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
-            })
-          )
-        ),
-        broadcastMap
+      const wcWithChannels = await fillChannelsFromOndeBola(
+        enrichMatchesWithBroadcasts(
+          appendScheduledKnockoutMatches(
+            wcMatches.map((m) =>
+              enrichMatchVenue({
+                ...m,
+                channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
+              })
+            )
+          ),
+          broadcastMap
+        )
       );
       const fromDb = groupKnockoutMatchesFromDb(wcWithChannels);
       if (fromDb.length > 0) return fromDb;
