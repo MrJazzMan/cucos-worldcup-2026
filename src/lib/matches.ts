@@ -1,4 +1,8 @@
-import { normalizeBroadcastChannels } from "@/lib/channels";
+import {
+  buildBroadcastMap,
+  enrichMatchesWithBroadcasts,
+} from "@/lib/broadcast-resolve";
+import { fillChannelsFromOndeBola } from "@/lib/broadcast-ondebola";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import type { DayOffset, GroupStanding, Match, TeamOption } from "@/types";
@@ -44,22 +48,22 @@ export async function getMatchesForDay(
     .select("fixture_id, channels")
     .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
 
-  const broadcastMap = new Map(
-    (broadcasts ?? []).map((b) => [
-      b.fixture_id,
-      normalizeBroadcastChannels(b.channels),
-    ])
+  const broadcastMap = buildBroadcastMap(broadcasts ?? []);
+
+  const enriched = enrichMatchesWithBroadcasts(
+    wcMatches.map((m) =>
+      enrichMatchVenue({
+        ...m,
+        channels: broadcastMap.get(m.fixture_id) ?? [],
+        isFavourite:
+          favouriteTeamIds.includes(m.home_team_id) ||
+          favouriteTeamIds.includes(m.away_team_id),
+      })
+    ),
+    broadcastMap
   );
 
-  return wcMatches.map((m) =>
-    enrichMatchVenue({
-      ...m,
-      channels: broadcastMap.get(m.fixture_id) ?? [],
-      isFavourite:
-        favouriteTeamIds.includes(m.home_team_id) ||
-        favouriteTeamIds.includes(m.away_team_id),
-    })
-  );
+  return enriched;
 }
 
 export async function getAllMatches(
@@ -81,22 +85,22 @@ export async function getAllMatches(
     .from("broadcasts")
     .select("fixture_id, channels");
 
-  const broadcastMap = new Map(
-    (broadcasts ?? []).map((b) => [
-      b.fixture_id,
-      normalizeBroadcastChannels(b.channels),
-    ])
-  );
+  const broadcastMap = buildBroadcastMap(broadcasts ?? []);
 
-  return appendScheduledKnockoutMatches(
-    wcMatches.map((m) =>
-      enrichMatchVenue({
-        ...m,
-        channels: broadcastMap.get(m.fixture_id) ?? [],
-        isFavourite:
-          favouriteTeamIds.includes(m.home_team_id) ||
-          favouriteTeamIds.includes(m.away_team_id),
-      })
+  return fillChannelsFromOndeBola(
+    enrichMatchesWithBroadcasts(
+      appendScheduledKnockoutMatches(
+        wcMatches.map((m) =>
+          enrichMatchVenue({
+            ...m,
+            channels: broadcastMap.get(m.fixture_id) ?? [],
+            isFavourite:
+              favouriteTeamIds.includes(m.home_team_id) ||
+              favouriteTeamIds.includes(m.away_team_id),
+          })
+        )
+      ),
+      broadcastMap
     )
   );
 }
@@ -176,18 +180,18 @@ export async function getKnockoutRounds(): Promise<
         .from("broadcasts")
         .select("fixture_id, channels")
         .in("fixture_id", fixtureIds.length ? fixtureIds : [-1]);
-      const broadcastMap = new Map(
-        (broadcasts ?? []).map((b) => [
-          b.fixture_id,
-          normalizeBroadcastChannels(b.channels),
-        ])
-      );
-      const wcWithChannels = appendScheduledKnockoutMatches(
-        wcMatches.map((m) =>
-          enrichMatchVenue({
-            ...m,
-            channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
-          })
+      const broadcastMap = buildBroadcastMap(broadcasts ?? []);
+      const wcWithChannels = await fillChannelsFromOndeBola(
+        enrichMatchesWithBroadcasts(
+          appendScheduledKnockoutMatches(
+            wcMatches.map((m) =>
+              enrichMatchVenue({
+                ...m,
+                channels: broadcastMap.get(m.fixture_id) ?? m.channels ?? [],
+              })
+            )
+          ),
+          broadcastMap
         )
       );
       const fromDb = groupKnockoutMatchesFromDb(wcWithChannels);

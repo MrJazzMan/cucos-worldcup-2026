@@ -1,8 +1,9 @@
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import {
-  mergeBroadcastChannels,
-  normalizeBroadcastChannels,
-} from "@/lib/channels";
+  buildBroadcastMap,
+  type MatchBroadcastMeta,
+} from "@/lib/broadcast-resolve";
+import { mergeBroadcastChannels } from "@/lib/channels";
 import {
   carregarAgenda,
   equipasCoincidem,
@@ -12,26 +13,26 @@ import {
   parseCanaisLista,
   type JogoTV,
 } from "@/lib/ondebola";
+import { appendScheduledKnockoutMatches } from "@/lib/scheduled-knockout-matches";
 import { ptTeam } from "@/lib/team-names";
 import { TIMEZONE } from "@/lib/timezone";
+import type { Match } from "@/types";
 import { formatInTimeZone } from "date-fns-tz";
 
-interface DbMatch {
-  fixture_id: number;
-  kickoff_utc: string;
-  home_team_name: string;
-  away_team_name: string;
-  match_date: string;
-}
-
-function findDbMatchForJogo(jogo: JogoTV, matches: DbMatch[]): DbMatch | null {
-  let melhor: { diff: number; match: DbMatch } | null = null;
+function findDbMatchForJogo(
+  jogo: JogoTV,
+  matches: MatchBroadcastMeta[]
+): MatchBroadcastMeta | null {
   const jogoDay = formatInTimeZone(jogo.inicio_lisboa, TIMEZONE, "yyyy-MM-dd");
+  const sameDay = matches.filter(
+    (m) =>
+      formatInTimeZone(new Date(m.kickoff_utc), TIMEZONE, "yyyy-MM-dd") ===
+      jogoDay
+  );
 
-  for (const m of matches) {
-    const dbDay = formatInTimeZone(new Date(m.kickoff_utc), TIMEZONE, "yyyy-MM-dd");
-    if (dbDay !== jogoDay) continue;
+  let melhor: { diff: number; match: MatchBroadcastMeta } | null = null;
 
+  for (const m of sameDay) {
     const home = ptTeam(m.home_team_name);
     const away = ptTeam(m.away_team_name);
     const casaOk = equipasCoincidem(home, jogo.equipa_casa);
@@ -77,7 +78,9 @@ export async function syncBroadcastsFromOndeBola(options?: {
 
   let query = admin
     .from("matches")
-    .select("fixture_id, kickoff_utc, home_team_name, away_team_name, match_date")
+    .select(
+      "fixture_id, kickoff_utc, home_team_name, away_team_name, match_date, round, group_name, status, home_team_id, home_team_logo, away_team_id, away_team_logo, home_score, away_score, minute, venue, channels"
+    )
     .order("kickoff_utc", { ascending: true });
 
   if (onlyToday) {
@@ -90,18 +93,20 @@ export async function syncBroadcastsFromOndeBola(options?: {
     return { synced: 0, source: "ondebola", reason: "sem jogos na BD" };
   }
 
-  const dbMatches = matches as DbMatch[];
+  const dbMatches = appendScheduledKnockoutMatches(matches as Match[]).map(
+    (m) => ({
+      fixture_id: m.fixture_id,
+      kickoff_utc: m.kickoff_utc,
+      home_team_name: m.home_team_name,
+      away_team_name: m.away_team_name,
+    })
+  );
 
   const { data: existingBroadcasts } = await admin
     .from("broadcasts")
     .select("fixture_id, channels");
 
-  const existingMap = new Map(
-    (existingBroadcasts ?? []).map((b) => [
-      b.fixture_id,
-      normalizeBroadcastChannels(b.channels),
-    ])
-  );
+  const existingMap = buildBroadcastMap(existingBroadcasts ?? []);
 
   const broadcasts: {
     fixture_id: number;

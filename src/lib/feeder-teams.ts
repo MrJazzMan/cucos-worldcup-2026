@@ -18,6 +18,10 @@ export function feederPlaceholderName(fifaMatchNumber: number): string {
   return `${FEEDER_PLACEHOLDER_PREFIX}${fifaMatchNumber}`;
 }
 
+export function isFeederPlaceholderName(name: string): boolean {
+  return name.startsWith(FEEDER_PLACEHOLDER_PREFIX);
+}
+
 export function feederFifaNumber(name: string): number | null {
   if (!name.startsWith(FEEDER_PLACEHOLDER_PREFIX)) return null;
   const n = Number(name.slice(FEEDER_PLACEHOLDER_PREFIX.length));
