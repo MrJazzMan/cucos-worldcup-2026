@@ -10,13 +10,14 @@ import {
   getUserFavouriteTeamIds,
 } from "@/lib/matches";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { pageMetadata } from "@/lib/site-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Fase final do Mundial 2026 — chave eliminatória e horários",
   description:
     "A chave eliminatória do Mundial 2026, dos dezasseis-avos à final. Confrontos, horários em Portugal e canais de TV de cada jogo a eliminar.",
-  alternates: { canonical: "/fasefinal" },
-};
+  path: "/fasefinal",
+});
 
 export default async function FaseFinalPage() {
   const supabase = await createSupabaseServer();

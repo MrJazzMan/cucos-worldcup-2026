@@ -6,6 +6,7 @@ import {
   getUserFavouriteTeamIds,
 } from "@/lib/matches";
 import { getMockMatchesForDate } from "@/lib/mock-data";
+import { pageMetadata } from "@/lib/site-metadata";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getDateForOffset } from "@/lib/timezone";
@@ -78,11 +79,11 @@ export default async function HomePage() {
   );
 }
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Mundial 2026: horários, canais de TV e onde ver em Portugal",
   description:
     "Vê que jogos do Mundial FIFA 2026 há hoje, a que horas em Portugal e em que canal de TV. Resultados ao vivo, grupos e fase final num só sítio.",
-  alternates: { canonical: "/" },
-};
+  path: "/",
+});
 
 export const revalidate = 60;
