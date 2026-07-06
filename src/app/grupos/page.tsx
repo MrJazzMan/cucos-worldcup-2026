@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { T } from "@/components/Display";
 import { GroupStandingsTable } from "@/components/GroupStandingsTable";
 import { getGroupStandings } from "@/lib/matches";
+import { pageMetadata } from "@/lib/site-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Grupos do Mundial 2026 — classificações e calendário",
   description:
     "Classificações e calendário de todos os grupos do Mundial 2026. Acompanha pontos, golos e horários em Portugal de cada seleção, atualizado ao vivo.",
-  alternates: { canonical: "/grupos" },
-};
+  path: "/grupos",
+});
 
 export default async function GruposPage() {
   const groups = await getGroupStandings();

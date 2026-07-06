@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { applySecurityHeaders } from "@/lib/security-headers";
+import { canonicalPathForRequest, canonicalUrl } from "@/lib/site-metadata";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 // User-agents de scrapers / AI crawlers conhecidos
@@ -81,6 +82,14 @@ function addSecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
+function attachCanonicalLink(res: NextResponse, pathname: string): NextResponse {
+  const canonicalPath = canonicalPathForRequest(pathname);
+  if (canonicalPath) {
+    res.headers.set("Link", `<${canonicalUrl(canonicalPath)}>; rel="canonical"`);
+  }
+  return res;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
   const origin = getRequestOrigin(request);
@@ -113,7 +122,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    return addSecurityHeaders(NextResponse.next({ request }));
+    const res = NextResponse.next({ request });
+    attachCanonicalLink(res, pathname);
+    return addSecurityHeaders(res);
   }
 
   const code = searchParams.get("code");
@@ -169,6 +180,7 @@ export async function middleware(request: NextRequest) {
   const supabase = createSupabaseMiddleware(request, () => response);
   await supabase.auth.getUser();
 
+  attachCanonicalLink(response, pathname);
   return addSecurityHeaders(response);
 }
 
