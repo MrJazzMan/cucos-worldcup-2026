@@ -4,6 +4,7 @@ import { KickoffTime, MatchCompactDate, TeamName } from "@/components/Display";
 import { TeamFlag } from "@/components/TeamFlag";
 import { useSettings } from "@/components/SettingsProvider";
 import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
+import { getMatchGoalDisplay } from "@/lib/match-result";
 import type { ResolvedSlotSide } from "@/lib/knockout-qualification";
 import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
 import type { KnockoutSlotPreview } from "@/lib/knockout-bracket";
@@ -142,6 +143,7 @@ export function BracketSlotCard({
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
   const showScore = isLive || isFinished;
+  const { scores } = getMatchGoalDisplay(match);
 
   return (
     <article
@@ -166,12 +168,12 @@ export function BracketSlotCard({
         <BracketTeamRow
           name={match.home_team_name}
           teamId={match.home_team_id}
-          score={showScore ? (match.home_score ?? 0) : undefined}
+          score={showScore ? scores.home : undefined}
         />
         <BracketTeamRow
           name={match.away_team_name}
           teamId={match.away_team_id}
-          score={showScore ? (match.away_score ?? 0) : undefined}
+          score={showScore ? scores.away : undefined}
         />
       </div>
     </article>

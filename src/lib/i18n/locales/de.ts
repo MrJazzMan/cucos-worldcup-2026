@@ -55,6 +55,8 @@ export const de: Dict = {
   "status.inMinutes": "In {n} Min.",
   "status.live": "Live",
   "status.finished": "Ende",
+  "status.penaltiesShort": "Elfm.",
+  "card.penaltiesResult": "{home}-{away} Elf.",
   "status.upcoming": "Bevorstehend",
   "card.channelTBC": "Sender noch offen",
   "card.matchNumber": "Spiel {n}",

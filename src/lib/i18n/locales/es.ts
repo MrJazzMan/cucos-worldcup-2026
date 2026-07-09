@@ -55,6 +55,8 @@ export const es: Dict = {
   "status.inMinutes": "Dentro de {n} min",
   "status.live": "En directo",
   "status.finished": "Final",
+  "status.penaltiesShort": "Pen.",
+  "card.penaltiesResult": "{home}-{away} pen",
   "status.upcoming": "Próximamente",
   "card.channelTBC": "Canal por confirmar",
   "card.matchNumber": "Partido {n}",

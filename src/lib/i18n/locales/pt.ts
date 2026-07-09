@@ -55,6 +55,8 @@ export const pt: Dict = {
   "status.inMinutes": "Dentro de {n} min",
   "status.live": "Ao vivo",
   "status.finished": "Final",
+  "status.penaltiesShort": "Pen.",
+  "card.penaltiesResult": "{home}-{away} pen",
   "status.upcoming": "Agendado",
   "featured.live": "AO VIVO",
   "featured.final": "FINAL",

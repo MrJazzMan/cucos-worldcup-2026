@@ -56,6 +56,8 @@ export const br: Dict = {
   "status.inMinutes": "Em {n} min",
   "status.live": "Ao vivo",
   "status.finished": "Final",
+  "status.penaltiesShort": "Pen.",
+  "card.penaltiesResult": "{home}-{away} pen",
   "status.upcoming": "Em breve",
   "card.channelTBC": "Canal a confirmar",
   "card.matchNumber": "Jogo {n}",

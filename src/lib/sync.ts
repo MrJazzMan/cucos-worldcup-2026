@@ -120,6 +120,7 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       .map((r) => r.fixture_id);
     const goalsSynced = await syncGoalEventsForFixtures(eventFixtureIds, {
       resyncLive: mode === "live",
+      fixtures,
     });
 
     let standingsSynced = 0;

@@ -56,6 +56,8 @@ export const nl: Dict = {
   "status.inMinutes": "Over {n} min",
   "status.live": "Live",
   "status.finished": "Einde",
+  "status.penaltiesShort": "Pen.",
+  "card.penaltiesResult": "{home}-{away} pen",
   "status.upcoming": "Binnenkort",
   "card.channelTBC": "Zender nog te bevestigen",
   "card.matchNumber": "Wedstrijd {n}",

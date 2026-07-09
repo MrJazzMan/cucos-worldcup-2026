@@ -1,4 +1,11 @@
-import { fetchFixturesByIds, type ApiFixtureEvent } from "@/lib/api-football";
+import {
+  fetchFixtureEvents,
+  fetchFixturesByIds,
+  mapApiStatus,
+  type ApiFixture,
+  type ApiFixtureEvent,
+} from "@/lib/api-football";
+import { regulationScoresFromEvents } from "@/lib/match-result";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { MatchGoalEvent } from "@/types";
 
@@ -7,20 +14,32 @@ export function formatGoalMinute(minute: number, extra: number | null): string {
   return `${minute}'`;
 }
 
+function goalEventKey(event: MatchGoalEvent): string {
+  return `${event.team_id}|${event.minute}|${event.extra ?? 0}|${event.player}|${event.detail}`;
+}
+
 export function mapApiEventsToGoals(events: ApiFixtureEvent[]): MatchGoalEvent[] {
-  return events
-    .filter((e) => e.type === "Goal" && e.player?.name)
-    .map((e) => ({
-      player: e.player!.name!,
+  const seen = new Set<string>();
+  const goals: MatchGoalEvent[] = [];
+
+  for (const e of events) {
+    if (e.type !== "Goal" || !e.player?.name) continue;
+    const goal: MatchGoalEvent = {
+      player: e.player.name,
       minute: e.time.elapsed,
       extra: e.time.extra,
       team_id: e.team.id,
       detail: e.detail,
-    }))
-    .sort(
-      (a, b) =>
-        a.minute - b.minute || (a.extra ?? 0) - (b.extra ?? 0)
-    );
+    };
+    const key = goalEventKey(goal);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    goals.push(goal);
+  }
+
+  return goals.sort(
+    (a, b) => a.minute - b.minute || (a.extra ?? 0) - (b.extra ?? 0)
+  );
 }
 
 export function goalsForTeam(
@@ -33,7 +52,7 @@ export function goalsForTeam(
 /** Sincroniza marcadores para jogos ao vivo ou terminados. */
 export async function syncGoalEventsForFixtures(
   fixtureIds: number[],
-  options?: { resyncLive?: boolean }
+  options?: { resyncLive?: boolean; fixtures?: ApiFixture[] }
 ): Promise<number> {
   if (!fixtureIds.length || !process.env.API_FOOTBALL_KEY) return 0;
 
@@ -58,14 +77,53 @@ export async function syncGoalEventsForFixtures(
   if (!ids.length) return 0;
 
   let synced = 0;
-  const fixtures = await fetchFixturesByIds(ids);
+  const fixtureById = new Map(
+    (options?.fixtures ?? []).map((fixture) => [fixture.fixture.id, fixture])
+  );
+  const missingIds = ids.filter((id) => !fixtureById.has(id));
+  const fetched = missingIds.length ? await fetchFixturesByIds(missingIds) : [];
+  for (const fixture of fetched) {
+    fixtureById.set(fixture.fixture.id, fixture);
+  }
 
-  for (const fixture of fixtures) {
+  for (const fixtureId of ids) {
+    const fixture = fixtureById.get(fixtureId);
+    if (!fixture) continue;
+
     try {
-      const goal_events = mapApiEventsToGoals(fixture.events ?? []);
+      const rawEvents =
+        fixture.events?.length
+          ? fixture.events
+          : await fetchFixtureEvents(fixture.fixture.id);
+      const goal_events = mapApiEventsToGoals(rawEvents ?? []);
+      const status = mapApiStatus(fixture.fixture.status.short);
+      const apiHome = fixture.goals.home ?? 0;
+      const apiAway = fixture.goals.away ?? 0;
+      const fromEvents = regulationScoresFromEvents(
+        goal_events,
+        fixture.teams.home.id,
+        fixture.teams.away.id
+      );
+      const home_score =
+        goal_events.length > 0 && status === "live"
+          ? Math.max(apiHome, fromEvents.home)
+          : fixture.goals.home;
+      const away_score =
+        goal_events.length > 0 && status === "live"
+          ? Math.max(apiAway, fromEvents.away)
+          : fixture.goals.away;
       const { error } = await admin
         .from("matches")
-        .update({ goal_events })
+        .update({
+          goal_events,
+          home_score,
+          away_score,
+          status,
+          minute:
+            status === "live" || status === "finished"
+              ? fixture.fixture.status.elapsed
+              : null,
+        })
         .eq("fixture_id", fixture.fixture.id);
       if (error) throw error;
       synced++;

@@ -15,7 +15,7 @@ export interface ApiFixtureEvent {
   detail: string;
 }
 
-interface ApiFixture {
+export interface ApiFixture {
   fixture: {
     id: number;
     date: string;

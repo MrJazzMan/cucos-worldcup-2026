@@ -4,8 +4,13 @@ import { KickoffTime, MatchCompactDate, TeamName } from "@/components/Display";
 import { MatchFinishedKickoff } from "@/components/match/MatchFinishedKickoff";
 import { MatchTeamScorers } from "@/components/match/MatchTeamScorers";
 import { TeamFlag } from "@/components/TeamFlag";
-import { goalsForTeam } from "@/lib/match-events";
-import type { Match } from "@/types";
+import { useSettings } from "@/components/SettingsProvider";
+import {
+  getMatchWinnerSide,
+  getPenaltyShootoutResult,
+  getMatchGoalDisplay,
+} from "@/lib/match-result";
+import type { Match, MatchGoalEvent } from "@/types";
 
 type MatchTeamsLayoutProps = {
   match: Match;
@@ -42,19 +47,27 @@ function TeamColumn({
   goals,
   sizes,
   variant,
+  won,
+  lost,
 }: {
   teamId: number;
   teamName: string;
-  goals: ReturnType<typeof goalsForTeam>;
+  goals: MatchGoalEvent[];
   sizes: (typeof SIZES)[keyof typeof SIZES];
   variant: "card" | "featured";
+  won?: boolean;
+  lost?: boolean;
 }) {
   return (
     <div
       className={`flex min-w-0 flex-1 flex-col items-center text-center ${sizes.teamGap}`}
     >
       <TeamFlag name={teamName} teamId={teamId} size={sizes.flag} />
-      <p className={`${sizes.name} text-foreground`}>
+      <p
+        className={`${sizes.name} ${
+          won ? "font-extrabold text-foreground" : lost ? "text-muted" : "text-foreground"
+        }`}
+      >
         <TeamName name={teamName} />
       </p>
       <MatchTeamScorers goals={goals} variant={variant} />
@@ -69,12 +82,14 @@ export function MatchTeamsLayout({
   selectedDay,
   showKickoffDate,
 }: MatchTeamsLayoutProps) {
+  const { t } = useSettings();
   const sizes = SIZES[variant];
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
   const showScoreboard = isLive || isFinished;
-  const homeGoals = goalsForTeam(match.goal_events, match.home_team_id);
-  const awayGoals = goalsForTeam(match.goal_events, match.away_team_id);
+  const winner = isFinished ? getMatchWinnerSide(match) : null;
+  const shootout = isFinished ? getPenaltyShootoutResult(match) : null;
+  const { scores, homeGoals, awayGoals } = getMatchGoalDisplay(match);
 
   return (
     <div className={`flex items-start justify-between ${sizes.gap}`}>
@@ -84,22 +99,51 @@ export function MatchTeamsLayout({
         goals={showScoreboard ? homeGoals : []}
         sizes={sizes}
         variant={variant}
+        won={winner === "home"}
+        lost={winner === "away"}
       />
 
       <div
         className={`flex ${sizes.center} shrink-0 flex-col items-center justify-center gap-1 self-center`}
       >
-        {showScoreboard && match.home_score != null ? (
+        {showScoreboard && (match.home_score != null || scores.home + scores.away > 0) ? (
           <div className="flex flex-col items-center gap-0.5">
             <p
               className={`flex items-center gap-1.5 font-bold tabular-nums ${sizes.score} ${
                 isLive ? "text-red-500" : "text-foreground"
               }`}
             >
-              <span>{match.home_score}</span>
+              <span
+                className={
+                  winner === "home"
+                    ? "font-extrabold"
+                    : winner === "away"
+                      ? "font-medium opacity-45"
+                      : ""
+                }
+              >
+                {scores.home}
+              </span>
               <span className={`${sizes.scoreDash} font-light opacity-40`}>–</span>
-              <span>{match.away_score}</span>
+              <span
+                className={
+                  winner === "away"
+                    ? "font-extrabold"
+                    : winner === "home"
+                      ? "font-medium opacity-45"
+                      : ""
+                }
+              >
+                {scores.away}
+              </span>
             </p>
+            {shootout && (
+              <p className="text-[10px] font-semibold tabular-nums text-foreground/80">
+                {t("card.penaltiesResult")
+                  .replace("{home}", String(shootout.homeScored))
+                  .replace("{away}", String(shootout.awayScored))}
+              </p>
+            )}
             <p className="text-[9px] font-medium tabular-nums text-muted/75">
               <MatchCompactDate utc={match.kickoff_utc} />
             </p>
@@ -140,6 +184,8 @@ export function MatchTeamsLayout({
         goals={showScoreboard ? awayGoals : []}
         sizes={sizes}
         variant={variant}
+        won={winner === "away"}
+        lost={winner === "home"}
       />
     </div>
   );

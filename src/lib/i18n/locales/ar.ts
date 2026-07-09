@@ -55,6 +55,8 @@ export const ar: Dict = {
   "status.inMinutes": "خلال {n} دقيقة",
   "status.live": "مباشر",
   "status.finished": "انتهت",
+  "status.penaltiesShort": "ركلات",
+  "card.penaltiesResult": "{home}-{away} ركلات",
   "status.upcoming": "لم تبدأ بعد",
   "card.channelTBC": "القناة قيد التحديد",
   "card.matchNumber": "مباراة {n}",
