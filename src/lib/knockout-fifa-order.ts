@@ -1,4 +1,5 @@
 import type { KnockoutRoundColumn, KnockoutSlotPreview } from "@/lib/knockout-bracket";
+import { getMatchWinnerSide } from "@/lib/match-result";
 import { syntheticFixtureId } from "@/lib/feeder-teams";
 import type { Match } from "@/types";
 
@@ -13,6 +14,103 @@ export const FIFA_MATCH_NUMBERS = {
 } as const;
 
 export type FifaRoundKey = keyof typeof FIFA_MATCH_NUMBERS;
+
+/** Jogos que alimentam cada eliminatória (casa = 1.º feeder, fora = 2.º). */
+export const KNOCKOUT_FEEDERS: Partial<Record<number, readonly [number, number]>> = {
+  89: [74, 77],
+  90: [73, 75],
+  91: [76, 78],
+  92: [79, 80],
+  93: [83, 84],
+  94: [81, 82],
+  95: [86, 88],
+  96: [85, 87],
+  97: [89, 90],
+  98: [93, 94],
+  99: [91, 92],
+  100: [95, 96],
+  101: [97, 98],
+  102: [99, 100],
+  104: [101, 102],
+};
+
+function winnerTeamId(match: Match): number | null {
+  const side = getMatchWinnerSide(match);
+  if (side == null) return null;
+  return side === "home" ? match.home_team_id : match.away_team_id;
+}
+
+function swapMatchHomeAway(match: Match): Match {
+  return {
+    ...match,
+    home_team_id: match.away_team_id,
+    home_team_name: match.away_team_name,
+    home_team_logo: match.away_team_logo,
+    away_team_id: match.home_team_id,
+    away_team_name: match.home_team_name,
+    away_team_logo: match.home_team_logo,
+    home_score: match.away_score,
+    away_score: match.home_score,
+    home_pen: match.away_pen ?? null,
+    away_pen: match.home_pen ?? null,
+  };
+}
+
+/** Casa/fora alinhados aos feeders FIFA (ex.: M97 casa = vencedor M89). */
+export function alignMatchToFeederOrder(
+  match: Match,
+  fifaNumber: number,
+  getMatchAtFifa: (fifa: number) => Match | undefined
+): Match {
+  const feeders = KNOCKOUT_FEEDERS[fifaNumber];
+  if (!feeders) return match;
+
+  const [homeFeeder, awayFeeder] = feeders;
+  const homeMatch = getMatchAtFifa(homeFeeder);
+  const awayMatch = getMatchAtFifa(awayFeeder);
+  if (!homeMatch || !awayMatch) return match;
+
+  const homeWinner = winnerTeamId(homeMatch);
+  const awayWinner = winnerTeamId(awayMatch);
+  if (homeWinner == null || awayWinner == null) return match;
+
+  const teams = new Set([match.home_team_id, match.away_team_id]);
+  if (!teams.has(homeWinner) || !teams.has(awayWinner)) return match;
+
+  if (match.home_team_id === homeWinner && match.away_team_id === awayWinner) {
+    return match;
+  }
+  if (match.home_team_id === awayWinner && match.away_team_id === homeWinner) {
+    return swapMatchHomeAway(match);
+  }
+  return match;
+}
+
+export function alignKnockoutColumns(
+  columns: KnockoutRoundColumn[]
+): KnockoutRoundColumn[] {
+  const cols = columns.map((col) => ({ ...col, matches: [...col.matches] }));
+
+  const getMatchAtFifa = (fifa: number): Match | undefined => {
+    const { key, index } = fifaSlotLocation(fifa);
+    const col = cols.find((c) => c.key === key);
+    return col?.matches[index];
+  };
+
+  for (const key of ["r16", "qf", "sf"] as const) {
+    const col = cols.find((c) => c.key === key);
+    if (!col) continue;
+    const fifaNums = FIFA_MATCH_NUMBERS[key];
+    col.matches = col.matches.map((match, index) => {
+      if (!match) return match;
+      const fifa = fifaNums[index];
+      if (fifa == null) return match;
+      return alignMatchToFeederOrder(match, fifa, getMatchAtFifa);
+    });
+  }
+
+  return cols;
+}
 
 /** Localização de um jogo FIFA (M73–M104) na coluna+índice da sua ronda. */
 export function fifaSlotLocation(matchNumber: number): {

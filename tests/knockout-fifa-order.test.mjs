@@ -166,3 +166,61 @@ test("orderMatchesInFifaSlots: casa por fixture_id sintético FIFA", () => {
   );
   assert.equal(result[1]?.fixture_id, 900_000_090);
 });
+
+test("alignKnockoutColumns: M97 casa = vencedor M89, fora = vencedor M90", () => {
+  const franceId = 3;
+  const moroccoId = 31;
+  const paraguayId = 2380;
+  const canadaId = 5529;
+
+  const columns = buildKnockoutColumns([
+    {
+      round: "Round of 16",
+      matches: [
+        makeMatch({
+          fixture_id: 900_000_089,
+          home_team_id: paraguayId,
+          away_team_id: franceId,
+          home_team_name: "Paraguay",
+          away_team_name: "France",
+          home_score: 1,
+          away_score: 2,
+          status: "finished",
+          round: "Round of 16",
+        }),
+        makeMatch({
+          fixture_id: 900_000_090,
+          home_team_id: canadaId,
+          away_team_id: moroccoId,
+          home_team_name: "Canada",
+          away_team_name: "Morocco",
+          home_score: 0,
+          away_score: 1,
+          status: "finished",
+          round: "Round of 16",
+        }),
+      ],
+    },
+    {
+      round: "Quarter-final",
+      matches: [
+        makeMatch({
+          fixture_id: 900_000_097,
+          home_team_id: moroccoId,
+          away_team_id: franceId,
+          home_team_name: "Morocco",
+          away_team_name: "France",
+          home_score: 0,
+          away_score: 1,
+          status: "finished",
+          round: "Quarter-final",
+        }),
+      ],
+    },
+  ]);
+
+  const qf = columns.find((c) => c.key === "qf");
+  const m97 = qf?.matches[0];
+  assert.equal(m97?.home_team_name, "France");
+  assert.equal(m97?.away_team_name, "Morocco");
+});

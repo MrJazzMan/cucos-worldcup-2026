@@ -1,4 +1,8 @@
-import { FIFA_MATCH_NUMBERS, orderMatchesInFifaSlots } from "@/lib/knockout-fifa-order";
+import {
+  FIFA_MATCH_NUMBERS,
+  alignKnockoutColumns,
+  orderMatchesInFifaSlots,
+} from "@/lib/knockout-fifa-order";
 import {
   buildBracketContext,
   enrichSlotPreview,
@@ -185,30 +189,32 @@ export function buildKnockoutColumns(
     }
   }
 
-  return ROUND_DEFS.map((def) => {
-    const data = byKey.get(def.key);
-    const previews = KNOCKOUT_SKELETON[def.key].map((p) =>
-      enrichSlotPreview(
-        p,
-        standingsByGroup,
-        locksByGroup,
-        def.key === "r32" ? thirdPlaceContext : null
-      )
-    );
-    const matches = orderMatchesInFifaSlots(
-      data?.matches ?? [],
-      previews,
-      def.slotCount,
-      FIFA_MATCH_NUMBERS[def.key]
-    );
+  return alignKnockoutColumns(
+    ROUND_DEFS.map((def) => {
+      const data = byKey.get(def.key);
+      const previews = KNOCKOUT_SKELETON[def.key].map((p) =>
+        enrichSlotPreview(
+          p,
+          standingsByGroup,
+          locksByGroup,
+          def.key === "r32" ? thirdPlaceContext : null
+        )
+      );
+      const matches = orderMatchesInFifaSlots(
+        data?.matches ?? [],
+        previews,
+        def.slotCount,
+        FIFA_MATCH_NUMBERS[def.key]
+      );
 
-    return {
-      key: def.key,
-      round: data?.round ?? def.key,
-      labelKey: def.labelKey,
-      matches,
-      slotCount: def.slotCount,
-      previews,
-    };
-  });
+      return {
+        key: def.key,
+        round: data?.round ?? def.key,
+        labelKey: def.labelKey,
+        matches,
+        slotCount: def.slotCount,
+        previews,
+      };
+    })
+  );
 }
