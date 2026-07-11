@@ -9,7 +9,6 @@ import { PageVisitTracker } from "@/components/PageVisitTracker";
 import { ProfileSync } from "@/components/ProfileSync";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { SettingsProvider } from "@/components/SettingsProvider";
-import { T } from "@/components/Display";
 import { THEME_INIT_SCRIPT } from "@/lib/themes";
 import { CONSENT_MODE_DEFAULT_SCRIPT } from "@/lib/consent";
 import { Analytics } from "@vercel/analytics/next";
@@ -105,12 +104,7 @@ export default function RootLayout({
             </main>
             <footer className="mt-10 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] text-center text-xs text-muted sm:pb-8">
               <p className="text-muted/60">🐱 Dedicado ao Miiuuu</p>
-              <p className="mt-1">
-                <a href="/privacidade" className="text-muted hover:text-accent hover:underline">
-                  <T k="footer.privacy" />
-                </a>
-              </p>
-              <p className="mt-0.5">© 2026 Cuco Enterprise</p>
+              <p className="mt-1">© 2026 Cuco Enterprise</p>
             </footer>
             </AppChrome>
             <CookieConsent />

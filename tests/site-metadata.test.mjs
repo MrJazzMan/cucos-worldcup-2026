@@ -15,5 +15,4 @@ test("canonicalUrl gera URL absoluta", () => {
 test("canonicalPathForRequest mapeia alias eliminatorias", () => {
   assert.equal(canonicalPathForRequest("/eliminatorias"), "/fasefinal");
   assert.equal(canonicalPathForRequest("/admin"), null);
-  assert.equal(canonicalPathForRequest("/privacidade"), "/privacidade");
 });

@@ -19,7 +19,7 @@ function LoginGateContent() {
   const errorDesc = searchParams.get("error_description");
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
-  if (pathname === "/auth/callback" || pathname === "/privacidade") return null;
+  if (pathname === "/auth/callback") return null;
   if (!error) return null;
 
   const returnParams = new URLSearchParams(searchParams.toString());

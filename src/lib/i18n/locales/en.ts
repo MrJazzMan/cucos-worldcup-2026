@@ -193,11 +193,9 @@ export const en: Dict = {
   "settings.timezone.auto": "Automatic (browser)",
   "settings.close": "Close",
   "footer.production": "Production",
-  "footer.privacy": "Privacy",
   "coffee.cta": "Buy me a coffee ☕ €1",
   "consent.message":
-    "We use cookies for analytics (Google Analytics) and ads (Google AdSense). ",
-  "consent.learnMore": "Privacy policy",
+    "We use cookies for analytics (Google Analytics) and ads (Google AdSense).",
   "consent.accept": "Accept",
   "consent.reject": "Decline",
   "ads.label": "Advertisement",

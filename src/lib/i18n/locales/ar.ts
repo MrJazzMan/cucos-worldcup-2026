@@ -150,11 +150,9 @@ export const ar: Dict = {
   "settings.timezone.auto": "تلقائي (المتصفح)",
   "settings.close": "إغلاق",
   "footer.production": "الإنتاج",
-  "footer.privacy": "الخصوصية",
   "coffee.cta": "ادعمني بقهوة ☕ 1€",
   "consent.message":
-    "نستخدم ملفات تعريف الارتباط للإحصاءات (Google Analytics) والإعلانات (Google AdSense). ",
-  "consent.learnMore": "سياسة الخصوصية",
+    "نستخدم ملفات تعريف الارتباط للإحصاءات (Google Analytics) والإعلانات (Google AdSense).",
   "consent.accept": "قبول",
   "consent.reject": "رفض",
   "ads.label": "إعلان",

@@ -52,6 +52,6 @@ export function canonicalPathForRequest(pathname: string): string | null {
 
   if (pathname === "/eliminatorias") return "/fasefinal";
 
-  const indexable = new Set(["/", "/grupos", "/fasefinal", "/privacidade"]);
+  const indexable = new Set(["/", "/grupos", "/fasefinal"]);
   return indexable.has(pathname) ? pathname : null;
 }

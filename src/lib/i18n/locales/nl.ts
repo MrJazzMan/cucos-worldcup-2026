@@ -153,11 +153,9 @@ export const nl: Dict = {
   "settings.timezone.auto": "Automatisch (browser)",
   "settings.close": "Sluiten",
   "footer.production": "Productie",
-  "footer.privacy": "Privacy",
   "coffee.cta": "Trakteer me op een koffie ☕ 1€",
   "consent.message":
-    "We gebruiken cookies voor statistieken (Google Analytics) en advertenties (Google AdSense). ",
-  "consent.learnMore": "Privacybeleid",
+    "We gebruiken cookies voor statistieken (Google Analytics) en advertenties (Google AdSense).",
   "consent.accept": "Accepteren",
   "consent.reject": "Weigeren",
   "ads.label": "Advertentie",
