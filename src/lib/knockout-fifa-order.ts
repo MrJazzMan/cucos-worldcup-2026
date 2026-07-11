@@ -1,5 +1,5 @@
 import type { KnockoutRoundColumn, KnockoutSlotPreview } from "@/lib/knockout-bracket";
-import { getMatchWinnerSide } from "@/lib/match-result";
+import { getWinnerTeamId } from "@/lib/match-result";
 import { syntheticFixtureId } from "@/lib/feeder-teams";
 import type { Match } from "@/types";
 
@@ -35,10 +35,29 @@ export const KNOCKOUT_FEEDERS: Partial<Record<number, readonly [number, number]>
 };
 
 function winnerTeamId(match: Match): number | null {
-  const side = getMatchWinnerSide(match);
-  if (side == null) return null;
-  return side === "home" ? match.home_team_id : match.away_team_id;
+  return getWinnerTeamId(match);
 }
+
+/** O par de equipas coincide com os vencedores dos feeders FIFA deste jogo. */
+export function teamsMatchFifaFeeders(
+  match: Match,
+  fifaNumber: number,
+  getWinnerAtFifa: (fifa: number) => number | null
+): boolean {
+  const feeders = KNOCKOUT_FEEDERS[fifaNumber];
+  if (!feeders) return false;
+
+  const homeWinner = getWinnerAtFifa(feeders[0]);
+  const awayWinner = getWinnerAtFifa(feeders[1]);
+  if (homeWinner == null || awayWinner == null) return false;
+
+  const teams = new Set([match.home_team_id, match.away_team_id]);
+  return teams.has(homeWinner) && teams.has(awayWinner);
+}
+
+export type FifaOrderContext = {
+  getWinnerAtFifa: (fifa: number) => number | null;
+};
 
 function swapMatchHomeAway(match: Match): Match {
   return {
@@ -94,7 +113,12 @@ export function alignKnockoutColumns(
   const getMatchAtFifa = (fifa: number): Match | undefined => {
     const { key, index } = fifaSlotLocation(fifa);
     const col = cols.find((c) => c.key === key);
-    return col?.matches[index];
+    if (!col) return undefined;
+    return (
+      col.matches[index] ??
+      col.matches.find((m) => m?.fixture_id === syntheticFixtureId(fifa)) ??
+      resolveFifaSlotData(col, index).match
+    );
   };
 
   for (const key of ["r16", "qf", "sf"] as const) {
@@ -296,7 +320,8 @@ export function orderMatchesInFifaSlots(
   matches: Match[],
   previews: KnockoutSlotPreview[],
   slotCount: number,
-  fifaNumbers?: readonly number[]
+  fifaNumbers?: readonly number[],
+  context?: FifaOrderContext
 ): Match[] {
   const slots: (Match | undefined)[] = new Array(slotCount);
   const unmatched = [...matches];
@@ -306,6 +331,11 @@ export function orderMatchesInFifaSlots(
     let idx = unmatched.findIndex((m) => teamsMatchSlotLoose(m, previews[i]!));
     if (idx === -1 && fifa != null) {
       idx = unmatched.findIndex((m) => m.fixture_id === syntheticFixtureId(fifa));
+    }
+    if (idx === -1 && fifa != null && context) {
+      idx = unmatched.findIndex((m) =>
+        teamsMatchFifaFeeders(m, fifa, context.getWinnerAtFifa)
+      );
     }
     if (idx === -1) continue;
     slots[i] = unmatched[idx];

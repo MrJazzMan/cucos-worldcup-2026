@@ -1,8 +1,12 @@
 import {
   FIFA_MATCH_NUMBERS,
   alignKnockoutColumns,
+  fifaSlotLocation,
   orderMatchesInFifaSlots,
+  resolveFifaSlotData,
 } from "@/lib/knockout-fifa-order";
+import { syntheticFixtureId } from "@/lib/feeder-teams";
+import { getWinnerTeamId } from "@/lib/match-result";
 import {
   buildBracketContext,
   enrichSlotPreview,
@@ -190,7 +194,7 @@ export function buildKnockoutColumns(
   }
 
   return alignKnockoutColumns(
-    ROUND_DEFS.map((def) => {
+    ROUND_DEFS.reduce<KnockoutRoundColumn[]>((columns, def) => {
       const data = byKey.get(def.key);
       const previews = KNOCKOUT_SKELETON[def.key].map((p) =>
         enrichSlotPreview(
@@ -200,21 +204,39 @@ export function buildKnockoutColumns(
           def.key === "r32" ? thirdPlaceContext : null
         )
       );
+
+      const getWinnerAtFifa = (fifa: number): number | null => {
+        const { key, index } = fifaSlotLocation(fifa);
+        const priorCol = columns.find((c) => c.key === key);
+        if (!priorCol) return null;
+        const prior =
+          priorCol.matches[index] ??
+          priorCol.matches.find(
+            (m) => m?.fixture_id === syntheticFixtureId(fifa)
+          ) ??
+          resolveFifaSlotData(priorCol, index).match;
+        if (!prior) return null;
+        return getWinnerTeamId(prior);
+      };
+
       const matches = orderMatchesInFifaSlots(
         data?.matches ?? [],
         previews,
         def.slotCount,
-        FIFA_MATCH_NUMBERS[def.key]
+        FIFA_MATCH_NUMBERS[def.key],
+        def.key === "r32" ? undefined : { getWinnerAtFifa }
       );
 
-      return {
+      columns.push({
         key: def.key,
         round: data?.round ?? def.key,
         labelKey: def.labelKey,
         matches,
         slotCount: def.slotCount,
         previews,
-      };
-    })
+      });
+
+      return columns;
+    }, [])
   );
 }

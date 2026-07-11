@@ -224,3 +224,119 @@ test("alignKnockoutColumns: M97 casa = vencedor M89, fora = vencedor M90", () =>
   assert.equal(m97?.home_team_name, "France");
   assert.equal(m97?.away_team_name, "Morocco");
 });
+
+test("orderMatchesInFifaSlots: R16 por feeders FIFA, não por kickoff", () => {
+  const franceId = 3;
+  const moroccoId = 31;
+  const paraguayId = 2380;
+  const canadaId = 5529;
+  const netherlandsId = 111;
+  const swedenId = 222;
+
+  const columns = buildKnockoutColumns([
+    {
+      round: "Round of 32",
+      matches: [
+        makeMatch({
+          fixture_id: 900_000_073,
+          home_team_id: canadaId,
+          away_team_id: 999,
+          home_team_name: "Canada",
+          away_team_name: "South Africa",
+          home_score: 1,
+          away_score: 0,
+          status: "finished",
+          round: "Round of 32",
+        }),
+        makeMatch({
+          fixture_id: 900_000_074,
+          home_team_id: 888,
+          away_team_id: paraguayId,
+          home_team_name: "Germany",
+          away_team_name: "Paraguay",
+          home_score: 1,
+          away_score: 2,
+          status: "finished",
+          round: "Round of 32",
+        }),
+        makeMatch({
+          fixture_id: 900_000_075,
+          home_team_id: netherlandsId,
+          away_team_id: moroccoId,
+          home_team_name: "Netherlands",
+          away_team_name: "Morocco",
+          home_score: 1,
+          away_score: 1,
+          home_pen: 2,
+          away_pen: 3,
+          status: "finished",
+          round: "Round of 32",
+        }),
+        makeMatch({
+          fixture_id: 900_000_077,
+          home_team_id: franceId,
+          away_team_id: swedenId,
+          home_team_name: "France",
+          away_team_name: "Sweden",
+          home_score: 3,
+          away_score: 0,
+          status: "finished",
+          round: "Round of 32",
+        }),
+      ],
+    },
+    {
+      round: "Round of 16",
+      matches: [
+        makeMatch({
+          fixture_id: 1567824,
+          home_team_id: canadaId,
+          away_team_id: moroccoId,
+          home_team_name: "Canada",
+          away_team_name: "Morocco",
+          home_score: 0,
+          away_score: 3,
+          status: "finished",
+          kickoff_utc: "2026-07-04T17:00:00.000Z",
+          round: "Round of 16",
+        }),
+        makeMatch({
+          fixture_id: 1569870,
+          home_team_id: paraguayId,
+          away_team_id: franceId,
+          home_team_name: "Paraguay",
+          away_team_name: "France",
+          home_score: 0,
+          away_score: 1,
+          status: "finished",
+          kickoff_utc: "2026-07-04T21:00:00.000Z",
+          round: "Round of 16",
+        }),
+      ],
+    },
+    {
+      round: "Quarter-final",
+      matches: [
+        makeMatch({
+          fixture_id: 1578539,
+          home_team_id: franceId,
+          away_team_id: moroccoId,
+          home_team_name: "France",
+          away_team_name: "Morocco",
+          home_score: 2,
+          away_score: 0,
+          status: "finished",
+          round: "Quarter-final",
+        }),
+      ],
+    },
+  ]);
+
+  const r16 = columns.find((c) => c.key === "r16");
+  assert.equal(r16?.matches[0]?.fixture_id, 1569870);
+  assert.equal(r16?.matches[1]?.fixture_id, 1567824);
+
+  const qf = columns.find((c) => c.key === "qf");
+  assert.equal(qf?.matches[0]?.home_team_name, "France");
+  assert.equal(qf?.matches[0]?.away_team_name, "Morocco");
+});

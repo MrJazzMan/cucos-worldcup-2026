@@ -171,6 +171,8 @@ export function getMatchWinnerSide(
     | "home_team_id"
     | "away_team_id"
     | "goal_events"
+    | "home_pen"
+    | "away_pen"
   >
 ): MatchWinnerSide | null {
   if (match.status !== "finished") return null;
@@ -180,5 +182,32 @@ export function getMatchWinnerSide(
   if (home > away) return "home";
   if (away > home) return "away";
 
-  return getPenaltyShootoutResult(match)?.winner ?? null;
+  const fromEvents = getPenaltyShootoutResult(match)?.winner;
+  if (fromEvents) return fromEvents;
+
+  const homePen = match.home_pen ?? null;
+  const awayPen = match.away_pen ?? null;
+  if (homePen != null && awayPen != null && homePen !== awayPen) {
+    return homePen > awayPen ? "home" : "away";
+  }
+
+  return null;
+}
+
+export function getWinnerTeamId(
+  match: Pick<
+    Match,
+    | "status"
+    | "home_score"
+    | "away_score"
+    | "home_team_id"
+    | "away_team_id"
+    | "goal_events"
+    | "home_pen"
+    | "away_pen"
+  >
+): number | null {
+  const side = getMatchWinnerSide(match);
+  if (side == null) return null;
+  return side === "home" ? match.home_team_id : match.away_team_id;
 }

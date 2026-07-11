@@ -2,6 +2,7 @@
 
 import { TeamFlag } from "@/components/TeamFlag";
 import { isSyntheticFixture } from "@/lib/feeder-teams";
+import { getWinnerTeamId } from "@/lib/match-result";
 import { formatBracketSlotLabel } from "@/lib/knockout-slot-labels";
 import type { ResolvedSlotSide } from "@/lib/knockout-qualification";
 import type { BracketSlotData } from "@/lib/knockout-bracket-tree";
@@ -110,23 +111,13 @@ type BracketRadialMatchProps = {
 export function winnerFromMatch(data: BracketSlotData) {
   const match = data.match;
   if (!match || match.status !== "finished") return null;
-  const home = match.home_score ?? 0;
-  const away = match.away_score ?? 0;
 
-  let homeWon: boolean;
-  if (home !== away) {
-    homeWon = home > away;
-  } else {
-    const homePen = match.home_pen ?? null;
-    const awayPen = match.away_pen ?? null;
-    if (homePen == null || awayPen == null || homePen === awayPen) return null;
-    homeWon = homePen > awayPen;
-  }
+  const teamId = getWinnerTeamId(match);
+  if (teamId == null || isSyntheticFixture(teamId)) return null;
 
-  const teamId = homeWon ? match.home_team_id : match.away_team_id;
-  if (isSyntheticFixture(teamId)) return null;
+  const side = match.home_team_id === teamId ? "home" : "away";
   return {
-    name: homeWon ? match.home_team_name : match.away_team_name,
+    name: side === "home" ? match.home_team_name : match.away_team_name,
     id: teamId,
   };
 }
