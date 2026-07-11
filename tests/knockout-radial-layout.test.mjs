@@ -10,6 +10,7 @@ import {
   pathToRoot,
   RADIAL_CENTER,
   RADIAL_R_TEAMS,
+  RADIAL_R_THIRD,
   RIGHT_HALF,
   teamSideForSlotId,
   TEAM_ORDER,
@@ -58,6 +59,16 @@ test("radial wheel: final no centro", () => {
   assert.ok(final);
   assert.ok(Math.abs(final.x - RADIAL_CENTER) < 1);
   assert.ok(Math.abs(final.y - RADIAL_CENTER) < 1);
+});
+
+test("radial wheel: 3.º lugar em baixo ao centro (sem arestas)", () => {
+  const third = layout.thirdPlace;
+  assert.ok(Math.abs(third.x - RADIAL_CENTER) < 1);
+  assert.ok(Math.abs(third.y - (RADIAL_CENTER + RADIAL_R_THIRD)) < 1);
+  assert.equal(
+    layout.edges.some((e) => e.from === "M103" || e.to === "M103"),
+    false
+  );
 });
 
 test("radial wheel: topologia M89 <- M74, M77", () => {

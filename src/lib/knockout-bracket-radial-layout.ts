@@ -494,7 +494,7 @@ export function buildRadialBracketLayout(
   }
 
   const center = getCenterSlots(columns, preview);
-  const thirdPos = polar(180, RADIAL_R_THIRD);
+  const thirdPos = polar(RADIAL_R_THIRD, 180);
   const thirdPlace: RadialLayoutNode = {
     id: "M103",
     round: "F",
