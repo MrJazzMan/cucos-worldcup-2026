@@ -4,19 +4,13 @@ import { applySecurityHeaders } from "@/lib/security-headers";
 import { canonicalPathForRequest, canonicalUrl } from "@/lib/site-metadata";
 import { checkRateLimit } from "@/lib/rate-limit";
 
-// User-agents de scrapers / AI crawlers conhecidos
+// Scrapers agressivos — bloqueados no middleware (alinhado com robots.txt).
+// Crawlers de IA (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) são permitidos.
 const BLOCKED_UA_PATTERNS = [
-  /GPTBot/i,
-  /ChatGPT-User/i,
-  /Claude-Web/i,
-  /ClaudeBot/i,
-  /anthropic-ai/i,
-  /Google-Extended/i,
   /CCBot/i,
   /Diffbot/i,
   /Bytespider/i,
   /PetalBot/i,
-  /PerplexityBot/i,
   /YouBot/i,
   /cohere-ai/i,
   /Amazonbot/i,
