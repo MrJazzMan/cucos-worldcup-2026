@@ -239,8 +239,8 @@ Nunca commitar ficheiros com chaves.
 
 O site é público (necessário para SEO), por isso nenhuma defesa é à prova de bala — são dissuasores em camadas:
 
-1. **`robots.txt`** — pede a bots de IA (GPTBot, ClaudeBot, etc.) para não indexarem. Só os bots honestos respeitam.
-2. **Middleware — bloqueio por User-Agent** (`src/middleware.ts`) — devolve `403` a bots/ferramentas conhecidos (`scrapy`, `python-requests`, `curl`, `wget`…). Apanha quem se identifica honestamente.
+1. **`robots.txt`** — permite crawlers de IA (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) nas páginas públicas; bloqueia scrapers agressivos e rotas `/api/`, `/admin/`, `/auth/`.
+2. **Middleware — bloqueio por User-Agent** (`src/middleware.ts`) — devolve `403` a scrapers conhecidos (`scrapy`, `python-requests`, `curl`, `wget`…). Crawlers de IA **não** são bloqueados.
 3. **Middleware — rate limiting por IP** (`src/lib/rate-limit.ts`) — limita cada IP a `RATE_LIMIT_PER_MIN` (default **60/min**) nas rotas públicas; devolve `429`. Trava cópia em massa mesmo por scrapers com UA disfarçado de browser. Isenta `/api/`, `/feed/`, `/calendar/`.
 4. **(Manual)** Vercel Firewall / bot protection no painel — filtra por comportamento/IP.
 

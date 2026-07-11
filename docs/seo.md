@@ -8,7 +8,7 @@ Checklist para melhorar visibilidade no Google. **Estado base já feito em 0.2.0
 
 - [x] Homepage **pública** — jogos no HTML (SSR) sem login
 - [x] Canais TV **fora do HTML** para anónimos (não diluem SEO)
-- [x] `robots.txt` — permite crawlers normais; bloqueia bots de IA
+- [x] `robots.txt` — permite crawlers normais e de IA (GPTBot, ClaudeBot, PerplexityBot); bloqueia scrapers agressivos
 - [x] `sitemap.xml` — `/`, `/grupos`, `/privacidade`
 - [x] Meta title/description em `layout.tsx`
 - [x] `/privacidade` indexável (sem login)
