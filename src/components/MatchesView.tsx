@@ -24,6 +24,7 @@ import type { Match, TeamOption } from "@/types";
 type DayMatch = Match & { isFavourite?: boolean };
 
 const LIVE_REFRESH_MS = 30_000;
+const IDLE_REFRESH_MS = 90_000;
 
 export function MatchesView({
   matches,
@@ -90,6 +91,15 @@ export function MatchesView({
     [listMatches]
   );
 
+  const needsScoreRefresh = useMemo(() => {
+    const staleCutoffMs = Date.now() - 2 * 60 * 60 * 1000;
+    return listMatches.some((m) => {
+      if (m.status === "live") return true;
+      if (m.status !== "upcoming") return false;
+      return new Date(m.kickoff_utc).getTime() < staleCutoffMs;
+    });
+  }, [listMatches]);
+
   const teamHeading = useMemo(() => {
     if (!isTeamSearch) return null;
     const team = teams.find((entry) => entry.team_id === selectedTeamId);
@@ -135,10 +145,11 @@ export function MatchesView({
   ]);
 
   useEffect(() => {
-    if (!mounted || !hasLiveNow) return;
-    const id = setInterval(() => router.refresh(), LIVE_REFRESH_MS);
+    if (!mounted || (!hasLiveNow && !needsScoreRefresh)) return;
+    const refreshMs = hasLiveNow ? LIVE_REFRESH_MS : IDLE_REFRESH_MS;
+    const id = setInterval(() => router.refresh(), refreshMs);
     return () => clearInterval(id);
-  }, [mounted, hasLiveNow, router]);
+  }, [mounted, hasLiveNow, needsScoreRefresh, router]);
 
   if (!mounted) {
     return <HomePageSkeleton />;

@@ -69,18 +69,32 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       const yesterday = new Date(today);
       yesterday.setUTCDate(today.getUTCDate() - 1);
 
-      const [live, dayNow, dayPrev, staleLiveRows] = await Promise.all([
-        fetchLiveFixtures(),
-        fetchFixturesByDate(today.toISOString().slice(0, 10)),
-        fetchFixturesByDate(yesterday.toISOString().slice(0, 10)),
-        admin.from("matches").select("fixture_id").eq("status", "live"),
-      ]);
+      const staleCutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
-      const staleLiveIds = (staleLiveRows.data ?? []).map((m) => m.fixture_id);
+      const [live, dayNow, dayPrev, staleLiveRows, staleUpcomingRows] =
+        await Promise.all([
+          fetchLiveFixtures(),
+          fetchFixturesByDate(today.toISOString().slice(0, 10)),
+          fetchFixturesByDate(yesterday.toISOString().slice(0, 10)),
+          admin.from("matches").select("fixture_id").eq("status", "live"),
+          admin
+            .from("matches")
+            .select("fixture_id")
+            .eq("status", "upcoming")
+            .lt("kickoff_utc", staleCutoff),
+        ]);
+
+      const staleFixtureIds = [
+        ...(staleLiveRows.data ?? []).map((m) => m.fixture_id),
+        ...(staleUpcomingRows.data ?? []).map((m) => m.fixture_id),
+      ];
+      const uniqueStaleIds = [...new Set(staleFixtureIds)];
       const staleFixtures =
-        staleLiveIds.length > 0 ? await fetchFixturesByIds(staleLiveIds) : [];
+        uniqueStaleIds.length > 0
+          ? await fetchFixturesByIds(uniqueStaleIds)
+          : [];
 
-      // Live + hoje/ontem + jogos ainda marcados live na BD (apanha FT que saiu do feed).
+      // Live + hoje/ontem + jogos presos em live/upcoming na BD (apanha FT que saiu do feed).
       const dedup = new Map<number, (typeof live)[number]>();
       [...live, ...dayNow, ...dayPrev, ...staleFixtures].forEach((f) =>
         dedup.set(f.fixture.id, f)
