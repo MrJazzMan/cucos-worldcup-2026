@@ -51,6 +51,47 @@ async function purgeNonWorldCupMatches(
   }
 }
 
+async function protectFinishedFromDowngrade(
+  admin: ReturnType<typeof createSupabaseAdmin>,
+  rows: ReturnType<typeof mapFixtureToMatch>[]
+): Promise<ReturnType<typeof mapFixtureToMatch>[]> {
+  if (!rows.length) return rows;
+
+  const ids = rows.map((r) => r.fixture_id);
+  const { data: existing } = await admin
+    .from("matches")
+    .select(
+      "fixture_id, status, home_score, away_score, home_pen, away_pen, minute, finished_utc"
+    )
+    .in("fixture_id", ids)
+    .eq("status", "finished");
+
+  if (!existing?.length) return rows;
+
+  const finishedById = new Map(
+    existing.map((row) => [row.fixture_id as number, row])
+  );
+
+  return rows.map((row) => {
+    const prev = finishedById.get(row.fixture_id);
+    if (!prev) return row;
+    // A API por vezes volta a reportar NS/TBD — nunca apagar um FT conhecido.
+    if (row.status === "upcoming" || row.status === "live") {
+      return {
+        ...row,
+        status: "finished" as const,
+        home_score: prev.home_score ?? row.home_score,
+        away_score: prev.away_score ?? row.away_score,
+        home_pen: prev.home_pen ?? row.home_pen ?? null,
+        away_pen: prev.away_pen ?? row.away_pen ?? null,
+        minute: prev.minute ?? row.minute,
+        finished_utc: prev.finished_utc ?? row.finished_utc ?? null,
+      };
+    }
+    return row;
+  });
+}
+
 export async function syncMatches(mode: "full" | "live" = "full") {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return { synced: MOCK_MATCHES.length, source: "mock-no-supabase" };
@@ -113,7 +154,12 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       return { synced: MOCK_MATCHES.length, source: "mock-fallback" };
     }
 
-    const rows = fixtures.map(mapFixtureToMatch);
+    if (!fixtures.length && mode === "live") {
+      return { synced: 0, source: "api-football-empty" };
+    }
+
+    const mapped = fixtures.map(mapFixtureToMatch);
+    const rows = await protectFinishedFromDowngrade(admin, mapped);
     let { error } = await admin.from("matches").upsert(rows, {
       onConflict: "fixture_id",
     });
@@ -155,8 +201,8 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       console.warn("Standings sync failed:", err);
     }
 
+    await purgeMockMatches(admin);
     if (mode === "full") {
-      await purgeMockMatches(admin);
       await purgeNonWorldCupMatches(admin);
     }
 
@@ -171,6 +217,14 @@ export async function syncMatches(mode: "full" | "live" = "full") {
     };
   } catch (err) {
     console.error("Sync error:", err);
+    // Live nunca semeia mocks — evita poluir o calendário do Mundial.
+    if (mode === "live") {
+      return {
+        synced: 0,
+        source: "api-error",
+        error: serializeSyncError(err),
+      };
+    }
     await seedMockMatches(admin);
     return {
       synced: MOCK_MATCHES.length,
