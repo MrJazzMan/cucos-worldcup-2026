@@ -342,14 +342,32 @@ function findRealMatchForSlot(
   const bestByFeeders = pickBestMatch(byFeeders);
   if (bestByFeeders) return bestByFeeders;
 
+  const expectedHome = resolveFeederSide(
+    slot.homeFeeder,
+    slot.homeFeederKind ?? "winner",
+    byFifa
+  );
+  const expectedAway = resolveFeederSide(
+    slot.awayFeeder,
+    slot.awayFeederKind ?? "winner",
+    byFifa
+  );
+  const feedersResolved =
+    !isSyntheticFixture(expectedHome.team_id) &&
+    !isSyntheticFixture(expectedAway.team_id);
+
+  // Quando os dois feeders já estão resolvidos, nunca associar apenas pela
+  // hora: foi assim que França–Cabo Verde ocupou indevidamente o slot M101.
+  if (feedersResolved) return undefined;
+
   const slotRound = knockoutRoundKey(slot.round);
   const slotKick = new Date(slot.kickoff_utc).getTime();
-  // ±12h — a API por vezes desvia horários em relação ao calendário FIFA.
+  // Fallback apenas enquanto os feeders ainda não estão resolvidos.
   const byKickoff = realCandidates.filter((m) => {
     if (knockoutRoundKey(m.round) !== slotRound) return false;
     return (
       Math.abs(new Date(m.kickoff_utc).getTime() - slotKick) <=
-      12 * 60 * 60 * 1000
+      3 * 60 * 60 * 1000
     );
   });
   return pickBestMatch(byKickoff);
@@ -424,6 +442,31 @@ function dropCoveredSynthetics(matches: Match[]): Match[] {
   return filtered.length === matches.length ? matches : filtered;
 }
 
+/**
+ * A API pode devolver jogos extra com nomes de ronda eliminatória. Mantém
+ * apenas o único fixture que cobre cada slot oficial M89–M104.
+ */
+function dropUnmappedOfficialRoundMatches(matches: Match[]): Match[] {
+  const byFifa = rebuildFifaMap(matches);
+  const officialFixtureIds = new Set(
+    [...byFifa.entries()]
+      .filter(([fifa]) => fifa >= 89 && fifa <= 104)
+      .map(([, match]) => match.fixture_id)
+  );
+  // O problema observado é em fases com poucos slots e feeders já resolvidos.
+  // R16/QF podem chegar parcialmente e com ordenação diferente da API; não
+  // remover esses jogos aqui.
+  const officialRoundKeys = new Set(["sf", "third", "final"]);
+
+  const filtered = matches.filter((match) => {
+    const roundKey = knockoutRoundKey(match.round);
+    if (!roundKey || !officialRoundKeys.has(roundKey)) return true;
+    return officialFixtureIds.has(match.fixture_id);
+  });
+
+  return filtered.length === matches.length ? matches : filtered;
+}
+
 function mergeOfficialRound(
   matches: Match[],
   slots: ScheduledKnockout[],
@@ -493,6 +536,7 @@ export function appendScheduledKnockoutMatches(matches: Match[]): Match[] {
   result = mergeOfficialRound(result, OFFICIAL_THIRD, 2);
   result = mergeOfficialRound(result, OFFICIAL_FINAL, 2);
   result = dropCoveredSynthetics(result);
+  result = dropUnmappedOfficialRoundMatches(result);
 
   if (result === matches) return matches;
 

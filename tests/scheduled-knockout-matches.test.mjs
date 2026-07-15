@@ -101,11 +101,8 @@ test("appendScheduledKnockoutMatches não pára quando já há R16 reais", () =>
   assert.ok(all.some((m) => m.fixture_id === syntheticFixtureId(103)));
   assert.ok(all.some((m) => m.fixture_id === syntheticFixtureId(104)));
   assert.ok(all.some((m) => m.fixture_id === 555001));
-  // Fixture real no slot M89: não deve permanecer sintético duplicado.
-  assert.equal(
-    all.some((m) => m.fixture_id === syntheticFixtureId(89)),
-    false
-  );
+  // Este fixture de teste não tem feeders R32 alinhados; pode coexistir com
+  // o M89 sintético, mas não pode impedir a criação das rondas seguintes.
 });
 
 test("prefers finished real SF over synthetic with same teams", () => {
@@ -191,11 +188,23 @@ test("prefers finished real SF over synthetic with same teams", () => {
     kickoff_utc: "2026-07-14T19:00:00.000Z",
   });
 
+  const unrelatedSf = match({
+    fixture_id: 101999,
+    home_team_id: 100,
+    home_team_name: "France",
+    away_team_id: 999,
+    away_team_name: "Cape Verde",
+    status: "upcoming",
+    round: "Semi-finals",
+    kickoff_utc: "2026-07-15T20:00:00.000Z",
+  });
+
   const all = appendScheduledKnockoutMatches([
     ...r32,
     ...qfFinished,
     finishedSf,
     syntheticSf,
+    unrelatedSf,
   ]);
 
   assert.equal(
@@ -206,6 +215,11 @@ test("prefers finished real SF over synthetic with same teams", () => {
   assert.ok(sf);
   assert.equal(sf.status, "finished");
   assert.equal(sf.away_score, 2);
+  assert.equal(
+    all.some((m) => m.fixture_id === unrelatedSf.fixture_id),
+    false,
+    "an unrelated France–Cape Verde fixture must not occupy an official SF slot"
+  );
 
   const third = all.find((m) => m.fixture_id === syntheticFixtureId(103));
   assert.ok(third);
