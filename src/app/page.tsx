@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { MatchesView } from "@/components/MatchesView";
 import {
   getAllMatches,
@@ -7,6 +8,10 @@ import {
 } from "@/lib/matches";
 import { getMockMatchesForDate } from "@/lib/mock-data";
 import { pageMetadata } from "@/lib/site-metadata";
+import {
+  matchesNeedScoreRefresh,
+  maybeSyncStaleMatchScores,
+} from "@/lib/stale-score-refresh";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getDateForOffset } from "@/lib/timezone";
@@ -40,6 +45,9 @@ function mockWindow(
 }
 
 export default async function HomePage() {
+  // Pedido a pedido — permite sync live de resultados atrasados (FT da meia, etc.).
+  await connection();
+
   const supabase = await createSupabaseServer();
   let loggedIn = false;
   if (supabase) {
@@ -65,10 +73,19 @@ export default async function HomePage() {
   const favouriteIds = loggedIn
     ? await getUserFavouriteTeamIds().catch(() => [] as number[])
     : [];
-  const [matches, teams] = await Promise.all([
-    loadAllMatches(favouriteIds),
-    getAllTeams().catch(() => [] as Awaited<ReturnType<typeof getAllTeams>>),
-  ]);
+  const teams = await getAllTeams().catch(
+    () => [] as Awaited<ReturnType<typeof getAllTeams>>
+  );
+  let matches = await loadAllMatches(favouriteIds);
+
+  // Recupera FT/live quando o QStash/cron falhou — um visitante desencadeia
+  // o sync (com cooldown) e a página re-lê a BD antes de renderizar.
+  if (matchesNeedScoreRefresh(matches)) {
+    const refresh = await maybeSyncStaleMatchScores(matches);
+    if (refresh.attempted && refresh.reason !== "error") {
+      matches = await loadAllMatches(favouriteIds);
+    }
+  }
 
   return (
     <MatchesView
@@ -85,5 +102,3 @@ export const metadata: Metadata = pageMetadata({
     "Vê que jogos do Mundial FIFA 2026 há hoje, a que horas em Portugal e em que canal de TV. Resultados ao vivo, grupos e fase final num só sítio.",
   path: "/",
 });
-
-export const revalidate = 60;
