@@ -101,10 +101,113 @@ test("appendScheduledKnockoutMatches não pára quando já há R16 reais", () =>
   assert.ok(all.some((m) => m.fixture_id === syntheticFixtureId(103)));
   assert.ok(all.some((m) => m.fixture_id === syntheticFixtureId(104)));
   assert.ok(all.some((m) => m.fixture_id === 555001));
-  // Prefere o fixture real do M89; se o mapa R32 não alinhar feeders,
-  // o sintético pode coexistir — o importante é haver final/3.º lugar.
-  const m89Synthetic = all.find((m) => m.fixture_id === syntheticFixtureId(89));
-  if (m89Synthetic) {
-    assert.equal(m89Synthetic.status, "upcoming");
-  }
+  // Fixture real no slot M89: não deve permanecer sintético duplicado.
+  assert.equal(
+    all.some((m) => m.fixture_id === syntheticFixtureId(89)),
+    false
+  );
+});
+
+test("prefers finished real SF over synthetic with same teams", () => {
+  const r32 = Array.from({ length: 16 }, (_, i) =>
+    finishedR32(73 + i, 100 + i * 2, `H${73 + i}`, 101 + i * 2, `A${73 + i}`)
+  );
+
+  // QF feeders so SF teams resolve
+  const qfFinished = [
+    match({
+      fixture_id: 97001,
+      home_team_id: 100,
+      home_team_name: "France",
+      away_team_id: 102,
+      away_team_name: "X",
+      home_score: 1,
+      away_score: 0,
+      status: "finished",
+      round: "Quarter-finals",
+      kickoff_utc: "2026-07-09T20:00:00.000Z",
+    }),
+    match({
+      fixture_id: 98001,
+      home_team_id: 104,
+      home_team_name: "Spain",
+      away_team_id: 106,
+      away_team_name: "Y",
+      home_score: 2,
+      away_score: 0,
+      status: "finished",
+      round: "Quarter-finals",
+      kickoff_utc: "2026-07-10T19:00:00.000Z",
+    }),
+    match({
+      fixture_id: 99001,
+      home_team_id: 108,
+      home_team_name: "England",
+      away_team_id: 110,
+      away_team_name: "Z",
+      home_score: 1,
+      away_score: 0,
+      status: "finished",
+      round: "Quarter-finals",
+      kickoff_utc: "2026-07-11T21:00:00.000Z",
+    }),
+    match({
+      fixture_id: 100001,
+      home_team_id: 112,
+      home_team_name: "Argentina",
+      away_team_id: 114,
+      away_team_name: "W",
+      home_score: 3,
+      away_score: 1,
+      status: "finished",
+      round: "Quarter-finals",
+      kickoff_utc: "2026-07-12T01:00:00.000Z",
+    }),
+  ];
+
+  const finishedSf = match({
+    fixture_id: 101001,
+    home_team_id: 100,
+    home_team_name: "France",
+    away_team_id: 104,
+    away_team_name: "Spain",
+    home_score: 0,
+    away_score: 2,
+    status: "finished",
+    round: "Semi-finals",
+    kickoff_utc: "2026-07-14T19:00:00.000Z",
+  });
+
+  const syntheticSf = match({
+    fixture_id: syntheticFixtureId(101),
+    home_team_id: 100,
+    home_team_name: "France",
+    away_team_id: 104,
+    away_team_name: "Spain",
+    home_score: null,
+    away_score: null,
+    status: "upcoming",
+    round: "Semi-finals",
+    kickoff_utc: "2026-07-14T19:00:00.000Z",
+  });
+
+  const all = appendScheduledKnockoutMatches([
+    ...r32,
+    ...qfFinished,
+    finishedSf,
+    syntheticSf,
+  ]);
+
+  assert.equal(
+    all.some((m) => m.fixture_id === syntheticFixtureId(101)),
+    false
+  );
+  const sf = all.find((m) => m.fixture_id === 101001);
+  assert.ok(sf);
+  assert.equal(sf.status, "finished");
+  assert.equal(sf.away_score, 2);
+
+  const third = all.find((m) => m.fixture_id === syntheticFixtureId(103));
+  assert.ok(third);
+  assert.equal(third.home_team_name, "France");
 });

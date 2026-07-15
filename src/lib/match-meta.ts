@@ -1,5 +1,7 @@
 import { getMatchPhase, type MatchPhase } from "@/lib/portugal-upcoming";
 import { formatVenueShort } from "@/lib/venues";
+import { buildFifaNumberByFixtureId } from "@/lib/scheduled-knockout-matches";
+import { isSyntheticFixture } from "@/lib/feeder-teams";
 import type { Match } from "@/types";
 
 export function localizeMatchPhase(
@@ -35,18 +37,48 @@ export function formatMatchPhaseLabel(
   return localizeMatchPhase(phase, t);
 }
 
-/** Número FIFA do jogo (1…N) por ordem de kickoff no torneio. */
+/**
+ * Número do jogo no rodapé.
+ * Eliminatórias alinhadas ao calendário FIFA usam 73–104; o resto é
+ * sequencial por kickoff (sem colidir com números FIFA já atribuídos).
+ */
 export function buildMatchNumberMap(
-  matches: Pick<Match, "fixture_id" | "kickoff_utc">[]
+  matches: Pick<
+    Match,
+    "fixture_id" | "kickoff_utc" | "round" | "group_name" | "status"
+  >[]
 ): Map<number, number> {
-  const sorted = [...matches].sort(
-    (a, b) =>
-      new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime()
-  );
-  const map = new Map<number, number>();
-  for (let i = 0; i < sorted.length; i++) {
-    map.set(sorted[i]!.fixture_id, i + 1);
+  const full = matches as Match[];
+  const fifaMap = buildFifaNumberByFixtureId(full);
+  const map = new Map<number, number>(fifaMap);
+  const used = new Set(map.values());
+
+  const remaining = matches
+    .filter((m) => !map.has(m.fixture_id))
+    .sort(
+      (a, b) =>
+        new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime()
+    );
+
+  let n = 1;
+  for (const match of remaining) {
+    while (used.has(n) || (n >= 73 && n <= 104)) {
+      n += 1;
+    }
+    // Sintéticos sem slot mapeado: extrair do id.
+    if (isSyntheticFixture(match.fixture_id)) {
+      const fifa = match.fixture_id - 900_000_000;
+      if (!used.has(fifa)) {
+        map.set(match.fixture_id, fifa);
+        used.add(fifa);
+        continue;
+      }
+    }
+    map.set(match.fixture_id, n);
+    used.add(n);
+    n += 1;
   }
+
   return map;
 }
 

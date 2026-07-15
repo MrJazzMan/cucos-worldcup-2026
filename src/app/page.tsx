@@ -82,7 +82,7 @@ export default async function HomePage() {
   // o sync (com cooldown) e a página re-lê a BD antes de renderizar.
   if (matchesNeedScoreRefresh(matches)) {
     const refresh = await maybeSyncStaleMatchScores(matches);
-    if (refresh.attempted && refresh.reason !== "error") {
+    if (refresh.attempted && refresh.reason === "api-football") {
       matches = await loadAllMatches(favouriteIds);
     }
   }

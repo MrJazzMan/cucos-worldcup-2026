@@ -53,7 +53,7 @@ export default async function FaseFinalPage() {
       ...preliminaryKnockout,
       ...allMatches,
     ]);
-    if (refresh.attempted && refresh.reason !== "error") {
+    if (refresh.attempted && refresh.reason === "api-football") {
       [rounds, standings, allMatches] = await Promise.all([
         getKnockoutRounds(),
         getGroupStandings(),

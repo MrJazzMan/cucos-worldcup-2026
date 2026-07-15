@@ -1,6 +1,7 @@
 import {
   feederPlaceholderName,
   isSyntheticFixture,
+  SYNTHETIC_FIXTURE_BASE,
   syntheticFixtureId,
 } from "@/lib/feeder-teams";
 import { buildKnockoutColumns, knockoutRoundKey } from "@/lib/knockout-bracket";
@@ -288,6 +289,26 @@ function getWinnerLookup(
   };
 }
 
+function statusRank(match: Match): number {
+  if (match.status === "finished") return 3;
+  if (match.status === "live") return 2;
+  return 1;
+}
+
+/** Preferir FT > live > upcoming quando há vários candidatos para o mesmo slot. */
+function preferRicherMatch(a: Match, b: Match): Match {
+  const rankDiff = statusRank(a) - statusRank(b);
+  if (rankDiff !== 0) return rankDiff > 0 ? a : b;
+  const aScores = (a.home_score ?? -1) + (a.away_score ?? -1);
+  const bScores = (b.home_score ?? -1) + (b.away_score ?? -1);
+  return aScores >= bScores ? a : b;
+}
+
+function pickBestMatch(candidates: Match[]): Match | undefined {
+  if (!candidates.length) return undefined;
+  return candidates.reduce((best, cur) => preferRicherMatch(best, cur));
+}
+
 function findRealMatchForSlot(
   slot: ScheduledKnockout,
   matches: Match[],
@@ -298,7 +319,7 @@ function findRealMatchForSlot(
     (m) => !isSyntheticFixture(m.fixture_id) && m.fixture_id !== syntheticId
   );
 
-  const byFeeders = realCandidates.find((m) => {
+  const byFeeders = realCandidates.filter((m) => {
     if (slot.homeFeederKind === "loser" || slot.awayFeederKind === "loser") {
       const home = resolveFeederSide(
         slot.homeFeeder,
@@ -318,14 +339,20 @@ function findRealMatchForSlot(
     }
     return teamsMatchFifaFeeders(m, slot.fifa, getWinnerLookup(byFifa));
   });
-  if (byFeeders) return byFeeders;
+  const bestByFeeders = pickBestMatch(byFeeders);
+  if (bestByFeeders) return bestByFeeders;
 
   const slotRound = knockoutRoundKey(slot.round);
   const slotKick = new Date(slot.kickoff_utc).getTime();
-  return realCandidates.find((m) => {
+  // ±12h — a API por vezes desvia horários em relação ao calendário FIFA.
+  const byKickoff = realCandidates.filter((m) => {
     if (knockoutRoundKey(m.round) !== slotRound) return false;
-    return Math.abs(new Date(m.kickoff_utc).getTime() - slotKick) <= 3 * 60 * 60 * 1000;
+    return (
+      Math.abs(new Date(m.kickoff_utc).getTime() - slotKick) <=
+      12 * 60 * 60 * 1000
+    );
   });
+  return pickBestMatch(byKickoff);
 }
 
 function findMatchCoveringFifa(
@@ -348,32 +375,53 @@ function findMatchCoveringFifa(
   return byFifa.get(fifa);
 }
 
-function rebuildFifaMap(matches: Match[]): Map<number, Match> {
-  const map = buildFifaR32Map(matches);
-
-  const allOfficial = [
+function allOfficialSlots(): ScheduledKnockout[] {
+  return [
     ...OFFICIAL_R16,
     ...OFFICIAL_QF,
     ...OFFICIAL_SF,
     ...OFFICIAL_THIRD,
     ...OFFICIAL_FINAL,
   ];
+}
 
-  for (const slot of allOfficial) {
+function rebuildFifaMap(matches: Match[]): Map<number, Match> {
+  const map = buildFifaR32Map(matches);
+
+  for (const slot of allOfficialSlots()) {
+    // Sempre preferir fixture real da API; sintético só como fallback.
+    const real = findRealMatchForSlot(slot, matches, map);
+    if (real) {
+      map.set(slot.fifa, real);
+      continue;
+    }
+
     const syntheticId = syntheticFixtureId(slot.fifa);
     const byId = matches.find((m) => m.fixture_id === syntheticId);
     if (byId) {
       map.set(slot.fifa, byId);
-      continue;
-    }
-
-    const real = findRealMatchForSlot(slot, matches, map);
-    if (real) {
-      map.set(slot.fifa, real);
     }
   }
 
   return map;
+}
+
+/** Remove sintéticos cujo slot FIFA já tem fixture real. */
+function dropCoveredSynthetics(matches: Match[]): Match[] {
+  const byFifa = rebuildFifaMap(matches);
+  const coveredSyntheticIds = new Set<number>();
+
+  for (const slot of allOfficialSlots()) {
+    const mapped = byFifa.get(slot.fifa);
+    if (!mapped || isSyntheticFixture(mapped.fixture_id)) continue;
+    coveredSyntheticIds.add(syntheticFixtureId(slot.fifa));
+  }
+
+  if (!coveredSyntheticIds.size) return matches;
+  const filtered = matches.filter(
+    (m) => !coveredSyntheticIds.has(m.fixture_id)
+  );
+  return filtered.length === matches.length ? matches : filtered;
 }
 
 function mergeOfficialRound(
@@ -444,6 +492,7 @@ export function appendScheduledKnockoutMatches(matches: Match[]): Match[] {
   result = mergeOfficialRound(result, OFFICIAL_SF, 4);
   result = mergeOfficialRound(result, OFFICIAL_THIRD, 2);
   result = mergeOfficialRound(result, OFFICIAL_FINAL, 2);
+  result = dropCoveredSynthetics(result);
 
   if (result === matches) return matches;
 
@@ -451,4 +500,33 @@ export function appendScheduledKnockoutMatches(matches: Match[]): Match[] {
     (a, b) =>
       new Date(a.kickoff_utc).getTime() - new Date(b.kickoff_utc).getTime()
   );
+}
+
+/**
+ * Mapa fixture_id → número FIFA (73–104) para eliminatórias alinhadas.
+ * Usado no rodapé «Jogo N» em vez da ordem sequencial global.
+ */
+export function buildFifaNumberByFixtureId(
+  matches: Match[]
+): Map<number, number> {
+  const byFifa = rebuildFifaMap(matches);
+  const map = new Map<number, number>();
+
+  for (const [fifa, match] of byFifa) {
+    if (fifa >= 73) {
+      map.set(match.fixture_id, fifa);
+    }
+  }
+
+  for (const match of matches) {
+    if (!isSyntheticFixture(match.fixture_id) || map.has(match.fixture_id)) {
+      continue;
+    }
+    map.set(
+      match.fixture_id,
+      match.fixture_id - SYNTHETIC_FIXTURE_BASE
+    );
+  }
+
+  return map;
 }
