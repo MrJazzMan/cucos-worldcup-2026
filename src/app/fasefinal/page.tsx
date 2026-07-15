@@ -76,4 +76,4 @@ export default async function FaseFinalPage() {
   );
 }
 
-export const revalidate = 300;
+export const revalidate = 60;

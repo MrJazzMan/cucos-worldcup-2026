@@ -15,7 +15,9 @@ export function isWorldCupRound(round: string | null | undefined): boolean {
     r.includes("quarter") ||
     r.includes("semi") ||
     r.includes("final") ||
-    r.includes("3rd")
+    r.includes("3rd") ||
+    r.includes("third") ||
+    r.includes("bronze")
   );
 }
 

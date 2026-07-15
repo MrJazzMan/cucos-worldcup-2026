@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { MatchDaySection } from "@/components/MatchDaySection";
 import { useSettings } from "@/components/SettingsProvider";
 import { buildMatchNumberMap } from "@/lib/match-meta";
@@ -13,12 +14,16 @@ interface KnockoutScheduleProps {
   loggedIn?: boolean;
 }
 
+const LIVE_REFRESH_MS = 30_000;
+const IDLE_REFRESH_MS = 90_000;
+
 export function KnockoutSchedule({
   matches,
   allMatches,
   loggedIn = false,
 }: KnockoutScheduleProps) {
-  const { t, tz } = useSettings();
+  const router = useRouter();
+  const { t, tz, mounted } = useSettings();
 
   const daySections = useMemo(
     () => groupMatchesByCalendarDay(matches, tz),
@@ -29,6 +34,27 @@ export function KnockoutSchedule({
     () => buildMatchNumberMap(allMatches.length > 0 ? allMatches : matches),
     [allMatches, matches]
   );
+
+  const hasLiveNow = useMemo(
+    () => matches.some((m) => m.status === "live"),
+    [matches]
+  );
+
+  const needsScoreRefresh = useMemo(() => {
+    const staleCutoffMs = Date.now() - 2 * 60 * 60 * 1000;
+    return matches.some((m) => {
+      if (m.status === "live") return true;
+      if (m.status !== "upcoming") return false;
+      return new Date(m.kickoff_utc).getTime() < staleCutoffMs;
+    });
+  }, [matches]);
+
+  useEffect(() => {
+    if (!mounted || (!hasLiveNow && !needsScoreRefresh)) return;
+    const refreshMs = hasLiveNow ? LIVE_REFRESH_MS : IDLE_REFRESH_MS;
+    const id = setInterval(() => router.refresh(), refreshMs);
+    return () => clearInterval(id);
+  }, [mounted, hasLiveNow, needsScoreRefresh, router]);
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 pt-2">

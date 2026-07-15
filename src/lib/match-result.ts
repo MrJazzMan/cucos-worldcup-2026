@@ -211,3 +211,22 @@ export function getWinnerTeamId(
   if (side == null) return null;
   return side === "home" ? match.home_team_id : match.away_team_id;
 }
+
+/** Perdedor do jogo terminado (inclui desempate por penáltis). */
+export function getLoserTeamId(
+  match: Pick<
+    Match,
+    | "status"
+    | "home_score"
+    | "away_score"
+    | "home_team_id"
+    | "away_team_id"
+    | "goal_events"
+    | "home_pen"
+    | "away_pen"
+  >
+): number | null {
+  const side = getMatchWinnerSide(match);
+  if (side == null) return null;
+  return side === "home" ? match.away_team_id : match.home_team_id;
+}
