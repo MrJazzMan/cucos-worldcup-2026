@@ -304,10 +304,21 @@ export function resolveFifaSlotData(
 
   const fifaNums = FIFA_MATCH_NUMBERS[column.key as FifaRoundKey];
   const fifa = fifaNums?.[fifaIndex];
+  const syntheticId = fifa != null ? syntheticFixtureId(fifa) : null;
+
+  // Preferir fixture real da API; sintéticos só como fallback.
   let match =
     fifa != null
-      ? column.matches.find((m) => m?.fixture_id === syntheticFixtureId(fifa))
+      ? column.matches.find(
+          (m) =>
+            m != null &&
+            m.fixture_id !== syntheticId &&
+            teamsMatchSlotLoose(m, preview)
+        )
       : undefined;
+  if (!match && syntheticId != null) {
+    match = column.matches.find((m) => m?.fixture_id === syntheticId);
+  }
   if (!match) match = atIndex;
   if (!match) {
     match = findMatchForFifaPreview(column.matches, preview);
