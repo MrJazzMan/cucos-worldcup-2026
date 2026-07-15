@@ -1,11 +1,14 @@
-# Sync ao vivo via Upstash QStash (ver docs/operacoes.md).
-# Este workflow foi desactivado — o QStash agenda sync por jogo.
-# Mantido só para testes manuais de emergência.
+# Backup de sync ao vivo fora do QStash.
+# No plano Hobby a Vercel só permite crons diários; este workflow cobre
+# resultados FT / jogos ao vivo a cada 10 minutos.
 
 name: Live sync
 
 on:
   workflow_dispatch:
+  schedule:
+    # A cada 10 minutos (UTC)
+    - cron: "*/10 * * * *"
 
 jobs:
   sync-live:

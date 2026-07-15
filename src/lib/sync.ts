@@ -5,6 +5,7 @@ import {
   fetchLiveFixtures,
   mapFixtureToMatch,
 } from "@/lib/api-football";
+import { isSyntheticFixture } from "@/lib/feeder-teams";
 import { syncGoalEventsForFixtures } from "@/lib/match-events";
 import { syncGroupStandings } from "@/lib/standings";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
@@ -69,7 +70,10 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       const yesterday = new Date(today);
       yesterday.setUTCDate(today.getUTCDate() - 1);
 
-      const staleCutoff = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+      // 30 min após o kickoff — cobre meias-finais/prolongamento sem esperar 2h.
+      const staleCutoff = new Date(
+        Date.now() - 30 * 60 * 1000
+      ).toISOString();
 
       const [live, dayNow, dayPrev, staleLiveRows, staleUpcomingRows] =
         await Promise.all([
@@ -87,7 +91,7 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       const staleFixtureIds = [
         ...(staleLiveRows.data ?? []).map((m) => m.fixture_id),
         ...(staleUpcomingRows.data ?? []).map((m) => m.fixture_id),
-      ];
+      ].filter((id) => !isSyntheticFixture(id));
       const uniqueStaleIds = [...new Set(staleFixtureIds)];
       const staleFixtures =
         uniqueStaleIds.length > 0

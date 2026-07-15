@@ -11,6 +11,14 @@
     {
       "path": "/api/sync-broadcasts?today=1",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/sync/live",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/sync/live",
+      "schedule": "0 23 * * *"
     }
   ]
 }
