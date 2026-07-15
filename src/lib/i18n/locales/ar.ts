@@ -61,6 +61,7 @@ export const ar: Dict = {
   "card.channelTBC": "القناة قيد التحديد",
   "card.matchNumber": "مباراة {n}",
   "card.feederWinner": "فائز المباراة {n}",
+  "card.feederLoser": "خاسر المباراة {n}",
   "card.channelsSignInLink": "سجّل الدخول",
   "card.channelsSignInHint": "عبر Google لرؤية قنوات البث",
   "card.favouriteAdd": "إضافة الفرق إلى المفضلة",

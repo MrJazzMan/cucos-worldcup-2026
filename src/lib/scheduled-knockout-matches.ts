@@ -12,7 +12,7 @@ import { getLoserTeamId, getWinnerTeamId } from "@/lib/match-result";
 import { formatMatchDate } from "@/lib/timezone";
 import type { Match } from "@/types";
 
-type FeederKind = "winner" | "loser";
+import type { FeederKind } from "@/lib/feeder-teams";
 
 type ScheduledKnockout = {
   fifa: number;
@@ -203,10 +203,13 @@ function knockoutOutcome(match: Match, kind: FeederKind): FeederSide | null {
   return teamFromMatchSide(match, teamId);
 }
 
-function placeholderSide(fifaMatchNumber: number): FeederSide {
+function placeholderSide(
+  fifaMatchNumber: number,
+  kind: FeederKind = "winner"
+): FeederSide {
   return {
     team_id: syntheticFixtureId(fifaMatchNumber),
-    team_name: feederPlaceholderName(fifaMatchNumber),
+    team_name: feederPlaceholderName(fifaMatchNumber, kind),
     team_logo: null,
   };
 }
@@ -243,7 +246,7 @@ function resolveFeederSide(
     const outcome = knockoutOutcome(feeder, kind);
     if (outcome) return outcome;
   }
-  return placeholderSide(fifaMatchNumber);
+  return placeholderSide(fifaMatchNumber, kind);
 }
 
 function buildSyntheticMatch(
