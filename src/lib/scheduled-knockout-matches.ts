@@ -10,6 +10,7 @@ import {
   teamsMatchFifaFeeders,
 } from "@/lib/knockout-fifa-order";
 import { getLoserTeamId, getWinnerTeamId } from "@/lib/match-result";
+import { canonicalTeamKey } from "@/lib/team-names";
 import { formatMatchDate } from "@/lib/timezone";
 import type { Match } from "@/types";
 
@@ -175,6 +176,70 @@ const OFFICIAL_FINAL: ScheduledKnockout[] = [
     round: "Final",
   },
 ];
+
+/**
+ * Resultados já confirmados por fontes oficiais/editoriais quando a API
+ * ainda mantém o fixture em NS. O fallback é aplicado apenas ao par exacto.
+ * M102: https://www.espn.com/soccer/report/_/gameId/760515
+ */
+const CONFIRMED_RESULT_FALLBACKS = [
+  {
+    home: "England",
+    away: "Argentina",
+    homeScore: 1,
+    awayScore: 2,
+    finishedUtc: "2026-07-15T21:00:00.000Z",
+  },
+] as const;
+
+function applyConfirmedResultFallback(match: Match): Match {
+  for (const result of CONFIRMED_RESULT_FALLBACKS) {
+    const homeKey = canonicalTeamKey(match.home_team_name);
+    const awayKey = canonicalTeamKey(match.away_team_name);
+    const resultHomeKey = canonicalTeamKey(result.home);
+    const resultAwayKey = canonicalTeamKey(result.away);
+
+    if (homeKey === resultHomeKey && awayKey === resultAwayKey) {
+      if (
+        match.status === "finished" &&
+        match.home_score === result.homeScore &&
+        match.away_score === result.awayScore
+      ) {
+        return match;
+      }
+      return {
+        ...match,
+        status: "finished",
+        home_score: result.homeScore,
+        away_score: result.awayScore,
+        minute: 90,
+        finished_utc: result.finishedUtc,
+      };
+    }
+
+    if (homeKey === resultAwayKey && awayKey === resultHomeKey) {
+      return {
+        ...match,
+        status: "finished",
+        home_score: result.awayScore,
+        away_score: result.homeScore,
+        minute: 90,
+        finished_utc: result.finishedUtc,
+      };
+    }
+  }
+  return match;
+}
+
+function applyConfirmedResultFallbacks(matches: Match[]): Match[] {
+  let changed = false;
+  const result = matches.map((match) => {
+    const updated = applyConfirmedResultFallback(match);
+    if (updated !== match) changed = true;
+    return updated;
+  });
+  return changed ? result : matches;
+}
 
 type FeederSide = {
   team_id: number;
@@ -528,7 +593,7 @@ function mergeOfficialRound(
  * API ainda não os publicou. Preferem-se sempre fixtures reais aos sintéticos.
  */
 export function appendScheduledKnockoutMatches(matches: Match[]): Match[] {
-  let result = matches;
+  let result = applyConfirmedResultFallbacks(matches);
 
   result = mergeOfficialRound(result, OFFICIAL_R16, 8);
   result = mergeOfficialRound(result, OFFICIAL_QF, 8);
