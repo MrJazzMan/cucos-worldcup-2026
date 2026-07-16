@@ -199,12 +199,27 @@ test("prefers finished real SF over synthetic with same teams", () => {
     kickoff_utc: "2026-07-15T20:00:00.000Z",
   });
 
+  // A API ainda pode devolver NS/null apesar do resultado confirmado (1–2).
+  const staleEnglandArgentina = match({
+    fixture_id: 102001,
+    home_team_id: 108,
+    home_team_name: "England",
+    away_team_id: 112,
+    away_team_name: "Argentina",
+    home_score: null,
+    away_score: null,
+    status: "upcoming",
+    round: "Semi-finals",
+    kickoff_utc: "2026-07-15T19:00:00.000Z",
+  });
+
   const all = appendScheduledKnockoutMatches([
     ...r32,
     ...qfFinished,
     finishedSf,
     syntheticSf,
     unrelatedSf,
+    staleEnglandArgentina,
   ]);
 
   assert.equal(
@@ -215,6 +230,11 @@ test("prefers finished real SF over synthetic with same teams", () => {
   assert.ok(sf);
   assert.equal(sf.status, "finished");
   assert.equal(sf.away_score, 2);
+  const sf102 = all.find((m) => m.fixture_id === 102001);
+  assert.ok(sf102);
+  assert.equal(sf102.status, "finished");
+  assert.equal(sf102.home_score, 1);
+  assert.equal(sf102.away_score, 2);
   assert.equal(
     all.some((m) => m.fixture_id === unrelatedSf.fixture_id),
     false,
@@ -224,4 +244,9 @@ test("prefers finished real SF over synthetic with same teams", () => {
   const third = all.find((m) => m.fixture_id === syntheticFixtureId(103));
   assert.ok(third);
   assert.equal(third.home_team_name, "France");
+  assert.equal(third.away_team_name, "England");
+  const final = all.find((m) => m.fixture_id === syntheticFixtureId(104));
+  assert.ok(final);
+  assert.equal(final.home_team_name, "Spain");
+  assert.equal(final.away_team_name, "Argentina");
 });
