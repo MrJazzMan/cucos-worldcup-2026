@@ -19,6 +19,7 @@ import {
   groupMatchesByCalendarDay,
   resolveScrollTargetDay,
 } from "@/lib/match-schedule";
+import type { TopScorerRow } from "@/lib/top-scorers";
 import type { Match, TeamOption } from "@/types";
 
 type DayMatch = Match & { isFavourite?: boolean };
@@ -30,10 +31,12 @@ export function MatchesView({
   matches,
   teams = [],
   loggedIn = false,
+  officialScorers = [],
 }: {
   matches: DayMatch[];
   teams?: TeamOption[];
   loggedIn?: boolean;
+  officialScorers?: TopScorerRow[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -235,7 +238,9 @@ export function MatchesView({
         </div>
       )}
 
-      {!isTeamSearch && <TopScorers matches={matches} />}
+      {!isTeamSearch && (
+        <TopScorers matches={matches} officialScorers={officialScorers} />
+      )}
     </div>
   );
 }

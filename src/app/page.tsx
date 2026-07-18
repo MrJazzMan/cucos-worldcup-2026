@@ -15,6 +15,7 @@ import {
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import { getDateForOffset } from "@/lib/timezone";
+import { getOfficialTopScorers } from "@/lib/top-scorers";
 import type { Match } from "@/types";
 
 async function loadAllMatches(favouriteIds: number[]) {
@@ -77,6 +78,7 @@ export default async function HomePage() {
     () => [] as Awaited<ReturnType<typeof getAllTeams>>
   );
   let matches = await loadAllMatches(favouriteIds);
+  const officialScorersPromise = getOfficialTopScorers(20);
 
   // Recupera FT/live quando o QStash/cron falhou — um visitante desencadeia
   // o sync (com cooldown) e a página re-lê a BD antes de renderizar.
@@ -87,11 +89,14 @@ export default async function HomePage() {
     }
   }
 
+  const officialScorers = await officialScorersPromise;
+
   return (
     <MatchesView
       matches={matches}
       teams={teams}
       loggedIn={loggedIn}
+      officialScorers={officialScorers}
     />
   );
 }

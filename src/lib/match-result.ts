@@ -52,6 +52,34 @@ export function regulationScoresFromEvents(
   };
 }
 
+/** Marcadores em falta ou desfasados do placar (FT) — precisam de re-sync. */
+export function needsGoalEventsResync(match: {
+  status: string;
+  home_score: number | null;
+  away_score: number | null;
+  home_team_id: number;
+  away_team_id: number;
+  goal_events?: MatchGoalEvent[] | null;
+}): boolean {
+  if (match.status === "live") return true;
+
+  if (match.status !== "finished") return false;
+
+  const goals = match.goal_events ?? [];
+  if (!goals.length) {
+    return (match.home_score ?? 0) + (match.away_score ?? 0) > 0;
+  }
+
+  const fromEvents = regulationScoresFromEvents(
+    goals,
+    match.home_team_id,
+    match.away_team_id
+  );
+  const home = match.home_score ?? 0;
+  const away = match.away_score ?? 0;
+  return fromEvents.home !== home || fromEvents.away !== away;
+}
+
 export type MatchGoalDisplay = {
   scores: { home: number; away: number };
   homeGoals: MatchGoalEvent[];

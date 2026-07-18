@@ -5,9 +5,15 @@ import {
   type ApiFixture,
   type ApiFixtureEvent,
 } from "@/lib/api-football";
-import { regulationScoresFromEvents } from "@/lib/match-result";
+import {
+  isRegulationGoalEvent,
+  needsGoalEventsResync,
+  regulationScoresFromEvents,
+} from "@/lib/match-result";
 import { createSupabaseAdmin } from "@/lib/supabase/admin";
 import type { MatchGoalEvent } from "@/types";
+
+export { needsGoalEventsResync } from "@/lib/match-result";
 
 export function formatGoalMinute(minute: number, extra: number | null): string {
   if (extra != null && extra > 0) return `${minute}+${extra}'`;
@@ -49,10 +55,20 @@ export function goalsForTeam(
   return (events ?? []).filter((e) => e.team_id === teamId);
 }
 
+function regulationGoalCount(events: MatchGoalEvent[] | null | undefined): number {
+  return (events ?? []).filter(isRegulationGoalEvent).length;
+}
+
 /** Sincroniza marcadores para jogos ao vivo ou terminados. */
 export async function syncGoalEventsForFixtures(
   fixtureIds: number[],
-  options?: { resyncLive?: boolean; fixtures?: ApiFixture[] }
+  options?: {
+    /** Re-sincroniza todos os ids (live sync). */
+    resyncLive?: boolean;
+    /** Em full sync, também re-sincroniza FT com placar ≠ eventos. */
+    resyncMismatched?: boolean;
+    fixtures?: ApiFixture[];
+  }
 ): Promise<number> {
   if (!fixtureIds.length || !process.env.API_FOOTBALL_KEY) return 0;
 
@@ -62,14 +78,25 @@ export async function syncGoalEventsForFixtures(
   if (!options?.resyncLive) {
     const { data: existing } = await admin
       .from("matches")
-      .select("fixture_id, status, goal_events")
+      .select(
+        "fixture_id, status, home_score, away_score, home_team_id, away_team_id, goal_events"
+      )
       .in("fixture_id", fixtureIds);
 
     ids = (existing ?? [])
       .filter((m) => {
         if (m.status === "live") return true;
         const goals = m.goal_events as MatchGoalEvent[] | null;
-        return !goals?.length;
+        if (!goals?.length) return true;
+        if (!options?.resyncMismatched) return false;
+        return needsGoalEventsResync({
+          status: m.status,
+          home_score: m.home_score,
+          away_score: m.away_score,
+          home_team_id: m.home_team_id,
+          away_team_id: m.away_team_id,
+          goal_events: goals,
+        });
       })
       .map((m) => m.fixture_id);
   }
@@ -112,6 +139,19 @@ export async function syncGoalEventsForFixtures(
         goal_events.length > 0 && status === "live"
           ? Math.max(apiAway, fromEvents.away)
           : fixture.goals.away;
+
+      // Evita gravar lista vazia por cima de marcadores já bons (rate-limit / falha parcial).
+      if (
+        status === "finished" &&
+        regulationGoalCount(goal_events) === 0 &&
+        (apiHome > 0 || apiAway > 0)
+      ) {
+        console.warn(
+          `goal events sync skipped empty payload for ${fixture.fixture.id} (${apiHome}-${apiAway})`
+        );
+        continue;
+      }
+
       const { error } = await admin
         .from("matches")
         .update({

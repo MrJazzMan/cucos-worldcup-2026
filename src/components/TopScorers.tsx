@@ -4,9 +4,7 @@ import { useMemo, useState } from "react";
 import { TeamName } from "@/components/Display";
 import { TeamFlag } from "@/components/TeamFlag";
 import { useSettings } from "@/components/SettingsProvider";
-import {
-  aggregateTopScorers,
-} from "@/lib/top-scorers";
+import { resolveTopScorers, type TopScorerRow } from "@/lib/top-scorers";
 import type { Match } from "@/types";
 
 const DEFAULT_VISIBLE = 5;
@@ -14,15 +12,20 @@ const EXPANDED_VISIBLE = 15;
 
 type TopScorersProps = {
   matches: Match[];
+  /** Tabela oficial (API-Football); se vazia, agrega goal_events. */
+  officialScorers?: TopScorerRow[];
 };
 
-export function TopScorers({ matches }: TopScorersProps) {
+export function TopScorers({
+  matches,
+  officialScorers = [],
+}: TopScorersProps) {
   const { t } = useSettings();
   const [expanded, setExpanded] = useState(false);
 
   const allScorers = useMemo(
-    () => aggregateTopScorers(matches, 50),
-    [matches]
+    () => resolveTopScorers(officialScorers, matches, 50),
+    [officialScorers, matches]
   );
 
   if (allScorers.length === 0) return null;
