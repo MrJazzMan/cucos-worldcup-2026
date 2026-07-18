@@ -9,7 +9,7 @@
     "postinstall": "node scripts/sync-circle-flags.mjs",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --experimental-loader ./scripts/test-support/ts-alias-loader.mjs --test tests/*.test.mjs"
+    "test": "node --experimental-strip-types --experimental-loader ./scripts/test-support/ts-alias-loader.mjs --test tests/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
