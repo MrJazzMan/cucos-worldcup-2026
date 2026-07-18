@@ -53,7 +53,7 @@ export function TopScorers({ matches }: TopScorersProps) {
             }`}
           >
             <span className="w-5 shrink-0 text-center text-sm font-bold tabular-nums text-muted">
-              {index + 1}
+              {row.rank}
             </span>
             <TeamFlag name={row.team_name} teamId={row.team_id} size={22} />
             <div className="min-w-0 flex-1">
