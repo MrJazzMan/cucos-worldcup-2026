@@ -3,7 +3,7 @@ import { estimateFinishedUtcFromApi } from "@/lib/match-finish-time";
 import { formatMatchDate } from "@/lib/timezone";
 import { formatVenueField } from "@/lib/venues";
 import { resolveMatchVenue } from "@/lib/official-venues";
-import { WC_LEAGUE_ID, isWorldCupRound } from "@/lib/world-cup";
+import { WC_LEAGUE_ID, WC_SEASON, isWorldCupRound } from "@/lib/world-cup";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
@@ -255,5 +255,35 @@ export async function fetchFixtureEvents(fixtureId: number) {
   return apiFetch<ApiFixtureEvent[]>(
     `/fixtures/events?fixture=${fixtureId}`,
     { revalidate: 0 }
+  );
+}
+
+/** Resposta de `/players/topscorers` (top 20 da competição). */
+export type ApiTopScorer = {
+  player: {
+    id: number;
+    name: string;
+  };
+  statistics: {
+    team: { id: number; name: string; logo: string };
+    games: {
+      appearences: number | null;
+      minutes: number | null;
+    };
+    goals: {
+      total: number | null;
+      assists: number | null;
+    };
+    penalty: {
+      scored: number | null;
+      missed: number | null;
+    };
+  }[];
+};
+
+export async function fetchTopScorers(options?: { revalidate?: number }) {
+  return apiFetch<ApiTopScorer[]>(
+    `/players/topscorers?league=${WC_LEAGUE_ID}&season=${WC_SEASON}`,
+    { revalidate: options?.revalidate ?? 120 }
   );
 }

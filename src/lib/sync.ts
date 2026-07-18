@@ -184,6 +184,8 @@ export async function syncMatches(mode: "full" | "live" = "full") {
       .map((r) => r.fixture_id);
     const goalsSynced = await syncGoalEventsForFixtures(eventFixtureIds, {
       resyncLive: mode === "live",
+      // Full sync: corrige FT cujo placar não bate com goal_events (marcadores a menos).
+      resyncMismatched: mode === "full",
       fixtures,
     });
 

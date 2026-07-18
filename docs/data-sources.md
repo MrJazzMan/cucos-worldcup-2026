@@ -15,6 +15,7 @@
 | `GET /fixtures?league=1&season=2026` | Calendário completo |
 | `GET /fixtures?live=all` | Jogos ao vivo |
 | `GET /fixtures?ids=id1-id2-…` | Batch até 20 — scores + **events** (marcadores) |
+| `GET /players/topscorers?league=1&season=2026` | Melhores marcadores (homepage); ordenação FIFA: golos → AS → minutos |
 | `GET /standings?league=1&season=2026` | Mapa **equipa → grupo** (48 equipas); fallback de leitura em `/grupos` |
 | `GET /fixtures/rounds?league=1&season=2026` | Rondas eliminatórias |
 

@@ -4,9 +4,13 @@ import assert from "node:assert/strict";
 import { makeMatch } from "./helpers.mjs";
 import {
   aggregateTopScorers,
+  compareTopScorersFifa,
   countScorersWithGoals,
   isScorerGoalEvent,
+  mapApiTopScorers,
+  resolveTopScorers,
 } from "../src/lib/top-scorers.ts";
+import { needsGoalEventsResync } from "../src/lib/match-result.ts";
 
 test("isScorerGoalEvent excludes own goals, missed pens and shootout", () => {
   assert.equal(
@@ -149,62 +153,160 @@ test("aggregateTopScorers ignores shootout penalties and own goals", () => {
     [
       { player: "Mbappé", goals: 2, rank: 1 },
       { player: "Enciso", goals: 1, rank: 2 },
-      { player: "Havertz", goals: 1, rank: 2 },
+      { player: "Havertz", goals: 1, rank: 3 },
     ]
   );
   assert.equal(countScorersWithGoals(matches), 3);
 });
 
-test("aggregateTopScorers shares rank on tied goal totals", () => {
+test("compareTopScorersFifa: assistências e minutos desempatam", () => {
+  const messi = {
+    player: "Messi",
+    team_name: "Argentina",
+    goals: 7,
+    assists: 3,
+    minutes: 553,
+  };
+  const haaland = {
+    player: "Haaland",
+    team_name: "Norway",
+    goals: 7,
+    assists: 0,
+    minutes: 469,
+  };
+  assert.ok(compareTopScorersFifa(messi, haaland) < 0);
+
+  const a = { ...messi, assists: 1, minutes: 400 };
+  const b = { ...haaland, assists: 1, minutes: 500 };
+  assert.ok(compareTopScorersFifa(a, b) < 0);
+});
+
+test("mapApiTopScorers ordena como Golden Boot (golos → AS → MIN)", () => {
+  const rows = mapApiTopScorers([
+    {
+      player: { id: 1, name: "Erling Haaland" },
+      statistics: [
+        {
+          team: { id: 109, name: "Norway", logo: "" },
+          games: { appearences: 5, minutes: 469 },
+          goals: { total: 7, assists: 0 },
+          penalty: { scored: 2, missed: 0 },
+        },
+      ],
+    },
+    {
+      player: { id: 2, name: "Kylian Mbappé" },
+      statistics: [
+        {
+          team: { id: 2, name: "France", logo: "" },
+          games: { appearences: 7, minutes: 592 },
+          goals: { total: 8, assists: 2 },
+          penalty: { scored: 1, missed: 0 },
+        },
+      ],
+    },
+    {
+      player: { id: 3, name: "Lionel Messi" },
+      statistics: [
+        {
+          team: { id: 26, name: "Argentina", logo: "" },
+          games: { appearences: 7, minutes: 553 },
+          goals: { total: 7, assists: 3 },
+          penalty: { scored: 4, missed: 0 },
+        },
+      ],
+    },
+  ]);
+
+  assert.deepEqual(
+    rows.map((r) => ({ player: r.player, goals: r.goals, rank: r.rank })),
+    [
+      { player: "Kylian Mbappé", goals: 8, rank: 1 },
+      { player: "Lionel Messi", goals: 7, rank: 2 },
+      { player: "Erling Haaland", goals: 7, rank: 3 },
+    ]
+  );
+});
+
+test("resolveTopScorers prefere oficiais à agregação local", () => {
   const matches = [
     makeMatch({
-      home_team_id: 1,
-      home_team_name: "A",
-      away_team_id: 2,
-      away_team_name: "B",
       goal_events: [
         {
           minute: 10,
           extra: null,
           detail: "Normal Goal",
-          player: "Alpha",
-          team_id: 1,
-        },
-        {
-          minute: 20,
-          extra: null,
-          detail: "Normal Goal",
-          player: "Alpha",
-          team_id: 1,
-        },
-        {
-          minute: 30,
-          extra: null,
-          detail: "Normal Goal",
-          player: "Bravo",
-          team_id: 2,
-        },
-        {
-          minute: 40,
-          extra: null,
-          detail: "Normal Goal",
-          player: "Bravo",
-          team_id: 2,
-        },
-        {
-          minute: 50,
-          extra: null,
-          detail: "Normal Goal",
-          player: "Charlie",
+          player: "Local Only",
           team_id: 1,
         },
       ],
     }),
   ];
+  const official = mapApiTopScorers([
+    {
+      player: { id: 9, name: "Kylian Mbappé" },
+      statistics: [
+        {
+          team: { id: 2, name: "France", logo: "" },
+          games: { appearences: 7, minutes: 592 },
+          goals: { total: 8, assists: 2 },
+          penalty: { scored: 1, missed: 0 },
+        },
+      ],
+    },
+  ]);
+  assert.equal(resolveTopScorers(official, matches)[0].player, "Kylian Mbappé");
+  assert.equal(resolveTopScorers([], matches)[0].player, "Local Only");
+});
 
-  const rows = aggregateTopScorers(matches);
-  assert.equal(rows[0].rank, 1);
-  assert.equal(rows[1].rank, 1);
-  assert.equal(rows[2].player, "Charlie");
-  assert.equal(rows[2].rank, 3);
+test("needsGoalEventsResync detects missing or mismatched events", () => {
+  assert.equal(
+    needsGoalEventsResync({
+      status: "finished",
+      home_score: 2,
+      away_score: 1,
+      home_team_id: 1,
+      away_team_id: 2,
+      goal_events: [],
+    }),
+    true
+  );
+  assert.equal(
+    needsGoalEventsResync({
+      status: "finished",
+      home_score: 1,
+      away_score: 0,
+      home_team_id: 1,
+      away_team_id: 2,
+      goal_events: [
+        {
+          minute: 20,
+          extra: null,
+          detail: "Normal Goal",
+          player: "A",
+          team_id: 1,
+        },
+      ],
+    }),
+    false
+  );
+  assert.equal(
+    needsGoalEventsResync({
+      status: "finished",
+      home_score: 2,
+      away_score: 0,
+      home_team_id: 1,
+      away_team_id: 2,
+      goal_events: [
+        {
+          minute: 20,
+          extra: null,
+          detail: "Normal Goal",
+          player: "A",
+          team_id: 1,
+        },
+      ],
+    }),
+    true
+  );
 });

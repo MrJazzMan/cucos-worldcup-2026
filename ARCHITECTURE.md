@@ -100,7 +100,7 @@ Handoff detalhado: [docs/sessao-handoff-2026-06-23.md](docs/sessao-handoff-2026-
 ## Homepage — calendário e marcadores
 
 - **`tournament-days.ts`** — dias do torneio (cutoff 06:00); chaves `td-N` vs `YYYY-MM-DD`.
-- **`top-scorers.ts`** — `aggregateTopScorers()` a partir de `goal_events` (exclui autogolos, penáltis falhados e marcas da disputa de penáltis; empates partilham posição).
+- **`top-scorers.ts`** — homepage usa `/players/topscorers` (API-Football, critérios Golden Boot); fallback `aggregateTopScorers()` a partir de `goal_events`.
 - Pesquisa equipa: `TeamSearch` + `getAllTeams()`; URL `?team=` e `?view=calendar`.
 
 ## Internacionalização (i18n)
